@@ -678,6 +678,7 @@
       background: var(--bg-glass); color: var(--text-muted); border: none;
     }
     .hist-tab:first-child { border-right: 1px solid var(--border-primary); }
+    .hist-tab:nth-child(2) { border-right: 1px solid var(--border-primary); }
     .hist-tab.active {
       background: var(--accent-gradient-btn); color: #fff;
       text-shadow: 0 1px 2px rgba(0,0,0,0.2);
@@ -830,6 +831,174 @@
       border: 1px solid var(--yellow-border); border-radius: 10px;
       font-size: 11px; color: var(--yellow); line-height: 1.6;
     }
+
+    /* ═══════ TOKEN INTEL PANEL ═══════ */
+    .intel-search { padding: 14px; }
+    .intel-search-row { display: flex; gap: 8px; }
+    .intel-search-row .fi { flex: 1; }
+    .intel-search-btn {
+      padding: 0 16px; background: var(--accent-gradient-btn); border: none;
+      border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer;
+      font-family: inherit; font-size: 12px; white-space: nowrap;
+    }
+    .intel-search-btn:hover { box-shadow: 0 2px 12px rgba(34,209,238,0.25); }
+    .intel-card {
+      margin: 0 14px 10px; padding: 14px; background: var(--bg-glass);
+      border: 1px solid var(--border-primary); border-radius: 12px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .intel-card-title {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;
+    }
+    .intel-hero { text-align: center; padding: 4px 0 8px; }
+    .intel-hero-name { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+    .intel-hero-ticker { font-size: 12px; color: var(--accent); font-weight: 600; }
+    .intel-hero-price {
+      font-size: 24px; font-weight: 800; margin: 8px 0 4px;
+      font-family: 'Fira Code', monospace;
+    }
+    .intel-hero-change { font-size: 12px; font-weight: 700; }
+    .intel-hero-change.up { color: var(--green); }
+    .intel-hero-change.down { color: var(--red); }
+    .intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .intel-stat {
+      padding: 8px; background: var(--bg-elevated); border-radius: 8px;
+      border: 1px solid var(--border-secondary);
+    }
+    .intel-stat-label {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px;
+    }
+    .intel-stat-val {
+      font-size: 13px; font-weight: 700; color: var(--text-primary);
+      font-family: 'Fira Code', monospace;
+    }
+    .intel-risk {
+      display: flex; align-items: center; gap: 12px; padding: 12px;
+      background: var(--bg-elevated); border-radius: 10px;
+      border: 1px solid var(--border-secondary);
+    }
+    .intel-risk-score {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; font-family: 'Fira Code', monospace; flex-shrink: 0;
+    }
+    .risk-low { background: var(--green-dim); color: var(--green); border: 2px solid var(--green-border); }
+    .risk-med { background: var(--yellow-dim); color: var(--yellow); border: 2px solid var(--yellow-border); }
+    .risk-high { background: var(--red-dim); color: var(--red); border: 2px solid var(--red-border); }
+    .intel-risk-label { font-size: 13px; font-weight: 700; }
+    .intel-risk-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .intel-holder {
+      display: flex; align-items: center; padding: 6px 0;
+      border-bottom: 1px solid var(--border-secondary); font-size: 11px;
+    }
+    .intel-holder:last-child { border-bottom: none; }
+    .intel-holder-rank { width: 18px; font-size: 10px; font-weight: 700; color: var(--text-muted); }
+    .intel-holder-addr {
+      flex: 1; font-family: 'Fira Code', monospace; font-size: 10px;
+      color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis;
+    }
+    .intel-holder-pct {
+      font-weight: 700; font-family: 'Fira Code', monospace;
+      font-size: 11px; margin-left: 8px;
+    }
+    .intel-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .intel-link {
+      padding: 5px 10px; background: var(--bg-elevated); border: 1px solid var(--border-secondary);
+      border-radius: 8px; font-size: 10px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; text-decoration: none; font-family: inherit;
+    }
+    .intel-link:hover { border-color: var(--border-glow); color: var(--accent); }
+    .intel-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .intel-empty-icon { font-size: 28px; margin-bottom: 10px; }
+    .intel-empty-text { font-size: 12px; line-height: 1.5; }
+
+    /* ═══════ PORTFOLIO DASHBOARD ═══════ */
+    .portfolio-summary {
+      margin: 14px; padding: 18px; background: var(--bg-glass);
+      border: 1px solid var(--border-primary); border-radius: 14px;
+      backdrop-filter: blur(8px); text-align: center;
+    }
+    .portfolio-total-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;
+    }
+    .portfolio-total {
+      font-size: 28px; font-weight: 800; font-family: 'Fira Code', monospace;
+      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .portfolio-sol {
+      font-size: 13px; color: var(--text-secondary); margin-top: 2px;
+      font-family: 'Fira Code', monospace;
+    }
+    .portfolio-row { display: flex; gap: 8px; margin: 0 14px 8px; }
+    .portfolio-stat-card {
+      flex: 1; padding: 10px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; text-align: center;
+    }
+    .portfolio-stat-label {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px;
+    }
+    .portfolio-stat-val {
+      font-size: 14px; font-weight: 700; font-family: 'Fira Code', monospace;
+    }
+    .portfolio-holding {
+      margin: 0 14px 6px; padding: 10px 12px; background: var(--bg-glass);
+      border: 1px solid var(--border-primary); border-radius: 10px;
+      cursor: pointer; display: flex; align-items: center; gap: 10px;
+    }
+    .portfolio-holding:hover { border-color: var(--border-glow); }
+    .portfolio-holding-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent-dim); display: flex; align-items: center;
+      justify-content: center; font-size: 12px; font-weight: 800;
+      color: var(--accent); flex-shrink: 0;
+    }
+    .portfolio-holding-info { flex: 1; min-width: 0; }
+    .portfolio-holding-name {
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .portfolio-holding-amount {
+      font-size: 10px; color: var(--text-muted); font-family: 'Fira Code', monospace;
+    }
+    .portfolio-holding-right { text-align: right; }
+    .portfolio-holding-value {
+      font-size: 12px; font-weight: 700; font-family: 'Fira Code', monospace;
+    }
+    .portfolio-holding-price {
+      font-size: 10px; color: var(--text-muted); font-family: 'Fira Code', monospace;
+    }
+
+    /* ═══════ PNL ANALYTICS ═══════ */
+    .pnl-stats { padding: 14px; }
+    .pnl-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .pnl-stat {
+      padding: 10px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; text-align: center;
+    }
+    .pnl-stat-label {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px;
+    }
+    .pnl-stat-val {
+      font-size: 15px; font-weight: 700; font-family: 'Fira Code', monospace;
+    }
+    .pnl-stat-big { grid-column: span 2; }
+    .pnl-stat-big .pnl-stat-val { font-size: 22px; }
+    .pnl-trade {
+      padding: 10px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; margin-bottom: 6px; font-size: 11px;
+    }
+    .pnl-trade-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+    .pnl-trade-pair { font-weight: 700; font-size: 12px; }
+    .pnl-trade-side { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    .pnl-trade-side.buy { background: var(--green-dim); color: var(--green); }
+    .pnl-trade-side.sell { background: var(--red-dim); color: var(--red); }
+    .pnl-trade-bottom { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 10px; font-family: 'Fira Code', monospace; }
   </style>
 </head>
 <body>
@@ -854,6 +1023,8 @@
         <button class="mode-btn" data-mode="trade" onclick="setMode('trade')"><span class="ic">⟡</span> TRADE</button>
         <button class="mode-btn" data-mode="launch" onclick="setMode('launch')"><span class="ic">◆</span> LAUNCH</button>
         <button class="mode-btn" data-mode="tools" onclick="setMode('tools')"><span class="ic">◈</span> TOOLS</button>
+        <button class="mode-btn" data-mode="intel" onclick="setMode('intel')"><span class="ic">⬡</span> INTEL</button>
+        <button class="mode-btn" data-mode="portfolio" onclick="setMode('portfolio')"><span class="ic">◐</span> FOLIO</button>
         <button class="mode-btn" data-mode="wallet" onclick="setMode('wallet')"><span class="ic">◎</span> WALLET</button>
       </div>
 
@@ -993,6 +1164,8 @@
             <div class="tcard" onclick="toolOpen('launch')"><div class="tcard-h"><span class="tcard-n">🎰 Token Launcher</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Launch directly on pump.fun, bonk.fun, bags.fm</div></div>
             <div class="tcard" onclick="toolOpen('wallet')"><div class="tcard-h"><span class="tcard-n">👻 Phantom Wallet</span><span class="tcard-s" id="ph-stat" style="background:var(--red-dim);color:var(--red);">DISCONNECTED</span></div><div class="tcard-d">Sign transactions, view balance, portfolio</div></div>
             <div class="tcard" onclick="setMode('sniper')"><div class="tcard-h"><span class="tcard-n">⚡ Sniper Bot</span><span class="tcard-s" id="sniper-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Auto-buy your token launches with multiple wallets</div></div>
+            <div class="tcard" onclick="setMode('intel')"><div class="tcard-h"><span class="tcard-n">⬡ Token Intel</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Scan any token: holders, liquidity, rug risk score</div></div>
+            <div class="tcard" onclick="setMode('portfolio')"><div class="tcard-h"><span class="tcard-n">◐ Portfolio</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Full portfolio dashboard with PnL tracking</div></div>
             <div class="tcard disabled" onclick="toast('🔔 Whale Alerts coming soon!')"><div class="tcard-h"><span class="tcard-n">🔔 Whale Alerts</span><span class="tcard-s" style="background:var(--yellow-dim);color:var(--yellow);">COMING SOON</span></div><div class="tcard-d">Track whale wallet movements</div></div>
           </div>
 
@@ -1013,10 +1186,12 @@
             <div class="ph">HISTORY</div>
             <div class="hist-tabs">
               <button class="hist-tab active" id="ht-chats" onclick="setHistTab('chats')">💬 CHATS</button>
-              <button class="hist-tab" id="ht-txs" onclick="setHistTab('txs')">📋 TRANSACTIONS</button>
+              <button class="hist-tab" id="ht-txs" onclick="setHistTab('txs')">📋 TRADES</button>
+              <button class="hist-tab" id="ht-pnl" onclick="setHistTab('pnl')">📊 PNL</button>
             </div>
             <div id="hist-chats" class="hist-list"></div>
             <div id="hist-txs" class="hist-list" style="display:none"></div>
+            <div id="hist-pnl" style="display:none"></div>
           </div>
 
           <!-- SNIPER -->
@@ -1051,6 +1226,34 @@
             <div id="sniper-log" style="padding:0 14px;"></div>
           </div>
 
+          <!-- TOKEN INTEL -->
+          <div id="p-intel" style="display:none">
+            <div class="ph">⬡ TOKEN INTEL</div>
+            <div class="intel-search">
+              <div class="intel-search-row">
+                <input type="text" id="intel-mint" class="fi" placeholder="Paste mint address or ticker...">
+                <button class="intel-search-btn" id="intel-go" onclick="fetchTokenIntel()">SCAN</button>
+              </div>
+            </div>
+            <div id="intel-results">
+              <div class="intel-empty">
+                <div class="intel-empty-icon">⬡</div>
+                <div class="intel-empty-text">Paste a token address or ticker and hit SCAN<br>for full intel: price, volume, holders, risk score</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PORTFOLIO -->
+          <div id="p-portfolio" style="display:none">
+            <div class="ph">◐ PORTFOLIO <button onclick="refreshPortfolio()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;float:right;">↻ Refresh</button></div>
+            <div id="portfolio-content">
+              <div class="intel-empty">
+                <div class="intel-empty-icon">◐</div>
+                <div class="intel-empty-text">Connect wallet to view portfolio</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1076,7 +1279,7 @@
       </div>
     </div>
 
-    <div class="footer">Ghost Crypto v0.8 • <span class="g">Powered by Claude</span> • Swaps via Jupiter • Wallet via Phantom</div>
+    <div class="footer">Ghost Crypto v0.9 • <span class="g">Powered by Claude</span> • Swaps via Jupiter • Wallet via Phantom</div>
   </div>
 
   <div id="toast" class="toast"></div>
@@ -1167,9 +1370,12 @@
       $('p-wallet').style.display = mode === 'wallet' ? 'block' : 'none';
       $('p-history').style.display = mode === 'history' ? 'block' : 'none';
       $('p-sniper').style.display = mode === 'sniper' ? 'block' : 'none';
+      $('p-intel').style.display = mode === 'intel' ? 'block' : 'none';
+      $('p-portfolio').style.display = mode === 'portfolio' ? 'block' : 'none';
       $('sidebar').classList.toggle('open', mode !== 'chat');
       if (mode === 'history') { renderChatHistory(); renderTxHistory(); }
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
+      if (mode === 'portfolio') { refreshPortfolio(); }
     }
 
     function selPlatform(p) {
@@ -1270,8 +1476,11 @@
     function setHistTab(tab) {
       $('ht-chats').classList.toggle('active', tab === 'chats');
       $('ht-txs').classList.toggle('active', tab === 'txs');
+      $('ht-pnl').classList.toggle('active', tab === 'pnl');
       $('hist-chats').style.display = tab === 'chats' ? 'block' : 'none';
       $('hist-txs').style.display = tab === 'txs' ? 'block' : 'none';
+      $('hist-pnl').style.display = tab === 'pnl' ? 'block' : 'none';
+      if (tab === 'pnl') renderPnlAnalytics();
     }
 
     function renderChatHistory() {
@@ -2188,6 +2397,461 @@
       toast('Trade history cleared');
     }
 
+    // ═══════ TOKEN INTEL ═══════
+    const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex';
+
+    async function fetchTokenIntel() {
+      const input = $('intel-mint').value.trim();
+      if (!input) { toast('Enter a mint address or ticker'); return; }
+
+      $('intel-results').innerHTML = '<div class="intel-empty"><div class="intel-empty-icon" style="animation:pulse 1s infinite;">⬡</div><div class="intel-empty-text">Scanning token...</div></div>';
+
+      try {
+        let pairs = [];
+        // If it looks like a mint address (base58, 32-44 chars)
+        if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(input)) {
+          const res = await fetch(`${DEXSCREENER_API}/tokens/${input}`);
+          const data = await res.json();
+          pairs = data.pairs || [];
+        } else {
+          // Search by ticker
+          const res = await fetch(`${DEXSCREENER_API}/search/?q=${encodeURIComponent(input)}`);
+          const data = await res.json();
+          pairs = (data.pairs || []).filter(p => p.chainId === 'solana');
+        }
+
+        if (pairs.length === 0) {
+          $('intel-results').innerHTML = '<div class="intel-empty"><div class="intel-empty-icon">⬡</div><div class="intel-empty-text">No token data found.<br>Check the address or try a different ticker.</div></div>';
+          return;
+        }
+
+        // Use highest liquidity pair
+        const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+        const mint = pair.baseToken?.address || input;
+        const symbol = pair.baseToken?.symbol || '???';
+        const name = pair.baseToken?.name || symbol;
+        const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+        const priceNative = pair.priceNative ? parseFloat(pair.priceNative) : 0;
+        const change5m = pair.priceChange?.m5 || 0;
+        const change1h = pair.priceChange?.h1 || 0;
+        const change6h = pair.priceChange?.h6 || 0;
+        const change24h = pair.priceChange?.h24 || 0;
+        const vol24h = pair.volume?.h24 || 0;
+        const vol6h = pair.volume?.h6 || 0;
+        const txns24h = pair.txns?.h24 || { buys: 0, sells: 0 };
+        const liquidity = pair.liquidity?.usd || 0;
+        const fdv = pair.fdv || 0;
+        const marketCap = pair.marketCap || fdv;
+        const pairCreated = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : null;
+        const dexId = pair.dexId || 'unknown';
+
+        // Calculate risk score
+        let riskScore = 0;
+        let riskFactors = [];
+        if (liquidity < 5000) { riskScore += 35; riskFactors.push('Very low liquidity'); }
+        else if (liquidity < 20000) { riskScore += 20; riskFactors.push('Low liquidity'); }
+        else if (liquidity < 100000) { riskScore += 10; riskFactors.push('Moderate liquidity'); }
+        if (pairCreated && (Date.now() - pairCreated.getTime()) < 86400000) { riskScore += 20; riskFactors.push('Token < 24h old'); }
+        else if (pairCreated && (Date.now() - pairCreated.getTime()) < 604800000) { riskScore += 10; riskFactors.push('Token < 7 days old'); }
+        if (vol24h < 1000) { riskScore += 15; riskFactors.push('Very low volume'); }
+        if (txns24h.buys + txns24h.sells < 20) { riskScore += 10; riskFactors.push('Few transactions'); }
+        if (fdv > 0 && liquidity > 0 && liquidity / fdv < 0.02) { riskScore += 15; riskFactors.push('Low liq/mcap ratio'); }
+        riskScore = Math.min(riskScore, 100);
+        const riskClass = riskScore <= 30 ? 'low' : riskScore <= 60 ? 'med' : 'high';
+        const riskLabel = riskScore <= 30 ? 'LOW RISK' : riskScore <= 60 ? 'MEDIUM RISK' : 'HIGH RISK';
+
+        // Fetch top holders via Solana RPC
+        let holdersHtml = '';
+        try {
+          const conn = new solanaWeb3.Connection(RPC_URL);
+          const largestAccounts = await conn.getTokenLargestAccounts(new solanaWeb3.PublicKey(mint));
+          const supply = await conn.getTokenSupply(new solanaWeb3.PublicKey(mint));
+          const totalSupply = supply.value.uiAmount || 1;
+
+          for (let i = 0; i < Math.min(largestAccounts.value.length, 10); i++) {
+            const acc = largestAccounts.value[i];
+            const pct = ((acc.uiAmount / totalSupply) * 100).toFixed(1);
+            const addr = acc.address.toString();
+            holdersHtml += `
+              <div class="intel-holder">
+                <span class="intel-holder-rank">${i + 1}</span>
+                <span class="intel-holder-addr" title="${addr}">${addr.slice(0, 6)}...${addr.slice(-4)}</span>
+                <span class="intel-holder-pct" style="color:${parseFloat(pct) > 10 ? 'var(--red)' : parseFloat(pct) > 5 ? 'var(--yellow)' : 'var(--text-primary)'}">${pct}%</span>
+              </div>`;
+          }
+        } catch (e) {
+          holdersHtml = '<div style="padding:8px;font-size:11px;color:var(--text-muted);">Could not load holders</div>';
+        }
+
+        // Format age
+        let ageStr = '—';
+        if (pairCreated) {
+          const ageMs = Date.now() - pairCreated.getTime();
+          if (ageMs < 3600000) ageStr = Math.floor(ageMs / 60000) + 'm';
+          else if (ageMs < 86400000) ageStr = Math.floor(ageMs / 3600000) + 'h';
+          else ageStr = Math.floor(ageMs / 86400000) + 'd';
+        }
+
+        const fmtUsd = (n) => {
+          if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+          if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+          if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+          return '$' + n.toFixed(0);
+        };
+        const fmtPrice = (p) => {
+          if (p === 0) return '$0';
+          if (p < 0.000001) return '$' + p.toFixed(10);
+          if (p < 0.01) return '$' + p.toFixed(6);
+          if (p < 1) return '$' + p.toFixed(4);
+          return '$' + p.toFixed(2);
+        };
+
+        $('intel-results').innerHTML = `
+          <div class="intel-card">
+            <div class="intel-hero">
+              <div class="intel-hero-name">${name}</div>
+              <div class="intel-hero-ticker">$${symbol} · ${dexId.toUpperCase()}</div>
+              <div class="intel-hero-price">${fmtPrice(price)}</div>
+              <div>
+                <span class="intel-hero-change ${change5m >= 0 ? 'up' : 'down'}">5m: ${change5m > 0 ? '+' : ''}${change5m.toFixed(1)}%</span>
+                <span style="margin:0 6px;color:var(--text-faint);">·</span>
+                <span class="intel-hero-change ${change1h >= 0 ? 'up' : 'down'}">1h: ${change1h > 0 ? '+' : ''}${change1h.toFixed(1)}%</span>
+                <span style="margin:0 6px;color:var(--text-faint);">·</span>
+                <span class="intel-hero-change ${change24h >= 0 ? 'up' : 'down'}">24h: ${change24h > 0 ? '+' : ''}${change24h.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="intel-card">
+            <div class="intel-card-title">Market Data</div>
+            <div class="intel-grid">
+              <div class="intel-stat"><div class="intel-stat-label">Market Cap</div><div class="intel-stat-val">${fmtUsd(marketCap)}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">FDV</div><div class="intel-stat-val">${fmtUsd(fdv)}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">Liquidity</div><div class="intel-stat-val">${fmtUsd(liquidity)}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">Vol 24h</div><div class="intel-stat-val">${fmtUsd(vol24h)}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">Buys 24h</div><div class="intel-stat-val" style="color:var(--green);">${txns24h.buys}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">Sells 24h</div><div class="intel-stat-val" style="color:var(--red);">${txns24h.sells}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">Age</div><div class="intel-stat-val">${ageStr}</div></div>
+              <div class="intel-stat"><div class="intel-stat-label">Price/SOL</div><div class="intel-stat-val">${priceNative < 0.001 ? priceNative.toFixed(8) : priceNative.toFixed(4)}</div></div>
+            </div>
+          </div>
+
+          <div class="intel-card">
+            <div class="intel-card-title">Risk Assessment</div>
+            <div class="intel-risk">
+              <div class="intel-risk-score risk-${riskClass}">${riskScore}</div>
+              <div>
+                <div class="intel-risk-label">${riskLabel}</div>
+                <div class="intel-risk-desc">${riskFactors.length > 0 ? riskFactors.join(' · ') : 'No major risk factors detected'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="intel-card">
+            <div class="intel-card-title">Top Holders</div>
+            ${holdersHtml}
+          </div>
+
+          <div class="intel-card">
+            <div class="intel-card-title">Quick Actions</div>
+            <div class="intel-links">
+              <a class="intel-link" href="https://dexscreener.com/solana/${mint}" target="_blank">📊 DexScreener</a>
+              <a class="intel-link" href="https://birdeye.so/token/${mint}?chain=solana" target="_blank">🦅 Birdeye</a>
+              <a class="intel-link" href="https://solscan.io/token/${mint}" target="_blank">🔍 Solscan</a>
+              <a class="intel-link" href="https://rugcheck.xyz/tokens/${mint}" target="_blank">🛡 RugCheck</a>
+              <span class="intel-link" onclick="$('tr-mint').value='${mint}';onMintInput('${mint}');setMode('trade');">⟡ Trade</span>
+            </div>
+          </div>`;
+
+      } catch (e) {
+        console.error('Intel error:', e);
+        $('intel-results').innerHTML = `<div class="intel-empty"><div class="intel-empty-icon">⚠️</div><div class="intel-empty-text">Error fetching data: ${e.message}</div></div>`;
+      }
+    }
+
+    // ═══════ PORTFOLIO DASHBOARD ═══════
+    async function refreshPortfolio() {
+      if (!walletAddress) {
+        $('portfolio-content').innerHTML = '<div class="intel-empty"><div class="intel-empty-icon">◐</div><div class="intel-empty-text">Connect wallet to view portfolio</div></div>';
+        return;
+      }
+
+      $('portfolio-content').innerHTML = '<div class="intel-empty"><div class="intel-empty-icon" style="animation:pulse 1s infinite;">◐</div><div class="intel-empty-text">Loading portfolio...</div></div>';
+
+      try {
+        const conn = new solanaWeb3.Connection(RPC_URL);
+
+        // Get SOL balance
+        const solBalance = (await conn.getBalance(walletPubkey)) / 1e9;
+
+        // Get SOL price
+        let solPrice = 0;
+        try {
+          const solPriceRes = await fetch(`${JUP_PRICE}?ids=${SOL_MINT}`);
+          if (solPriceRes.ok) {
+            const solPriceData = await solPriceRes.json();
+            solPrice = parseFloat(solPriceData.data?.[SOL_MINT]?.price || 0);
+          }
+        } catch(e) {}
+
+        const solValue = solBalance * solPrice;
+
+        // Get all token accounts
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
+          walletPubkey,
+          { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
+        );
+
+        const positions = tokenAccounts.value
+          .map(ta => {
+            const info = ta.account.data.parsed.info;
+            const amt = info.tokenAmount.uiAmount;
+            if (amt <= 0) return null;
+            return { mint: info.mint, amount: amt, decimals: info.tokenAmount.decimals };
+          })
+          .filter(Boolean);
+
+        // Get prices for all tokens
+        let prices = {};
+        if (positions.length > 0) {
+          const mintList = positions.map(p => p.mint).join(',');
+          try {
+            const priceRes = await fetch(`${JUP_PRICE}?ids=${mintList}`);
+            if (priceRes.ok) {
+              const priceData = await priceRes.json();
+              prices = priceData.data || {};
+            }
+          } catch(e) {}
+        }
+
+        // Build holdings with value
+        let holdings = positions.map(pos => {
+          const priceInfo = prices[pos.mint];
+          const symbol = priceInfo?.mintSymbol || pos.mint.slice(0, 6) + '...';
+          const price = priceInfo ? parseFloat(priceInfo.price) : 0;
+          const value = price * pos.amount;
+          return { ...pos, symbol, price, value };
+        }).sort((a, b) => b.value - a.value);
+
+        const totalTokenValue = holdings.reduce((sum, h) => sum + h.value, 0);
+        const totalValue = solValue + totalTokenValue;
+        const tokenCount = holdings.length;
+
+        // Find PnL from trade history
+        let totalBought = 0, totalSold = 0;
+        for (const t of tradeHistory) {
+          const solAmt = parseFloat(t.amountIn?.replace(/[^0-9.]/g, '') || 0);
+          if (t.side === 'buy' && t.amountIn?.includes('SOL')) totalBought += solAmt;
+          if (t.side === 'sell' && t.amountOut?.includes('SOL')) totalSold += parseFloat(t.amountOut?.replace(/[^0-9.]/g, '') || 0);
+        }
+
+        const fmtUsd = (n) => {
+          if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+          if (n >= 1e3) return '$' + (n / 1e3).toFixed(2) + 'K';
+          return '$' + n.toFixed(2);
+        };
+
+        let html = `
+          <div class="portfolio-summary">
+            <div class="portfolio-total-label">Total Portfolio Value</div>
+            <div class="portfolio-total">${fmtUsd(totalValue)}</div>
+            <div class="portfolio-sol">${solBalance.toFixed(4)} SOL ($${solValue.toFixed(2)})</div>
+          </div>
+          <div class="portfolio-row">
+            <div class="portfolio-stat-card">
+              <div class="portfolio-stat-label">Tokens</div>
+              <div class="portfolio-stat-val">${tokenCount}</div>
+            </div>
+            <div class="portfolio-stat-card">
+              <div class="portfolio-stat-label">Token Value</div>
+              <div class="portfolio-stat-val">${fmtUsd(totalTokenValue)}</div>
+            </div>
+            <div class="portfolio-stat-card">
+              <div class="portfolio-stat-label">SOL Price</div>
+              <div class="portfolio-stat-val">$${solPrice.toFixed(2)}</div>
+            </div>
+          </div>`;
+
+        // SOL holding first
+        html += `
+          <div class="portfolio-holding" onclick="toast('SOL — native balance')">
+            <div class="portfolio-holding-icon">◎</div>
+            <div class="portfolio-holding-info">
+              <div class="portfolio-holding-name">SOL</div>
+              <div class="portfolio-holding-amount">${solBalance.toFixed(4)}</div>
+            </div>
+            <div class="portfolio-holding-right">
+              <div class="portfolio-holding-value">$${solValue.toFixed(2)}</div>
+              <div class="portfolio-holding-price">$${solPrice.toFixed(2)}</div>
+            </div>
+          </div>`;
+
+        // Token holdings
+        for (const h of holdings.slice(0, 30)) {
+          const fmtAmt = h.amount > 1e6 ? (h.amount / 1e6).toFixed(2) + 'M' : h.amount > 1e3 ? (h.amount / 1e3).toFixed(1) + 'K' : h.amount.toFixed(2);
+          const fmtVal = h.value > 0 ? '$' + (h.value < 0.01 ? h.value.toFixed(6) : h.value.toFixed(2)) : '$0.00';
+          const fmtPrc = h.price > 0 ? '$' + (h.price < 0.001 ? h.price.toFixed(8) : h.price.toFixed(6)) : '—';
+          const initial = h.symbol.charAt(0).toUpperCase();
+
+          html += `
+            <div class="portfolio-holding" onclick="$('intel-mint').value='${h.mint}';setMode('intel');fetchTokenIntel();">
+              <div class="portfolio-holding-icon">${initial}</div>
+              <div class="portfolio-holding-info">
+                <div class="portfolio-holding-name">${h.symbol}</div>
+                <div class="portfolio-holding-amount">${fmtAmt}</div>
+              </div>
+              <div class="portfolio-holding-right">
+                <div class="portfolio-holding-value">${fmtVal}</div>
+                <div class="portfolio-holding-price">${fmtPrc}</div>
+              </div>
+            </div>`;
+        }
+
+        $('portfolio-content').innerHTML = html;
+      } catch (e) {
+        console.error('Portfolio error:', e);
+        $('portfolio-content').innerHTML = `<div class="intel-empty"><div class="intel-empty-icon">⚠️</div><div class="intel-empty-text">Error: ${e.message}</div></div>`;
+      }
+    }
+
+    // ═══════ PNL ANALYTICS ═══════
+    function renderPnlAnalytics() {
+      const el = $('hist-pnl');
+      if (tradeHistory.length === 0) {
+        el.innerHTML = '<div class="intel-empty" style="padding:30px;"><div class="intel-empty-icon">📊</div><div class="intel-empty-text">No trades recorded yet.<br>Trade via Jupiter and your PnL analytics will appear here.</div></div>';
+        return;
+      }
+
+      // Calculate stats
+      let totalBuys = 0, totalSells = 0;
+      let totalBuyVol = 0, totalSellVol = 0;
+      let tokenStats = {};
+      let firstTrade = Infinity, lastTrade = 0;
+
+      for (const t of tradeHistory) {
+        const sym = t.symbol || 'Unknown';
+        if (!tokenStats[sym]) tokenStats[sym] = { buys: 0, sells: 0, buyVol: 0, sellVol: 0, trades: [] };
+        tokenStats[sym].trades.push(t);
+
+        if (t.side === 'buy') {
+          totalBuys++;
+          tokenStats[sym].buys++;
+          const solAmt = parseFloat(t.amountIn?.replace(/[^0-9.]/g, '') || 0);
+          if (t.amountIn?.includes('SOL')) { totalBuyVol += solAmt; tokenStats[sym].buyVol += solAmt; }
+        } else {
+          totalSells++;
+          tokenStats[sym].sells++;
+          const solAmt = parseFloat(t.amountOut?.replace(/[^0-9.]/g, '') || 0);
+          if (t.amountOut?.includes('SOL')) { totalSellVol += solAmt; tokenStats[sym].sellVol += solAmt; }
+        }
+
+        if (t.time < firstTrade) firstTrade = t.time;
+        if (t.time > lastTrade) lastTrade = t.time;
+      }
+
+      const totalTrades = totalBuys + totalSells;
+      const netPnl = totalSellVol - totalBuyVol;
+      const netPnlPct = totalBuyVol > 0 ? ((netPnl / totalBuyVol) * 100).toFixed(1) : '0.0';
+      const avgTradeSize = totalBuyVol > 0 ? (totalBuyVol / totalBuys).toFixed(3) : '0';
+
+      // Win rate: tokens where sellVol > buyVol
+      let wins = 0, losses = 0;
+      for (const sym in tokenStats) {
+        const s = tokenStats[sym];
+        if (s.sells > 0 && s.buys > 0) {
+          if (s.sellVol > s.buyVol) wins++; else losses++;
+        }
+      }
+      const winRate = (wins + losses) > 0 ? ((wins / (wins + losses)) * 100).toFixed(0) : '—';
+
+      // Trading period
+      let tradingPeriod = '—';
+      if (firstTrade < Infinity) {
+        const days = Math.floor((lastTrade - firstTrade) / 86400000);
+        tradingPeriod = days > 0 ? days + 'd' : '<1d';
+      }
+
+      // Best / worst token
+      let bestToken = { sym: '—', pnl: -Infinity };
+      let worstToken = { sym: '—', pnl: Infinity };
+      for (const sym in tokenStats) {
+        const s = tokenStats[sym];
+        const pnl = s.sellVol - s.buyVol;
+        if (s.sells > 0 && pnl > bestToken.pnl) bestToken = { sym, pnl };
+        if (s.sells > 0 && pnl < worstToken.pnl) worstToken = { sym, pnl };
+      }
+
+      const pnlColor = netPnl >= 0 ? 'var(--green)' : 'var(--red)';
+      const pnlSign = netPnl >= 0 ? '+' : '';
+
+      let html = `<div class="pnl-stats">
+        <div class="pnl-stat-grid">
+          <div class="pnl-stat pnl-stat-big">
+            <div class="pnl-stat-label">Realized PnL (SOL)</div>
+            <div class="pnl-stat-val" style="color:${pnlColor}">${pnlSign}${netPnl.toFixed(4)} SOL</div>
+            <div style="font-size:11px;color:${pnlColor};margin-top:2px;">${pnlSign}${netPnlPct}%</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Total Trades</div>
+            <div class="pnl-stat-val">${totalTrades}</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Win Rate</div>
+            <div class="pnl-stat-val" style="color:${winRate !== '—' && parseInt(winRate) >= 50 ? 'var(--green)' : 'var(--red)'}">${winRate}${winRate !== '—' ? '%' : ''}</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Bought</div>
+            <div class="pnl-stat-val">${totalBuyVol.toFixed(3)} SOL</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Sold</div>
+            <div class="pnl-stat-val">${totalSellVol.toFixed(3)} SOL</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Avg Buy Size</div>
+            <div class="pnl-stat-val">${avgTradeSize} SOL</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Active Period</div>
+            <div class="pnl-stat-val">${tradingPeriod}</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Best Token</div>
+            <div class="pnl-stat-val" style="color:var(--green);font-size:12px;">${bestToken.sym !== '—' ? bestToken.sym + ' +' + bestToken.pnl.toFixed(3) : '—'}</div>
+          </div>
+          <div class="pnl-stat">
+            <div class="pnl-stat-label">Worst Token</div>
+            <div class="pnl-stat-val" style="color:var(--red);font-size:12px;">${worstToken.sym !== '—' ? worstToken.sym + ' ' + worstToken.pnl.toFixed(3) : '—'}</div>
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Recent Trades</div>
+      </div>
+      <div style="padding:0 14px 14px;max-height:260px;overflow-y:auto;">`;
+
+      // List recent trades
+      for (const t of tradeHistory.slice(0, 30)) {
+        const date = new Date(t.time);
+        const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        html += `
+          <div class="pnl-trade">
+            <div class="pnl-trade-top">
+              <span class="pnl-trade-pair">${t.symbol || 'Unknown'}</span>
+              <span class="pnl-trade-side ${t.side}">${t.side.toUpperCase()}</span>
+            </div>
+            <div class="pnl-trade-bottom">
+              <span>${t.amountIn} → ${t.amountOut}</span>
+              <span>${dateStr} ${timeStr}</span>
+            </div>
+          </div>`;
+      }
+
+      html += '</div>';
+      el.innerHTML = html;
+    }
+
     // ═══════ CHAT MODE (AGENT / CHAT) ═══════
     function setChatMode(mode) {
       chatMode = mode;
@@ -2207,6 +2871,9 @@
       { patterns: [/^open\s+tools/i, /^tools$/i, /^plugins$/i], action: () => { setMode('tools'); return '◈ Opened tools panel.'; } },
       { patterns: [/^open\s+sniper/i, /^sniper$/i], action: () => { setMode('sniper'); return '⚡ Opened sniper bot.'; } },
       { patterns: [/^open\s+history/i, /^history$/i], action: () => { setMode('history'); return '☰ Opened history.'; } },
+      { patterns: [/^open\s+intel/i, /^intel$/i], action: () => { setMode('intel'); return '⬡ Opened token intel.'; } },
+      { patterns: [/^open\s+portfolio/i, /^portfolio$/i, /^folio$/i], action: () => { setMode('portfolio'); return '◐ Opened portfolio.'; } },
+      { patterns: [/^open\s+pnl/i, /^pnl$/i], action: () => { setMode('history'); setTimeout(() => setHistTab('pnl'), 50); return '📊 Opened PnL analytics.'; } },
       { patterns: [/^new\s+chat$/i, /^clear\s+chat$/i, /^reset$/i], action: () => { setTimeout(newChat, 100); return '✦ Starting new chat...'; } },
       { patterns: [/^connect\s+wallet$/i, /^connect$/i], action: () => { connectWallet(); return '👻 Connecting Phantom...'; } },
       { patterns: [/^disconnect\s+wallet$/i, /^disconnect$/i], action: () => { disconnectWallet(); return '👻 Disconnecting...'; } },
@@ -2217,12 +2884,30 @@
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\nOr just describe what you want — Claude will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\n/p [ticker] or price [ticker] — instant price check\nscan [mint] — full token intel\n\nOr just describe what you want — Claude will figure it out.`;
       }},
     ];
 
     // Trade commands that need parameter parsing
     function tryTradeCommand(text) {
+      // Quick price: "/p SOL" or "price WIF" or "/price SOL"
+      const priceMatch = text.match(/^(?:\/p(?:rice)?|price)\s+(.+)/i);
+      if (priceMatch) {
+        const ticker = priceMatch[1].trim();
+        quickPriceLookup(ticker);
+        return '🔍 Looking up ' + ticker + '...';
+      }
+
+      // Scan token: "scan [mint/ticker]"
+      const scanMatch = text.match(/^scan\s+(.+)/i);
+      if (scanMatch) {
+        const target = scanMatch[1].trim();
+        $('intel-mint').value = target;
+        setMode('intel');
+        setTimeout(fetchTokenIntel, 100);
+        return '⬡ Scanning ' + target + '...';
+      }
+
       // "buy 0.1 [mint]" or "buy 0.1 sol of [mint]"
       const buyMatch = text.match(/^buy\s+([\d.]+)\s*(?:sol\s+(?:of\s+)?)?([1-9A-HJ-NP-Za-km-z]{32,44})/i);
       if (buyMatch) {
@@ -2260,6 +2945,60 @@
       }
 
       return null;
+    }
+
+    // Quick price lookup via DexScreener
+    async function quickPriceLookup(query) {
+      try {
+        let url;
+        if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(query)) {
+          url = `${DEXSCREENER_API}/tokens/${query}`;
+        } else {
+          url = `${DEXSCREENER_API}/search/?q=${encodeURIComponent(query)}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+        let pairs = (data.pairs || []).filter(p => p.chainId === 'solana');
+
+        if (pairs.length === 0) {
+          addMsg('system', `⬡ No Solana token found for "${query}"`);
+          return;
+        }
+
+        // Highest liquidity pair
+        const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+        const symbol = pair.baseToken?.symbol || '???';
+        const name = pair.baseToken?.name || symbol;
+        const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+        const change1h = pair.priceChange?.h1 || 0;
+        const change24h = pair.priceChange?.h24 || 0;
+        const vol24h = pair.volume?.h24 || 0;
+        const liq = pair.liquidity?.usd || 0;
+        const mcap = pair.marketCap || pair.fdv || 0;
+        const mint = pair.baseToken?.address || '';
+
+        const fmtUsd = (n) => {
+          if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+          if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+          if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+          return '$' + n.toFixed(0);
+        };
+        const fmtPrice = (p) => {
+          if (p === 0) return '$0';
+          if (p < 0.000001) return '$' + p.toFixed(10);
+          if (p < 0.01) return '$' + p.toFixed(6);
+          if (p < 1) return '$' + p.toFixed(4);
+          return '$' + p.toFixed(2);
+        };
+
+        const c1h = change1h >= 0 ? `🟢 +${change1h.toFixed(1)}%` : `🔴 ${change1h.toFixed(1)}%`;
+        const c24h = change24h >= 0 ? `🟢 +${change24h.toFixed(1)}%` : `🔴 ${change24h.toFixed(1)}%`;
+
+        addMsg('system', `⬡ **${name}** ($${symbol})\n\n💰 Price: **${fmtPrice(price)}**\n📊 1h: ${c1h} · 24h: ${c24h}\n📈 Vol 24h: ${fmtUsd(vol24h)} · MCap: ${fmtUsd(mcap)}\n💧 Liquidity: ${fmtUsd(liq)}\n\n\`${mint}\`\n\nType \`scan ${mint}\` for full intel or \`buy [amount] ${mint}\` to trade.`);
+      } catch (e) {
+        addMsg('system', `⚠️ Error looking up "${query}": ${e.message}`);
+      }
     }
 
     function tryLocalCommand(text) {
@@ -2552,6 +3291,7 @@ User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
 
     function setInput(text) { $('input').value = text; $('input').focus(); }
     $('input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    $('intel-mint').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fetchTokenIntel(); } });
 
     // ═══════ INIT ═══════
     $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
