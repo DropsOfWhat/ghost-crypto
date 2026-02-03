@@ -1031,15 +1031,17 @@
       font-family: inherit; font-size: 11px;
     }
     .alpha-wallet {
-      padding: 8px 10px; margin-bottom: 6px;
-      background: var(--bg-glass); border: 1px solid var(--border-primary);
-      border-radius: 10px; display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; overflow: hidden; transition: border-color 0.2s;
     }
     .alpha-wallet:hover { border-color: var(--border-glow); }
+    .alpha-wallet-head {
+      padding: 8px 10px; display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
     .alpha-wallet-icon {
       width: 30px; height: 30px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; flex-shrink: 0;
+      font-size: 13px; flex-shrink: 0; font-weight: 700;
     }
     .alpha-wallet-info { flex: 1; min-width: 0; }
     .alpha-wallet-label { font-size: 11px; font-weight: 700; }
@@ -1053,6 +1055,46 @@
       font-size: 14px; padding: 2px 4px;
     }
     .alpha-wallet-del:hover { color: var(--red); }
+    .alpha-wallet-expand {
+      font-size: 10px; color: var(--text-faint); padding: 0 6px; transition: transform 0.2s;
+    }
+    .alpha-wallet.open .alpha-wallet-expand { transform: rotate(180deg); }
+    .alpha-wallet-body {
+      display: none; border-top: 1px solid var(--border-secondary);
+      padding: 8px 10px; background: rgba(0,0,0,0.15);
+    }
+    .alpha-wallet.open .alpha-wallet-body { display: block; }
+    .alpha-holdings-title {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--text-faint); text-transform: uppercase; margin-bottom: 5px;
+    }
+    .alpha-token-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 3px 0; font-size: 10px;
+    }
+    .alpha-token-row + .alpha-token-row { border-top: 1px solid var(--border-secondary); }
+    .alpha-token-name { color: var(--text-secondary); font-weight: 600; }
+    .alpha-token-bal { color: var(--text-muted); font-family: 'Fira Code', monospace; font-size: 9px; }
+    .alpha-token-val { color: var(--accent); font-family: 'Fira Code', monospace; font-size: 9px; }
+    .alpha-stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px;
+    }
+    .alpha-stat-pill {
+      padding: 3px 6px; background: var(--bg-elevated); border-radius: 6px;
+      font-size: 9px; display: flex; justify-content: space-between;
+    }
+    .alpha-stat-pill span:first-child { color: var(--text-faint); }
+    .alpha-stat-pill span:last-child { color: var(--text-secondary); font-family: 'Fira Code', monospace; }
+    .alpha-stat-pill.green span:last-child { color: var(--green); }
+    .alpha-stat-pill.red span:last-child { color: var(--red); }
+
+    .alpha-settings-toggle {
+      padding: 6px 14px; font-size: 9px; color: var(--text-faint); cursor: pointer;
+      display: flex; align-items: center; gap: 4px; user-select: none;
+    }
+    .alpha-settings-toggle:hover { color: var(--text-muted); }
+    .alpha-settings-body { display: none; }
+    .alpha-settings-body.open { display: block; }
 
     .alpha-config {
       padding: 10px; background: var(--bg-glass); border: 1px solid var(--border-primary);
@@ -1371,36 +1413,8 @@
               <div id="alpha-wallets"></div>
             </div>
 
-            <div class="alpha-section">
-              <div class="alpha-stitle">Bot Wallet</div>
-              <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">Uses sniper wallets for auto-signing. <span style="color:var(--accent);cursor:pointer;" onclick="setMode('sniper')">Manage →</span></div>
-              <select id="alpha-wallet-sel" class="fi" style="font-size:11px;margin-bottom:4px;"></select>
-            </div>
-
-            <div class="alpha-section">
-              <div class="alpha-stitle">Helius API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional — <a href="https://helius.dev" target="_blank" style="color:var(--accent)">helius.dev</a>)</span></div>
-              <div class="alpha-add-row">
-                <input type="password" id="alpha-helius-key" class="fi" placeholder="Optional — improves accuracy..." style="flex:1;font-size:11px;" value="">
-                <button class="alpha-add-btn" onclick="saveHeliusKey()" style="padding:0 10px;">Save</button>
-              </div>
-              <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">Works without it. Add Helius key for faster + more reliable parsing.</div>
-            </div>
-
-            <div class="alpha-section">
-              <div class="alpha-stitle">Configuration</div>
-              <div class="alpha-config">
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Buy Amount (SOL)</span><input type="number" id="alpha-buy-amt" class="alpha-cfg-input" value="0.01" step="0.005" min="0.001"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Max Daily Trades</span><input type="number" id="alpha-max-daily" class="alpha-cfg-input" value="10" step="1" min="1"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Stop Loss %</span><input type="number" id="alpha-sl" class="alpha-cfg-input" value="30" step="5" min="5"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Take Profit %</span><input type="number" id="alpha-tp" class="alpha-cfg-input" value="100" step="10" min="10"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Min Liquidity $</span><input type="number" id="alpha-min-liq" class="alpha-cfg-input" value="5000" step="1000" min="0"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Slippage %</span><input type="number" id="alpha-slip" class="alpha-cfg-input" value="15" step="1" min="1"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Poll Interval (s)</span><input type="number" id="alpha-poll" class="alpha-cfg-input" value="15" step="5" min="10"></div>
-              </div>
-            </div>
-
             <div class="alpha-btn-row">
-              <button class="alpha-btn study" id="alpha-study-btn" onclick="alphaStudy()">📚 Study</button>
+              <button class="alpha-btn study" id="alpha-study-btn" onclick="alphaStudy()">📚 Study Wallets</button>
               <button class="alpha-btn start" id="alpha-start-btn" onclick="alphaToggle()">▶ Start Bot</button>
             </div>
 
@@ -1414,7 +1428,41 @@
               <div class="alpha-log" id="alpha-log"></div>
             </div>
 
-            <div class="sniper-warn">⚠️ Alpha Bot uses private keys to auto-sign trades. Only fund the bot wallet with SOL you can afford to lose. No bot guarantees profits. Past wallet performance ≠ future results.</div>
+            <div class="alpha-settings-toggle" onclick="toggleAlphaSettings()">
+              <span id="alpha-settings-arrow">▸</span> Settings & Configuration
+            </div>
+            <div id="alpha-settings-body" class="alpha-settings-body">
+              <div class="alpha-section">
+                <div class="alpha-stitle">Bot Wallet</div>
+                <div style="font-size:10px;color:var(--text-faint);margin-bottom:6px;">Uses sniper wallets for auto-signing · <span style="color:var(--accent);cursor:pointer;" onclick="setMode('sniper')">Manage wallets →</span></div>
+                <select id="alpha-wallet-sel" class="fi" style="font-size:11px;margin-bottom:4px;"></select>
+              </div>
+
+              <div class="alpha-section">
+                <div class="alpha-stitle">Configuration</div>
+                <div class="alpha-config">
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Buy Amount (SOL)</span><input type="number" id="alpha-buy-amt" class="alpha-cfg-input" value="0.01" step="0.005" min="0.001"></div>
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Max Daily Trades</span><input type="number" id="alpha-max-daily" class="alpha-cfg-input" value="10" step="1" min="1"></div>
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Stop Loss %</span><input type="number" id="alpha-sl" class="alpha-cfg-input" value="30" step="5" min="5"></div>
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Take Profit %</span><input type="number" id="alpha-tp" class="alpha-cfg-input" value="100" step="10" min="10"></div>
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Min Liquidity $</span><input type="number" id="alpha-min-liq" class="alpha-cfg-input" value="5000" step="1000" min="0"></div>
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Slippage %</span><input type="number" id="alpha-slip" class="alpha-cfg-input" value="15" step="1" min="1"></div>
+                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Poll Interval (s)</span><input type="number" id="alpha-poll" class="alpha-cfg-input" value="15" step="5" min="10"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Auto-Learn Every</span><input type="number" id="alpha-learn-n" class="alpha-cfg-input" value="5" step="1" min="2" title="Re-study after this many closed trades"> <span style="font-size:9px;color:var(--text-faint);position:absolute;right:90px;">trades</span></div>
+                </div>
+              </div>
+
+              <div class="alpha-section">
+                <div class="alpha-stitle">Helius API Key (optional)</div>
+                <div class="alpha-add-row">
+                  <input type="password" id="alpha-helius-key" class="fi" placeholder="Optional — improves accuracy..." style="flex:1;font-size:11px;" value="">
+                  <button class="alpha-add-btn" onclick="saveHeliusKey()" style="padding:0 10px;">Save</button>
+                </div>
+                <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">Built-in key works by default. Override here if needed.</div>
+              </div>
+            </div>
+
+            <div class="sniper-warn">⚠️ Alpha Bot uses private keys to auto-sign. Only fund what you can afford to lose. Past performance ≠ future results.</div>
           </div>
 
         </div>
@@ -3050,14 +3098,20 @@
     let alphaBotLog = JSON.parse(localStorage.getItem('ghost-alpha-log') || '[]');
     let alphaBotTrades = JSON.parse(localStorage.getItem('ghost-alpha-trades') || '[]');
     let alphaDailyCount = 0;
-    let alphaPositions = {}; // mint -> { entryPrice, amount, time }
+    let alphaPositions = {}; // mint -> { symbol, entrySOL, amount, entryTime, sig, copiedFrom }
+    let alphaClosedCount = parseInt(localStorage.getItem('ghost-alpha-closed-count') || '0');
 
     function saveAlphaState() {
-      localStorage.setItem('ghost-alpha-wallets', JSON.stringify(alphaWallets));
+      // Strip trades array from wallet objects to save space — only keep stats
+      const walletsForSave = alphaWallets.map(w => ({
+        address: w.address, label: w.label, stats: w.stats, addedAt: w.addedAt,
+      }));
+      localStorage.setItem('ghost-alpha-wallets', JSON.stringify(walletsForSave));
       localStorage.setItem('ghost-alpha-lastsigs', JSON.stringify(alphaLastSigs));
       localStorage.setItem('ghost-alpha-log', JSON.stringify(alphaBotLog.slice(-50)));
       localStorage.setItem('ghost-alpha-trades', JSON.stringify(alphaBotTrades.slice(-100)));
       localStorage.setItem('ghost-alpha-strategy', alphaStrategy);
+      localStorage.setItem('ghost-alpha-closed-count', alphaClosedCount.toString());
     }
 
     function alphaLog(msg, type = 'info') {
@@ -3127,20 +3181,157 @@
         el.innerHTML = '<div style="font-size:11px;color:var(--text-muted);padding:6px 0;">No wallets tracked yet</div>';
         return;
       }
+      const bgColors = ['#22d1ee', '#f59e0b', '#34d399', '#a78bfa', '#f472b6'];
       el.innerHTML = alphaWallets.map((w, i) => {
         const addr = w.address;
-        const statsStr = w.stats ? `${w.stats.totalTrades} trades · ${w.stats.winRate}% win` : 'Not studied yet';
-        const bgColors = ['#22d1ee', '#f59e0b', '#34d399', '#a78bfa', '#f472b6'];
-        return `<div class="alpha-wallet">
-          <div class="alpha-wallet-icon" style="background:${bgColors[i % 5]}22;color:${bgColors[i % 5]}">${w.label.charAt(0).toUpperCase()}</div>
-          <div class="alpha-wallet-info">
-            <div class="alpha-wallet-label">${w.label}</div>
-            <div class="alpha-wallet-addr">${addr.slice(0, 8)}...${addr.slice(-6)}</div>
-            <div class="alpha-wallet-stats">${statsStr}</div>
+        const c = bgColors[i % 5];
+        const s = w.stats;
+        const statsHtml = s ? `
+          <div class="alpha-stat-grid">
+            <div class="alpha-stat-pill"><span>Trades</span><span>${s.totalTrades}</span></div>
+            <div class="alpha-stat-pill"><span>Win Rate</span><span>${s.winRate}%</span></div>
+            <div class="alpha-stat-pill ${parseFloat(s.pnl) >= 0 ? 'green' : 'red'}"><span>PnL</span><span>${parseFloat(s.pnl) >= 0 ? '+' : ''}${s.pnl} SOL</span></div>
+            <div class="alpha-stat-pill"><span>Avg Buy</span><span>${s.avgBuySize} SOL</span></div>
+            <div class="alpha-stat-pill"><span>Buys</span><span>${s.buys}</span></div>
+            <div class="alpha-stat-pill"><span>Sells</span><span>${s.sells}</span></div>
+          </div>` : '<div style="font-size:9px;color:var(--text-faint);margin-bottom:6px;">Click "Study Wallets" to analyze</div>';
+
+        const holdingsId = `alpha-holdings-${i}`;
+        return `<div class="alpha-wallet" id="alpha-wcard-${i}">
+          <div class="alpha-wallet-head" onclick="toggleAlphaWallet(${i})">
+            <div class="alpha-wallet-icon" style="background:${c}22;color:${c}">${w.label.charAt(0).toUpperCase()}</div>
+            <div class="alpha-wallet-info">
+              <div class="alpha-wallet-label">${w.label}</div>
+              <div class="alpha-wallet-addr">${addr.slice(0, 8)}...${addr.slice(-6)}</div>
+              <div class="alpha-wallet-stats">${s ? `${s.totalTrades} trades · ${s.winRate}% win · ${parseFloat(s.pnl) >= 0 ? '+' : ''}${s.pnl} SOL` : 'Not studied yet'}</div>
+            </div>
+            <span class="alpha-wallet-expand">▾</span>
+            <button class="alpha-wallet-del" onclick="event.stopPropagation();removeAlphaWallet(${i})">✕</button>
           </div>
-          <button class="alpha-wallet-del" onclick="removeAlphaWallet(${i})">✕</button>
+          <div class="alpha-wallet-body">
+            ${statsHtml}
+            <div class="alpha-holdings-title">Token Holdings</div>
+            <div id="${holdingsId}"><div style="font-size:9px;color:var(--text-faint);">Click to load holdings...</div></div>
+          </div>
         </div>`;
       }).join('');
+    }
+
+    function toggleAlphaWallet(idx) {
+      const card = $(`alpha-wcard-${idx}`);
+      if (!card) return;
+      const wasOpen = card.classList.contains('open');
+      card.classList.toggle('open');
+      // Fetch holdings on first open
+      if (!wasOpen) {
+        const holdEl = $(`alpha-holdings-${idx}`);
+        if (holdEl && holdEl.dataset.loaded !== 'true') {
+          fetchWalletHoldings(alphaWallets[idx].address, idx);
+        }
+      }
+    }
+
+    async function fetchWalletHoldings(address, idx) {
+      const holdEl = $(`alpha-holdings-${idx}`);
+      if (!holdEl) return;
+      holdEl.innerHTML = '<div style="font-size:9px;color:var(--text-faint);">Loading holdings...</div>';
+
+      try {
+        // Use Helius DAS API for token balances
+        if (heliusKey) {
+          const res = await fetch(`https://api.helius.xyz/v0/addresses/${address}/balances?api-key=${heliusKey}`);
+          if (res.ok) {
+            const data = await res.json();
+            const tokens = (data.tokens || []).filter(t => t.amount > 0).slice(0, 15);
+            const nativeSol = (data.nativeBalance || 0) / 1e9;
+
+            if (tokens.length === 0 && nativeSol < 0.001) {
+              holdEl.innerHTML = '<div style="font-size:9px;color:var(--text-faint);">No token holdings found</div>';
+              holdEl.dataset.loaded = 'true';
+              return;
+            }
+
+            // Fetch token metadata for symbols
+            const mints = tokens.map(t => t.mint);
+            let symbolMap = {};
+            try {
+              const metaRes = await fetch(`https://api.helius.xyz/v0/token-metadata?api-key=${heliusKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mintAccounts: mints.slice(0, 15), includeOffChain: true }),
+              });
+              if (metaRes.ok) {
+                const metaData = await metaRes.json();
+                for (const m of metaData) {
+                  symbolMap[m.account] = m.onChainMetadata?.metadata?.data?.symbol?.replace(/\0/g, '') ||
+                    m.offChainMetadata?.metadata?.symbol || m.account.slice(0, 6) + '...';
+                }
+              }
+            } catch (e) { /* use fallback names */ }
+
+            let html = `<div class="alpha-token-row">
+              <span class="alpha-token-name">◎ SOL</span>
+              <span class="alpha-token-bal">${nativeSol.toFixed(4)}</span>
+            </div>`;
+
+            for (const t of tokens) {
+              const dec = t.decimals || 6;
+              const bal = t.amount / Math.pow(10, dec);
+              if (bal < 0.000001) continue;
+              const sym = symbolMap[t.mint] || t.mint.slice(0, 6) + '...';
+              const balStr = bal >= 1000000 ? (bal / 1000000).toFixed(2) + 'M' :
+                bal >= 1000 ? (bal / 1000).toFixed(2) + 'K' : bal.toFixed(bal < 1 ? 6 : 2);
+              html += `<div class="alpha-token-row">
+                <span class="alpha-token-name">${sym}</span>
+                <span class="alpha-token-bal">${balStr}</span>
+              </div>`;
+            }
+
+            holdEl.innerHTML = html;
+            holdEl.dataset.loaded = 'true';
+            return;
+          }
+        }
+
+        // Fallback: RPC getTokenAccountsByOwner
+        const conn = new solanaWeb3.Connection(RPC_URL);
+        const pubkey = new solanaWeb3.PublicKey(address);
+        const sol = await conn.getBalance(pubkey);
+        const tokenAccs = await conn.getParsedTokenAccountsByOwner(pubkey, { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') });
+
+        const tokens = (tokenAccs.value || [])
+          .map(a => a.account.data.parsed?.info)
+          .filter(t => t && parseFloat(t.tokenAmount?.uiAmountString || '0') > 0)
+          .slice(0, 15);
+
+        let html = `<div class="alpha-token-row">
+          <span class="alpha-token-name">◎ SOL</span>
+          <span class="alpha-token-bal">${(sol / 1e9).toFixed(4)}</span>
+        </div>`;
+
+        for (const t of tokens) {
+          const bal = parseFloat(t.tokenAmount?.uiAmountString || '0');
+          const mint = t.mint;
+          const balStr = bal >= 1000000 ? (bal / 1000000).toFixed(2) + 'M' :
+            bal >= 1000 ? (bal / 1000).toFixed(2) + 'K' : bal.toFixed(bal < 1 ? 6 : 2);
+          html += `<div class="alpha-token-row">
+            <span class="alpha-token-name">${mint.slice(0, 6)}...</span>
+            <span class="alpha-token-bal">${balStr}</span>
+          </div>`;
+        }
+
+        holdEl.innerHTML = html;
+        holdEl.dataset.loaded = 'true';
+      } catch (e) {
+        holdEl.innerHTML = `<div style="font-size:9px;color:var(--red);">Error: ${e.message}</div>`;
+      }
+    }
+
+    function toggleAlphaSettings() {
+      const body = $('alpha-settings-body');
+      const arrow = $('alpha-settings-arrow');
+      const isOpen = body.classList.toggle('open');
+      arrow.textContent = isOpen ? '▾' : '▸';
     }
 
     function populateAlphaWalletSel() {
@@ -3386,9 +3577,25 @@
 
         // Ask Claude to generate strategy
         alphaLog('Generating strategy via Claude...');
+
+        // Include bot's own trade history if available
+        let botPerfSection = '';
+        const closedTrades = alphaBotTrades.filter(t => t.side === 'sell' && t.copiedFrom);
+        if (closedTrades.length > 0) {
+          const perfByWallet = {};
+          for (const t of closedTrades) {
+            const from = t.copiedFrom;
+            if (!perfByWallet[from]) perfByWallet[from] = { wins: 0, losses: 0, pnl: 0 };
+            const pnl = parseFloat(t.pnl) || 0;
+            if (pnl > 0) perfByWallet[from].wins++; else perfByWallet[from].losses++;
+            perfByWallet[from].pnl += pnl;
+          }
+          botPerfSection = `\n\nBOT'S OWN RESULTS FROM COPYING (${closedTrades.length} closed trades):\n${JSON.stringify(perfByWallet, null, 2)}\nFactor these results into your wallet rankings and rules.`;
+        }
+
         const strategyPrompt = `You are analyzing cryptocurrency trading wallets on Solana to build a copy-trading strategy. Here is the data from tracked wallets:
 
-${JSON.stringify(walletData, null, 2)}
+${JSON.stringify(walletData, null, 2)}${botPerfSection}
 
 Based on this data, generate a concise trading strategy profile. Include:
 1. SUMMARY: One-line assessment of these wallets
@@ -3624,7 +3831,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           }
           const symbol = best.baseToken?.symbol || mint.slice(0, 6);
           alphaLog(`✅ ${symbol} passed checks (liq: $${liq.toFixed(0)}). Executing buy...`);
-          await alphaExecuteBuy(mint, symbol);
+          await alphaExecuteBuy(mint, symbol, trackedWallet.label);
         } else {
           alphaLog(`Skipped ${mint.slice(0, 6)}... — no DEX data found`, 'warn');
         }
@@ -3633,7 +3840,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       }
     }
 
-    async function alphaExecuteBuy(mint, symbol) {
+    async function alphaExecuteBuy(mint, symbol, copiedFrom = 'unknown') {
       const walletIdx = parseInt($('alpha-wallet-sel').value);
       const botWallet = sniperWallets[walletIdx];
       if (!botWallet) { alphaLog('No bot wallet selected', 'error'); return; }
@@ -3681,14 +3888,14 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         const outAmt = parseInt(quote.outAmount) / Math.pow(10, 6); // approximate
         alphaPositions[mint] = {
           symbol, entrySOL: buyAmt, amount: outAmt,
-          entryTime: Date.now(), sig,
+          entryTime: Date.now(), sig, copiedFrom,
         };
 
         alphaDailyCount++;
 
         const trade = {
           side: 'buy', symbol, mint, sol: buyAmt,
-          sig, time: Date.now(), wallet: botWallet.label,
+          sig, time: Date.now(), wallet: botWallet.label, copiedFrom,
         };
         alphaBotTrades.unshift(trade);
         tradeHistory.unshift({
@@ -3769,7 +3976,8 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
         const trade = {
           side: 'sell', symbol, mint, sol: solReceived,
-          pnl: pnl.toFixed(4), sig, time: Date.now(),
+          pnl: pnl.toFixed(4), pnlPct, sig, time: Date.now(),
+          copiedFrom: pos?.copiedFrom || 'unknown',
         };
         alphaBotTrades.unshift(trade);
         tradeHistory.unshift({
@@ -3779,10 +3987,21 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           sig, time: Date.now(),
         });
         localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+
+        // Track closed trades for auto-learn
+        alphaClosedCount++;
         saveAlphaState();
 
         const pnlStr = pnl >= 0 ? `+${pnl.toFixed(4)} SOL (+${pnlPct}%)` : `${pnl.toFixed(4)} SOL (${pnlPct}%)`;
         alphaLog(`🔴 SOLD ${symbol} — ${solReceived.toFixed(4)} SOL — PnL: ${pnlStr} — tx: ${sig.slice(0, 8)}...`, 'trade');
+
+        // Check if auto-learn should trigger
+        const learnEvery = parseInt($('alpha-learn-n')?.value) || 5;
+        if (alphaClosedCount >= learnEvery && alphaBotRunning) {
+          alphaClosedCount = 0;
+          saveAlphaState();
+          alphaAutoLearn();
+        }
 
       } catch (e) {
         alphaLog(`❌ Sell failed for ${symbol}: ${e.message}`, 'error');
@@ -3827,6 +4046,110 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       if (alphaBotRunning) setTimeout(() => alphaCheckPositions(), 30000);
     }
 
+    // ── Auto-Learn — Bot Studies Its Own Performance ──
+    async function alphaAutoLearn() {
+      if (!apiKey) return;
+      alphaLog('🧠 Auto-learning — analyzing bot performance...', 'info');
+      setAlphaStatus('studying', 'Self-learning...');
+
+      try {
+        // Build bot's own performance data grouped by copied wallet
+        const sellTrades = alphaBotTrades.filter(t => t.side === 'sell' && t.copiedFrom);
+        const walletPerf = {};
+
+        for (const t of sellTrades) {
+          const from = t.copiedFrom || 'unknown';
+          if (!walletPerf[from]) walletPerf[from] = { wins: 0, losses: 0, totalPnl: 0, trades: [] };
+          const pnl = parseFloat(t.pnl) || 0;
+          if (pnl > 0) walletPerf[from].wins++;
+          else walletPerf[from].losses++;
+          walletPerf[from].totalPnl += pnl;
+          walletPerf[from].trades.push({
+            symbol: t.symbol, pnl: t.pnl, pnlPct: t.pnlPct || '?',
+            time: new Date(t.time).toISOString(),
+          });
+        }
+
+        // Build tracked wallet current stats
+        const walletStats = alphaWallets.map(w => ({
+          label: w.label,
+          address: w.address.slice(0, 8) + '...',
+          stats: w.stats || {},
+        }));
+
+        // Current config
+        const currentConfig = {
+          buyAmount: parseFloat($('alpha-buy-amt').value) || 0.01,
+          stopLoss: parseFloat($('alpha-sl').value) || 30,
+          takeProfit: parseFloat($('alpha-tp').value) || 100,
+          minLiquidity: parseFloat($('alpha-min-liq').value) || 5000,
+          slippage: parseFloat($('alpha-slip').value) || 15,
+        };
+
+        // Total bot stats
+        const totalWins = sellTrades.filter(t => parseFloat(t.pnl) > 0).length;
+        const totalLosses = sellTrades.filter(t => parseFloat(t.pnl) <= 0).length;
+        const totalPnl = sellTrades.reduce((s, t) => s + (parseFloat(t.pnl) || 0), 0);
+
+        const learnPrompt = `You are the brain of an autonomous copy-trading bot on Solana. You need to analyze the bot's OWN trading performance and adjust the strategy.
+
+TRACKED WALLETS (smart money being copied):
+${JSON.stringify(walletStats, null, 2)}
+
+BOT'S OWN PERFORMANCE BY COPIED WALLET:
+${JSON.stringify(walletPerf, null, 2)}
+
+BOT TOTALS: ${totalWins} wins, ${totalLosses} losses, Total PnL: ${totalPnl.toFixed(4)} SOL
+
+CURRENT CONFIG: ${JSON.stringify(currentConfig)}
+
+PREVIOUS STRATEGY:
+${alphaStrategy}
+
+Based on the bot's ACTUAL results from copying these wallets, update the strategy:
+
+1. PERFORMANCE REVIEW: How is the bot doing? Which copied wallets are profitable vs losing money?
+2. WALLET ADJUSTMENTS: Which wallets should be prioritized, deprioritized, or ignored? Be specific.
+3. PARAMETER SUGGESTIONS: Should SL/TP/buy amount be adjusted based on actual results?
+4. PATTERNS: Any patterns in wins vs losses? (token types, timing, sizes)
+5. UPDATED RULES: New entry/exit rules based on what actually works
+6. CONFIDENCE SCORE: 0-100 updated confidence
+
+Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text, no markdown.`;
+
+        const res = await fetch(CLAUDE_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            max_tokens: 1500,
+            messages: [{ role: 'user', content: learnPrompt }],
+          }),
+        });
+
+        if (!res.ok) throw new Error('Claude API error: ' + res.status);
+        const data = await res.json();
+        const newStrategy = data.content?.[0]?.text || alphaStrategy;
+
+        alphaStrategy = newStrategy;
+        $('alpha-strategy').textContent = newStrategy;
+        saveAlphaState();
+
+        alphaLog(`🧠 Self-learned from ${sellTrades.length} closed trades — strategy updated`, 'trade');
+        setAlphaStatus('live', `Running — learned from ${sellTrades.length} trades`);
+        toast('🧠 Bot updated its own strategy!');
+
+      } catch (e) {
+        alphaLog('Auto-learn error: ' + e.message, 'error');
+        setAlphaStatus('live', 'Running — auto-learn failed');
+      }
+    }
+
     // Instant local commands (no API call needed)
     const LOCAL_COMMANDS = [
       { patterns: [/^open\s+trade/i, /^trade$/i, /^trading$/i, /^swap$/i], action: () => { setMode('trade'); return '⟡ Opened trade panel.'; } },
@@ -3842,6 +4165,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
+      { patterns: [/^learn$/i, /^auto\s*learn$/i, /^self\s*study$/i], action: () => { setMode('alpha'); setTimeout(alphaAutoLearn, 100); return '🧠 Running self-analysis...'; } },
       { patterns: [/^new\s+chat$/i, /^clear\s+chat$/i, /^reset$/i], action: () => { setTimeout(newChat, 100); return '✦ Starting new chat...'; } },
       { patterns: [/^connect\s+wallet$/i, /^connect$/i], action: () => { connectWallet(); return '👻 Connecting Phantom...'; } },
       { patterns: [/^disconnect\s+wallet$/i, /^disconnect$/i], action: () => { disconnectWallet(); return '👻 Disconnecting...'; } },
@@ -3852,7 +4176,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\n/p [ticker] or price [ticker] — instant price check\nscan [mint] — full token intel\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Claude will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\n/p [ticker] or price [ticker] — instant price check\nscan [mint] — full token intel\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Claude will figure it out.`;
       }},
     ];
 
@@ -4020,6 +4344,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
             case 'start_alpha': setMode('alpha'); setTimeout(startAlphaBot, 200); break;
             case 'stop_alpha': stopAlphaBot(); break;
             case 'study_wallets': setMode('alpha'); setTimeout(alphaStudy, 200); break;
+            case 'auto_learn': setMode('alpha'); setTimeout(alphaAutoLearn, 200); break;
           }
         } catch(e) { console.warn('Action failed:', action, e); }
       }
@@ -4143,7 +4468,7 @@ RULES:
 - Always warn about risks for trades.
 - The action tags will be hidden from the user — they only see your text.
 ${webSearchEnabled ? '- You have web search — use it for real-time prices and news.' : ''}
-User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. Alpha Bot: ${alphaBotRunning ? 'RUNNING (' + alphaWallets.length + ' wallets tracked)' : 'inactive'}.`;
+User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. Alpha Bot: ${alphaBotRunning ? 'RUNNING (' + alphaWallets.length + ' wallets, ' + alphaBotTrades.filter(t=>t.side==='sell').length + ' closed trades, auto-learns every ' + ($('alpha-learn-n')?.value||5) + ')' : 'inactive'}.`;
       } else {
         sysPrompt = `You are Ghost, a crypto-knowledgeable AI assistant. You're in Chat mode — focus on having helpful, informative conversations. You specialize in Solana, memecoins, DeFi, trading strategies, technical analysis, and crypto culture. Be direct and conversational. Use crypto-native language when appropriate.${webSearchEnabled ? ' You have web search enabled — use it to find real-time prices, news, and market data.' : ''} User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0.`;
       }
@@ -4283,10 +4608,14 @@ User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. A
     if (alphaStrategy) {
       const el = $('alpha-strategy');
       if (el) el.textContent = alphaStrategy;
+      setAlphaStatus('idle', 'Study complete — ready to trade');
     }
     if (heliusKey) {
-      $('alpha-helius-key').value = heliusKey;
+      const hk = $('alpha-helius-key');
+      if (hk) hk.value = heliusKey;
     }
+    // Render saved log on load
+    if (alphaBotLog.length > 0) renderAlphaLog();
 
     // Auto-prompt for key if not set
     if (!apiKey) setTimeout(promptApiKey, 500);
