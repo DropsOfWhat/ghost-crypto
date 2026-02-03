@@ -1373,6 +1373,15 @@
             </div>
 
             <div class="alpha-section">
+              <div class="alpha-stitle">Helius API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;">(free at <a href="https://helius.dev" target="_blank" style="color:var(--accent)">helius.dev</a>)</span></div>
+              <div class="alpha-add-row">
+                <input type="password" id="alpha-helius-key" class="fi" placeholder="Paste Helius API key..." style="flex:1;font-size:11px;" value="">
+                <button class="alpha-add-btn" onclick="saveHeliusKey()" style="padding:0 10px;">Save</button>
+              </div>
+              <div style="font-size:9px;color:var(--text-faint);margin-top:2px;">Required for studying wallet history & live monitoring. Free tier = 100K credits/day.</div>
+            </div>
+
+            <div class="alpha-section">
               <div class="alpha-stitle">Configuration</div>
               <div class="alpha-config">
                 <div class="alpha-cfg-row"><span class="alpha-cfg-label">Buy Amount (SOL)</span><input type="number" id="alpha-buy-amt" class="alpha-cfg-input" value="0.01" step="0.005" min="0.001"></div>
@@ -3127,83 +3136,68 @@
       });
     }
 
-    // ── Fetch Wallet Swap History ──
+    // ── Helius API Key ──
+    let heliusKey = localStorage.getItem('ghost-helius-key') || '';
+    function saveHeliusKey() {
+      heliusKey = $('alpha-helius-key').value.trim();
+      localStorage.setItem('ghost-helius-key', heliusKey);
+      toast(heliusKey ? '🔑 Helius key saved' : 'Helius key cleared');
+    }
+
+    function getHeliusUrl(path) {
+      return `https://api.helius.xyz/v0/${path}?api-key=${heliusKey}`;
+    }
+
+    // ── Fetch Wallet Swap History via Helius ──
     async function fetchWalletSwaps(address, limit = 30) {
-      const conn = new solanaWeb3.Connection(RPC_URL);
-      const pubkey = new solanaWeb3.PublicKey(address);
-      const sigs = await conn.getSignaturesForAddress(pubkey, { limit });
+      if (!heliusKey) throw new Error('Helius API key required — get one free at helius.dev');
+
+      const url = getHeliusUrl(`addresses/${address}/transactions`) + `&limit=${limit}&type=SWAP`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Helius API error ${res.status}: ${errText.slice(0, 80)}`);
+      }
+
+      const txns = await res.json();
       const swaps = [];
 
-      for (const sigInfo of sigs.slice(0, 15)) { // Parse max 15 for speed
-        try {
-          const tx = await conn.getParsedTransaction(sigInfo.signature, {
-            maxSupportedTransactionVersion: 0,
-          });
-          if (!tx || !tx.meta) continue;
+      for (const tx of txns) {
+        if (tx.type !== 'SWAP' || !tx.events?.swap) continue;
+        const swap = tx.events.swap;
+        const sig = tx.signature;
+        const time = (tx.timestamp || 0) * 1000;
 
-          // Detect swaps by looking at token balance changes
-          const pre = tx.meta.preTokenBalances || [];
-          const post = tx.meta.postTokenBalances || [];
-
-          // Build balance maps
-          const preMap = {};
-          const postMap = {};
-          for (const b of pre) {
-            if (b.owner === address) preMap[b.mint] = b.uiTokenAmount.uiAmount || 0;
+        // Determine if it's a buy (SOL in, token out) or sell (token in, SOL out)
+        if (swap.nativeInput && swap.tokenOutputs?.length > 0) {
+          // BUY: spent SOL, got tokens
+          const solAmount = parseInt(swap.nativeInput.amount || '0') / 1e9;
+          for (const out of swap.tokenOutputs) {
+            const decimals = out.rawTokenAmount?.decimals || 6;
+            const tokenAmount = parseInt(out.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, decimals);
+            swaps.push({ sig, side: 'buy', mint: out.mint, tokenAmount, solAmount, time });
           }
-          for (const b of post) {
-            if (b.owner === address) postMap[b.mint] = b.uiTokenAmount.uiAmount || 0;
+        } else if (swap.nativeOutput && swap.tokenInputs?.length > 0) {
+          // SELL: spent tokens, got SOL
+          const solAmount = parseInt(swap.nativeOutput.amount || '0') / 1e9;
+          for (const inp of swap.tokenInputs) {
+            const decimals = inp.rawTokenAmount?.decimals || 6;
+            const tokenAmount = parseInt(inp.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, decimals);
+            swaps.push({ sig, side: 'sell', mint: inp.mint, tokenAmount, solAmount, time });
           }
+        } else if (swap.tokenInputs?.length > 0 && swap.tokenOutputs?.length > 0) {
+          // Token-to-token swap — check native transfers for SOL delta
+          const nativeIn = (tx.nativeTransfers || []).filter(n => n.fromUserAccount === address)
+            .reduce((s, n) => s + n.amount, 0) / 1e9;
+          const nativeOut = (tx.nativeTransfers || []).filter(n => n.toUserAccount === address)
+            .reduce((s, n) => s + n.amount, 0) / 1e9;
 
-          // Find tokens that changed
-          const allMints = new Set([...Object.keys(preMap), ...Object.keys(postMap)]);
-          let solDelta = 0;
-          let tokenBuys = [];
-          let tokenSells = [];
-
-          for (const mint of allMints) {
-            if (mint === SOL_MINT) continue;
-            const before = preMap[mint] || 0;
-            const after = postMap[mint] || 0;
-            const delta = after - before;
-            if (delta > 0.000001) tokenBuys.push({ mint, amount: delta, after });
-            if (delta < -0.000001) tokenSells.push({ mint, amount: Math.abs(delta), after });
+          for (const out of swap.tokenOutputs) {
+            const decimals = out.rawTokenAmount?.decimals || 6;
+            const tokenAmount = parseInt(out.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, decimals);
+            swaps.push({ sig, side: 'buy', mint: out.mint, tokenAmount, solAmount: nativeIn || 0.001, time });
           }
-
-          // Check SOL balance change
-          const preSol = (tx.meta.preBalances?.[0] || 0) / 1e9;
-          const postSol = (tx.meta.postBalances?.[0] || 0) / 1e9;
-          solDelta = postSol - preSol;
-
-          // If we got token buys with SOL decrease — it's a BUY swap
-          if (tokenBuys.length > 0 && solDelta < -0.001) {
-            for (const buy of tokenBuys) {
-              swaps.push({
-                sig: sigInfo.signature,
-                side: 'buy',
-                mint: buy.mint,
-                tokenAmount: buy.amount,
-                solAmount: Math.abs(solDelta),
-                time: (sigInfo.blockTime || 0) * 1000,
-              });
-            }
-          }
-
-          // If token sells with SOL increase — it's a SELL swap
-          if (tokenSells.length > 0 && solDelta > 0.001) {
-            for (const sell of tokenSells) {
-              swaps.push({
-                sig: sigInfo.signature,
-                side: 'sell',
-                mint: sell.mint,
-                tokenAmount: sell.amount,
-                solAmount: solDelta,
-                time: (sigInfo.blockTime || 0) * 1000,
-              });
-            }
-          }
-
-        } catch (e) { /* skip unparseable tx */ }
+        }
       }
 
       return swaps;
@@ -3213,6 +3207,7 @@
     async function alphaStudy() {
       if (!apiKey) { toast('Set Claude API key first'); return; }
       if (alphaWallets.length === 0) { toast('Add wallets to study first'); return; }
+      if (!heliusKey) { toast('Set Helius API key first (free at helius.dev)'); return; }
 
       setAlphaStatus('studying', 'Studying wallets...');
       $('alpha-study-btn').disabled = true;
@@ -3341,6 +3336,9 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       if (alphaWallets.length === 0) {
         toast('Add wallets to track first'); return;
       }
+      if (!heliusKey) {
+        toast('Set Helius API key first (free at helius.dev)'); return;
+      }
 
       alphaBotRunning = true;
       alphaDailyCount = 0;
@@ -3396,6 +3394,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
       for (const w of alphaWallets) {
         try {
+          // Step 1: Get recent signatures (this works on public RPC)
           const sigs = await conn.getSignaturesForAddress(new solanaWeb3.PublicKey(w.address), { limit: 3 });
           if (sigs.length === 0) continue;
 
@@ -3413,49 +3412,47 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           alphaLastSigs[w.address] = sigs[0].signature;
           saveAlphaState();
 
-          // Parse new transactions
-          for (const sigInfo of newSigs.slice(0, 3)) {
-            try {
-              const tx = await conn.getParsedTransaction(sigInfo.signature, { maxSupportedTransactionVersion: 0 });
-              if (!tx || !tx.meta) continue;
-
-              const pre = tx.meta.preTokenBalances || [];
-              const post = tx.meta.postTokenBalances || [];
-              const preMap = {}, postMap = {};
-              for (const b of pre) { if (b.owner === w.address) preMap[b.mint] = b.uiTokenAmount.uiAmount || 0; }
-              for (const b of post) { if (b.owner === w.address) postMap[b.mint] = b.uiTokenAmount.uiAmount || 0; }
-
-              const preSol = (tx.meta.preBalances?.[0] || 0) / 1e9;
-              const postSol = (tx.meta.postBalances?.[0] || 0) / 1e9;
-              const solDelta = postSol - preSol;
-
-              // Detect buys
-              for (const mint of Object.keys(postMap)) {
-                if (mint === SOL_MINT) continue;
-                const before = preMap[mint] || 0;
-                const after = postMap[mint] || 0;
-                if (after - before > 0.000001 && solDelta < -0.001) {
-                  alphaLog(`🔔 ${w.label} bought token ${mint.slice(0, 6)}... (${Math.abs(solDelta).toFixed(3)} SOL)`);
-                  await alphaEvaluateAndBuy(mint, w, Math.abs(solDelta));
-                }
-              }
-
-              // Detect sells
-              for (const mint of Object.keys(preMap)) {
-                if (mint === SOL_MINT) continue;
-                const before = preMap[mint] || 0;
-                const after = postMap[mint] || 0;
-                if (before - after > 0.000001 && solDelta > 0.001) {
-                  alphaLog(`🔔 ${w.label} sold token ${mint.slice(0, 6)}... (+${solDelta.toFixed(3)} SOL)`);
-                  // If we hold this token, consider selling
-                  if (alphaPositions[mint]) {
-                    await alphaExecuteSell(mint);
-                  }
-                }
-              }
-
-            } catch (e) { /* skip */ }
+          // Step 2: Parse new transactions via Helius
+          if (!heliusKey) {
+            alphaLog(`New activity from ${w.label} but no Helius key to parse`, 'warn');
+            continue;
           }
+
+          const sigList = newSigs.slice(0, 3).map(s => s.signature);
+          const parseRes = await fetch(getHeliusUrl('transactions') , {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transactions: sigList }),
+          });
+
+          if (!parseRes.ok) continue;
+          const parsedTxns = await parseRes.json();
+
+          for (const tx of parsedTxns) {
+            if (tx.type !== 'SWAP' || !tx.events?.swap) continue;
+            const swap = tx.events.swap;
+
+            // Detect buys (SOL in → token out)
+            if (swap.nativeInput && swap.tokenOutputs?.length > 0) {
+              const solAmt = parseInt(swap.nativeInput.amount || '0') / 1e9;
+              for (const out of swap.tokenOutputs) {
+                alphaLog(`🔔 ${w.label} bought ${out.mint.slice(0, 6)}... (${solAmt.toFixed(3)} SOL)`);
+                await alphaEvaluateAndBuy(out.mint, w, solAmt);
+              }
+            }
+
+            // Detect sells (token in → SOL out)
+            if (swap.nativeOutput && swap.tokenInputs?.length > 0) {
+              const solAmt = parseInt(swap.nativeOutput.amount || '0') / 1e9;
+              for (const inp of swap.tokenInputs) {
+                alphaLog(`🔔 ${w.label} sold ${inp.mint.slice(0, 6)}... (+${solAmt.toFixed(3)} SOL)`);
+                if (alphaPositions[inp.mint]) {
+                  await alphaExecuteSell(inp.mint);
+                }
+              }
+            }
+          }
+
         } catch (e) {
           alphaLog(`Error polling ${w.label}: ${e.message}`, 'error');
         }
@@ -4150,6 +4147,9 @@ User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. A
     if (alphaStrategy) {
       const el = $('alpha-strategy');
       if (el) el.textContent = alphaStrategy;
+    }
+    if (heliusKey) {
+      $('alpha-helius-key').value = heliusKey;
     }
 
     // Auto-prompt for key if not set
