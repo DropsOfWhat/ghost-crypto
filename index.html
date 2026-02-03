@@ -3190,14 +3190,15 @@
     function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     // ── Fetch Wallet Swap History ──
-    async function fetchWalletSwaps(address, limit = 30) {
-      // Path A: Helius API (best quality)
+    async function fetchWalletSwaps(address, limit = 50) {
+      // Path A: Helius API — fetch ALL types, not just SWAP
       if (heliusKey) {
         try {
-          const url = `https://api.helius.xyz/v0/addresses/${address}/transactions?api-key=${heliusKey}&limit=${limit}&type=SWAP`;
+          const url = `https://api.helius.xyz/v0/addresses/${address}/transactions?api-key=${heliusKey}&limit=${limit}`;
           const res = await fetch(url);
           if (res.ok) {
             const txns = await res.json();
+            alphaLog(`  → Helius returned ${txns.length} transactions`, 'info');
             return parseHeliusSwaps(txns, address);
           }
         } catch (e) { alphaLog('Helius fallback to RPC: ' + e.message, 'warn'); }
@@ -3210,11 +3211,11 @@
       const sigs = await conn.getSignaturesForAddress(pubkey, { limit });
       const swaps = [];
 
-      for (const sigInfo of sigs.slice(0, 12)) {
-        await delay(300); // Rate limit protection
+      for (const sigInfo of sigs.slice(0, 15)) {
+        await delay(300);
         try {
           const tx = await rpcGetTransaction(sigInfo.signature);
-          if (!tx || !tx.meta) continue;
+          if (!tx || !tx.meta || tx.meta.err) continue;
 
           const pre = tx.meta.preTokenBalances || [];
           const post = tx.meta.postTokenBalances || [];
@@ -3240,7 +3241,7 @@
               swaps.push({ sig: sigInfo.signature, side: 'sell', mint, tokenAmount: Math.abs(delta), solAmount: solDelta, time: (sigInfo.blockTime || 0) * 1000 });
             }
           }
-        } catch (e) { /* skip unparseable tx */ }
+        } catch (e) { /* skip */ }
       }
       return swaps;
     }
@@ -3248,34 +3249,83 @@
     function parseHeliusSwaps(txns, address) {
       const swaps = [];
       for (const tx of txns) {
-        if (tx.type !== 'SWAP' || !tx.events?.swap) continue;
-        const swap = tx.events.swap;
         const sig = tx.signature;
         const time = (tx.timestamp || 0) * 1000;
 
-        if (swap.nativeInput && swap.tokenOutputs?.length > 0) {
-          const solAmount = parseInt(swap.nativeInput.amount || '0') / 1e9;
-          for (const out of swap.tokenOutputs) {
-            const dec = out.rawTokenAmount?.decimals || 6;
-            const tokenAmount = parseInt(out.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec);
-            swaps.push({ sig, side: 'buy', mint: out.mint, tokenAmount, solAmount, time });
+        // Method 1: Helius parsed swap events
+        if (tx.events?.swap) {
+          const swap = tx.events.swap;
+          if (swap.nativeInput && swap.tokenOutputs?.length > 0) {
+            const solAmount = parseInt(swap.nativeInput.amount || '0') / 1e9;
+            for (const out of swap.tokenOutputs) {
+              const dec = out.rawTokenAmount?.decimals || 6;
+              const tokenAmount = parseInt(out.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec);
+              if (solAmount > 0.0001) swaps.push({ sig, side: 'buy', mint: out.mint, tokenAmount, solAmount, time });
+            }
+            continue;
           }
-        } else if (swap.nativeOutput && swap.tokenInputs?.length > 0) {
-          const solAmount = parseInt(swap.nativeOutput.amount || '0') / 1e9;
-          for (const inp of swap.tokenInputs) {
-            const dec = inp.rawTokenAmount?.decimals || 6;
-            const tokenAmount = parseInt(inp.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec);
-            swaps.push({ sig, side: 'sell', mint: inp.mint, tokenAmount, solAmount, time });
+          if (swap.nativeOutput && swap.tokenInputs?.length > 0) {
+            const solAmount = parseInt(swap.nativeOutput.amount || '0') / 1e9;
+            for (const inp of swap.tokenInputs) {
+              const dec = inp.rawTokenAmount?.decimals || 6;
+              const tokenAmount = parseInt(inp.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec);
+              if (solAmount > 0.0001) swaps.push({ sig, side: 'sell', mint: inp.mint, tokenAmount, solAmount, time });
+            }
+            continue;
           }
-        } else if (swap.tokenInputs?.length > 0 && swap.tokenOutputs?.length > 0) {
-          for (const out of swap.tokenOutputs) {
-            const dec = out.rawTokenAmount?.decimals || 6;
-            const tokenAmount = parseInt(out.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec);
-            swaps.push({ sig, side: 'buy', mint: out.mint, tokenAmount, solAmount: 0.001, time });
+          if (swap.tokenInputs?.length > 0 && swap.tokenOutputs?.length > 0) {
+            for (const out of swap.tokenOutputs) {
+              const dec = out.rawTokenAmount?.decimals || 6;
+              const tokenAmount = parseInt(out.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec);
+              swaps.push({ sig, side: 'buy', mint: out.mint, tokenAmount, solAmount: 0.001, time });
+            }
+            continue;
+          }
+        }
+
+        // Method 2: Analyze tokenTransfers + nativeTransfers for any tx type
+        const tokenXfers = tx.tokenTransfers || [];
+        const nativeXfers = tx.nativeTransfers || [];
+
+        // SOL spent by this address (outgoing native)
+        const solOut = nativeXfers.filter(n => n.fromUserAccount === address)
+          .reduce((s, n) => s + (n.amount || 0), 0) / 1e9;
+        // SOL received by this address (incoming native)
+        const solIn = nativeXfers.filter(n => n.toUserAccount === address)
+          .reduce((s, n) => s + (n.amount || 0), 0) / 1e9;
+
+        // Tokens received by this address
+        const tokensIn = tokenXfers.filter(t => t.toUserAccount === address && t.mint !== SOL_MINT);
+        // Tokens sent from this address
+        const tokensOut = tokenXfers.filter(t => t.fromUserAccount === address && t.mint !== SOL_MINT);
+
+        // BUY pattern: SOL went out, tokens came in
+        if (solOut > 0.001 && tokensIn.length > 0 && tokensOut.length === 0) {
+          for (const t of tokensIn) {
+            const dec = t.tokenStandard === 'Fungible' ? 6 : (t.rawTokenAmount?.decimals || 6);
+            const amount = t.tokenAmount || (parseInt(t.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec));
+            if (amount > 0) swaps.push({ sig, side: 'buy', mint: t.mint, tokenAmount: amount, solAmount: solOut, time });
+          }
+        }
+
+        // SELL pattern: tokens went out, SOL came in
+        if (solIn > 0.001 && tokensOut.length > 0 && tokensIn.length === 0) {
+          for (const t of tokensOut) {
+            const dec = t.tokenStandard === 'Fungible' ? 6 : (t.rawTokenAmount?.decimals || 6);
+            const amount = t.tokenAmount || (parseInt(t.rawTokenAmount?.tokenAmount || '0') / Math.pow(10, dec));
+            if (amount > 0) swaps.push({ sig, side: 'sell', mint: t.mint, tokenAmount: amount, solAmount: solIn, time });
           }
         }
       }
-      return swaps;
+
+      // Dedupe by signature (in case both methods matched)
+      const seen = new Set();
+      return swaps.filter(s => {
+        const key = s.sig + s.mint + s.side;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
 
     // ── Study Phase — Analyze All Tracked Wallets ──
@@ -3485,22 +3535,14 @@ Be concise, use numbers. Output as plain text, not markdown.`;
               });
               if (parseRes.ok) {
                 const parsed = await parseRes.json();
-                for (const tx of parsed) {
-                  if (tx.type !== 'SWAP' || !tx.events?.swap) continue;
-                  const swap = tx.events.swap;
-                  if (swap.nativeInput && swap.tokenOutputs?.length > 0) {
-                    const solAmt = parseInt(swap.nativeInput.amount || '0') / 1e9;
-                    for (const out of swap.tokenOutputs) {
-                      alphaLog(`🔔 ${w.label} bought ${out.mint.slice(0, 6)}... (${solAmt.toFixed(3)} SOL)`);
-                      await alphaEvaluateAndBuy(out.mint, w, solAmt);
-                    }
-                  }
-                  if (swap.nativeOutput && swap.tokenInputs?.length > 0) {
-                    const solAmt = parseInt(swap.nativeOutput.amount || '0') / 1e9;
-                    for (const inp of swap.tokenInputs) {
-                      alphaLog(`🔔 ${w.label} sold ${inp.mint.slice(0, 6)}... (+${solAmt.toFixed(3)} SOL)`);
-                      if (alphaPositions[inp.mint]) await alphaExecuteSell(inp.mint);
-                    }
+                const detectedSwaps = parseHeliusSwaps(parsed, w.address);
+                for (const s of detectedSwaps) {
+                  if (s.side === 'buy') {
+                    alphaLog(`🔔 ${w.label} bought ${s.mint.slice(0, 6)}... (${s.solAmount.toFixed(3)} SOL)`);
+                    await alphaEvaluateAndBuy(s.mint, w, s.solAmount);
+                  } else if (s.side === 'sell') {
+                    alphaLog(`🔔 ${w.label} sold ${s.mint.slice(0, 6)}... (+${s.solAmount.toFixed(3)} SOL)`);
+                    if (alphaPositions[s.mint]) await alphaExecuteSell(s.mint);
                   }
                 }
                 continue; // Done with this wallet via Helius
