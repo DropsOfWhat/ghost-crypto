@@ -637,10 +637,9 @@
       flex: 1; position: relative; overflow: hidden; background: var(--bg-primary); min-height: 300px;
     }
 
-    /* Positions below chart */
+    /* Positions (in right column) */
     .perps-positions-section {
-      border-top: 1px solid var(--border-primary); max-height: 220px; overflow-y: auto;
-      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-primary); margin-top: 14px;
     }
     .perps-pos-header {
       display: flex; justify-content: space-between; align-items: center;
@@ -676,7 +675,7 @@
       background: rgba(251,191,36,0.1); color: #fbbf24;
     }
     .perps-pos-grid {
-      display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
     }
     .perps-pos-stat { display: flex; flex-direction: column; gap: 1px; }
     .perps-pos-stat-label {
@@ -2195,17 +2194,6 @@
               <iframe id="perps-chart-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups" style="width:100%;height:100%;border:none;"></iframe>
             </div>
           </div>
-
-          <!-- Positions (below chart) -->
-          <div class="perps-positions-section">
-            <div class="perps-pos-header">
-              <span>OPEN POSITIONS</span>
-              <button onclick="refreshPerpsPositions()">↻ Refresh</button>
-            </div>
-            <div id="perps-positions-list">
-              <div class="perps-pos-empty">No open positions</div>
-            </div>
-          </div>
         </div>
 
         <!-- RIGHT: Order Form -->
@@ -2290,6 +2278,17 @@
             <div class="perps-info">
               ⚡ Trades via <a href="https://jup.ag/perps" target="_blank">Jupiter Perps</a> — oracle-priced, up to 100x. Collateral from JLP pool.
               No funding rates — borrow fees only. <strong>Liquidation is real.</strong>
+            </div>
+
+            <!-- Open Positions -->
+            <div class="perps-positions-section">
+              <div class="perps-pos-header">
+                <span>OPEN POSITIONS</span>
+                <button onclick="refreshPerpsPositions()">↻ Refresh</button>
+              </div>
+              <div id="perps-positions-list">
+                <div class="perps-pos-empty">No open positions</div>
+              </div>
             </div>
           </div>
         </div>
