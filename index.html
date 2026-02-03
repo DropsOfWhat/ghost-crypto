@@ -1001,6 +1001,11 @@
     .pnl-trade-bottom { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 10px; font-family: 'Fira Code', monospace; }
 
     /* ═══════ ALPHA BOT ═══════ */
+    .ph-back {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 14px; padding: 0 6px 0 0; vertical-align: middle; font-family: inherit;
+    }
+    .ph-back:hover { color: var(--accent); }
     .alpha-status-bar {
       margin: 0 14px 10px; padding: 10px 14px;
       border-radius: 10px; font-size: 12px; font-weight: 600;
@@ -1143,7 +1148,7 @@
 
           <!-- TRADE -->
           <div id="p-trade" style="display:none">
-            <div class="ph">⟡ SWAP TERMINAL <span style="font-size:10px;font-weight:400;color:var(--text-faint);">via Jupiter</span></div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⟡ SWAP TERMINAL <span style="font-size:10px;font-weight:400;color:var(--text-faint);">via Jupiter</span></div>
 
             <div class="trade-section">
               <div class="fg">
@@ -1210,7 +1215,7 @@
 
           <!-- LAUNCH -->
           <div id="p-launch" style="display:none">
-            <div class="ph">🚀 TOKEN LAUNCHER</div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🚀 TOKEN LAUNCHER</div>
             <div class="launch-steps" id="launch-steps" style="display:none">
               <div class="launch-step pending" id="step-1"><span class="step-num">1</span><span class="step-label">Upload metadata to IPFS</span><span class="step-status"></span></div>
               <div class="launch-step pending" id="step-2"><span class="step-num">2</span><span class="step-label">Build transaction</span><span class="step-status"></span></div>
@@ -1264,7 +1269,7 @@
 
           <!-- WALLET -->
           <div id="p-wallet" style="display:none">
-            <div class="ph">PHANTOM WALLET</div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>PHANTOM WALLET</div>
             <div class="winfo" id="wallet-content">
               <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
                 <div style="font-size:32px;margin-bottom:12px;">👻</div>
@@ -1276,7 +1281,7 @@
 
           <!-- HISTORY -->
           <div id="p-history" style="display:none">
-            <div class="ph">HISTORY</div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>HISTORY</div>
             <div class="hist-tabs">
               <button class="hist-tab active" id="ht-chats" onclick="setHistTab('chats')">💬 CHATS</button>
               <button class="hist-tab" id="ht-txs" onclick="setHistTab('txs')">📋 TRADES</button>
@@ -1289,7 +1294,7 @@
 
           <!-- SNIPER -->
           <div id="p-sniper" style="display:none">
-            <div class="ph">⚡ SNIPER BOT</div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⚡ SNIPER BOT</div>
 
             <div class="sniper-toggle-row">
               <div>
@@ -1321,7 +1326,7 @@
 
           <!-- TOKEN INTEL -->
           <div id="p-intel" style="display:none">
-            <div class="ph">⬡ TOKEN INTEL</div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⬡ TOKEN INTEL</div>
             <div class="intel-search">
               <div class="intel-search-row">
                 <input type="text" id="intel-mint" class="fi" placeholder="Paste mint address or ticker...">
@@ -1338,7 +1343,7 @@
 
           <!-- PORTFOLIO -->
           <div id="p-portfolio" style="display:none">
-            <div class="ph">◐ PORTFOLIO <button onclick="refreshPortfolio()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;float:right;">↻ Refresh</button></div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>◐ PORTFOLIO <button onclick="refreshPortfolio()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;font-family:inherit;float:right;">↻ Refresh</button></div>
             <div id="portfolio-content">
               <div class="intel-empty">
                 <div class="intel-empty-icon">◐</div>
@@ -1349,7 +1354,7 @@
 
           <!-- ALPHA BOT -->
           <div id="p-alpha" style="display:none">
-            <div class="ph">🧠 ALPHA BOT</div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🧠 ALPHA BOT</div>
 
             <div id="alpha-status" class="alpha-status-bar idle">
               <span class="alpha-dot"></span>
@@ -1519,7 +1524,11 @@
     }
 
     // ═══════ MODES ═══════
+    let modeHistory = [];
+
     function setMode(mode) {
+      if (currentMode && currentMode !== mode) modeHistory.push(currentMode);
+      if (modeHistory.length > 10) modeHistory = modeHistory.slice(-10);
       currentMode = mode;
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
       $('p-trade').style.display = mode === 'trade' ? 'block' : 'none';
@@ -1536,6 +1545,13 @@
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
       if (mode === 'portfolio') { refreshPortfolio(); }
       if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); populateAlphaWalletSel(); }
+    }
+
+    function goBack() {
+      const prev = modeHistory.pop() || 'tools';
+      setMode(prev);
+      // Remove the duplicate push that setMode just added
+      if (modeHistory.length && modeHistory[modeHistory.length - 1] === prev) modeHistory.pop();
     }
 
     function selPlatform(p) {
