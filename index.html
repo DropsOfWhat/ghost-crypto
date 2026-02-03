@@ -1273,6 +1273,85 @@
     }
     .alpha-log-time { color: var(--text-faint); font-size: 9px; white-space: nowrap; margin-top: 1px; }
     .alpha-log-msg { color: var(--text-secondary); word-break: break-word; }
+
+    /* ═══════ MEV PROTECTION TOGGLE ═══════ */
+    .mev-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; margin: 8px 0;
+      background: var(--bg-glass); border: 1px solid var(--border-primary); border-radius: 10px;
+    }
+    .mev-label { font-size: 11px; font-weight: 600; color: var(--text); }
+    .mev-sub { font-size: 9px; color: var(--text-faint); }
+    .mev-toggle {
+      width: 36px; height: 20px; border-radius: 10px; border: none;
+      background: var(--border); cursor: pointer; position: relative; transition: 0.2s;
+    }
+    .mev-toggle.on { background: var(--green); }
+    .mev-toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: #fff;
+      transition: 0.2s;
+    }
+    .mev-toggle.on::after { left: 18px; }
+
+    /* ═══════ TRENDING FEED ═══════ */
+    .trend-card {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;
+      transition: background 0.15s;
+    }
+    .trend-card:hover { background: rgba(0,255,204,0.03); }
+    .trend-rank { font-size: 12px; font-weight: 800; color: var(--text-faint); width: 20px; text-align: center; flex-shrink: 0; }
+    .trend-icon {
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .trend-info { flex: 1; min-width: 0; }
+    .trend-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trend-ticker { font-size: 10px; color: var(--text-muted); }
+    .trend-right { text-align: right; flex-shrink: 0; }
+    .trend-price { font-size: 12px; font-weight: 600; color: var(--text); }
+    .trend-chg { font-size: 11px; font-weight: 700; }
+    .trend-chg.up { color: var(--green); }
+    .trend-chg.down { color: var(--red); }
+    .trend-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+    .trend-tab {
+      flex: 1; padding: 8px 0; text-align: center; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; border: none; background: none; color: var(--text-muted);
+      cursor: pointer; border-bottom: 2px solid transparent;
+    }
+    .trend-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .trend-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+
+    /* ═══════ WATCHLIST ═══════ */
+    .watch-card {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .watch-icon {
+      width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .watch-info { flex: 1; min-width: 0; }
+    .watch-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .watch-mint { font-size: 9px; color: var(--text-faint); font-family: 'SF Mono','Fira Code',monospace; }
+    .watch-right { text-align: right; flex-shrink: 0; }
+    .watch-price { font-size: 12px; font-weight: 600; color: var(--text); }
+    .watch-chg { font-size: 11px; font-weight: 700; }
+    .watch-chg.up { color: var(--green); }
+    .watch-chg.down { color: var(--red); }
+    .watch-del {
+      background: none; border: none; color: var(--text-faint); cursor: pointer;
+      font-size: 14px; padding: 2px 4px; flex-shrink: 0;
+    }
+    .watch-del:hover { color: var(--red); }
+    .watch-add-row { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+
+    /* ═══════ EMBEDDED CHART ═══════ */
+    .chart-embed {
+      width: 100%; height: 350px; border: none; border-radius: 0;
+      background: var(--bg-surface);
+    }
   </style>
 </head>
 <body>
@@ -1352,6 +1431,13 @@
               <div class="trade-settings">
                 <div class="fg"><label class="fl">SLIPPAGE %</label><input type="number" id="tr-slippage" class="fi" value="1" step="0.5" min="0.1" max="50"></div>
                 <div class="fg"><label class="fl">PRIORITY (SOL)</label><input type="number" id="tr-priority" class="fi" value="0.0005" step="0.0001" min="0"></div>
+              </div>
+              <div class="mev-row">
+                <div>
+                  <div class="mev-label">🛡️ MEV Protection</div>
+                  <div class="mev-sub">Route via Jito bundles to prevent sandwich attacks</div>
+                </div>
+                <button class="mev-toggle on" id="mev-toggle" onclick="toggleMev()"></button>
               </div>
 
               <div id="tr-quote" class="trade-quote">
@@ -1439,6 +1525,8 @@
             <div class="tcard" onclick="setMode('intel')"><div class="tcard-h"><span class="tcard-n">⬡ Token Intel</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Scan any token: holders, liquidity, rug risk score</div></div>
             <div class="tcard" onclick="setMode('portfolio')"><div class="tcard-h"><span class="tcard-n">◐ Portfolio</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Full portfolio dashboard with PnL tracking</div></div>
             <div class="tcard" onclick="setMode('alpha')"><div class="tcard-h"><span class="tcard-n">🧠 Alpha Bot</span><span class="tcard-s" id="alpha-tool-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">AI copy-trader — study wallets, learn patterns, auto-trade</div></div>
+            <div class="tcard" onclick="setMode('trending')"><div class="tcard-h"><span class="tcard-n">🔥 Trending</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Hottest tokens on Solana — live feed from DexScreener</div></div>
+            <div class="tcard" onclick="setMode('watchlist')"><div class="tcard-h"><span class="tcard-n">⭐ Watchlist</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Track tokens you're eyeing — live prices & 24h change</div></div>
             <div class="tcard disabled" onclick="toast('🔔 Whale Alerts coming soon!')"><div class="tcard-h"><span class="tcard-n">🔔 Whale Alerts</span><span class="tcard-s" style="background:var(--yellow-dim);color:var(--yellow);">COMING SOON</span></div><div class="tcard-d">Track whale wallet movements</div></div>
           </div>
 
@@ -1599,6 +1687,54 @@
             <div class="sniper-warn">⚠️ Alpha Bot uses private keys to auto-sign. Only fund what you can afford to lose. Past performance ≠ future results.</div>
           </div>
 
+          <!-- TRENDING FEED -->
+          <div id="p-trending" style="display:none">
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🔥 TRENDING</div>
+            <div class="trend-tabs">
+              <button class="trend-tab active" id="tt-trending" onclick="setTrendTab('trending')">🔥 TRENDING</button>
+              <button class="trend-tab" id="tt-gainers" onclick="setTrendTab('gainers')">🚀 GAINERS</button>
+              <button class="trend-tab" id="tt-new" onclick="setTrendTab('new')">🆕 NEW PAIRS</button>
+            </div>
+            <div style="display:flex;justify-content:flex-end;padding:6px 14px 0;">
+              <button onclick="fetchTrending()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;font-family:inherit;">↻ Refresh</button>
+            </div>
+            <div id="trending-list">
+              <div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">Loading trending tokens...</div>
+            </div>
+          </div>
+
+          <!-- WATCHLIST -->
+          <div id="p-watchlist" style="display:none">
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⭐ WATCHLIST</div>
+            <div class="watch-add-row">
+              <input type="text" id="watch-input" class="fi" placeholder="Paste token address to watch..." style="flex:1;font-size:11px;">
+              <button class="alpha-add-btn" onclick="addToWatchlist($('watch-input').value.trim())">+ Add</button>
+            </div>
+            <div id="watchlist-list">
+              <div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">
+                <div style="font-size:28px;margin-bottom:10px;">⭐</div>
+                Your watchlist is empty.<br>Paste a contract address above or tap ⭐ on any token card.
+              </div>
+            </div>
+          </div>
+
+          <!-- EMBEDDED CHART -->
+          <div id="p-chart" style="display:none">
+            <div class="ph">
+              <button class="ph-back" onclick="goBack()">←</button>
+              📊 CHART <span id="chart-token-label" style="font-size:10px;font-weight:400;color:var(--text-faint);margin-left:6px;"></span>
+              <span style="flex:1"></span>
+              <button onclick="window.open($('chart-embed').src.replace('/embed/','/'),'_blank')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:10px;font-family:inherit;">Open Full ↗</button>
+            </div>
+            <iframe id="chart-embed" class="chart-embed" src="about:blank" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+            <div id="chart-actions" style="display:flex;gap:6px;padding:10px 14px;">
+              <button class="tk-btn buy" id="chart-buy-btn" onclick="">⟡ BUY</button>
+              <button class="tk-btn" id="chart-scan-btn" onclick="">⬡ SCAN</button>
+              <button class="tk-btn" id="chart-solscan-btn" onclick="">🔍 SOLSCAN</button>
+              <button class="tk-btn" id="chart-watch-btn" onclick="">⭐ WATCH</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1744,11 +1880,16 @@
       $('p-intel').style.display = mode === 'intel' ? 'block' : 'none';
       $('p-portfolio').style.display = mode === 'portfolio' ? 'block' : 'none';
       $('p-alpha').style.display = mode === 'alpha' ? 'block' : 'none';
+      $('p-trending').style.display = mode === 'trending' ? 'block' : 'none';
+      $('p-watchlist').style.display = mode === 'watchlist' ? 'block' : 'none';
+      $('p-chart').style.display = mode === 'chart' ? 'block' : 'none';
       $('sidebar').classList.toggle('open', mode !== 'chat');
       if (mode === 'history') { renderChatHistory(); renderTxHistory(); }
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
       if (mode === 'portfolio') { refreshPortfolio(); }
       if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); populateAlphaWalletSel(); }
+      if (mode === 'trending') { fetchTrending(); }
+      if (mode === 'watchlist') { renderWatchlist(); refreshWatchlistPrices(); }
     }
 
     function goBack() {
@@ -2715,17 +2856,29 @@
         if (!phantom) throw new Error('Phantom not found');
         const signed = await phantom.signTransaction(tx);
 
-        // Step 4: Send to Solana
-        btn.textContent = 'SUBMITTING...';
-        const conn = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+        // Step 4: Send to Solana (via Jito if MEV protection is on)
+        btn.textContent = mevEnabled ? 'JITO BUNDLE...' : 'SUBMITTING...';
         const rawTx = signed.serialize();
-        const sig = await conn.sendRawTransaction(rawTx, {
-          skipPreflight: true,
-          maxRetries: 3,
-        });
+        let sig;
+
+        if (mevEnabled) {
+          try {
+            sig = await sendViaJito(rawTx);
+          } catch (jitoErr) {
+            // Fallback to regular RPC if Jito fails
+            console.warn('Jito failed, falling back to RPC:', jitoErr);
+            btn.textContent = 'FALLBACK RPC...';
+            const conn = await getWorkingConnection();
+            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+          }
+        } else {
+          const conn = await getWorkingConnection();
+          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+        }
 
         btn.textContent = 'CONFIRMING...';
-        await conn.confirmTransaction(sig, 'confirmed');
+        const confirmConn = await getWorkingConnection();
+        await confirmConn.confirmTransaction(sig, 'confirmed');
 
         // Success!
         const tokenDecimals = await getTokenDecimals(side === 'buy' ? mint : SOL_MINT);
@@ -4423,6 +4576,8 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^open\s+portfolio/i, /^portfolio$/i, /^folio$/i], action: () => { setMode('portfolio'); return '◐ Opened portfolio.'; } },
       { patterns: [/^open\s+pnl/i, /^pnl$/i], action: () => { setMode('history'); setTimeout(() => setHistTab('pnl'), 50); return '📊 Opened PnL analytics.'; } },
       { patterns: [/^open\s+alpha/i, /^alpha$/i, /^alpha\s*bot$/i, /^bot$/i, /^copy\s*trade$/i], action: () => { setMode('alpha'); return '🧠 Opened Alpha Bot.'; } },
+      { patterns: [/^open\s+trending/i, /^trending$/i, /^hot$/i, /^trend$/i], action: () => { setMode('trending'); return '🔥 Opened trending feed.'; } },
+      { patterns: [/^open\s+watchlist/i, /^watchlist$/i, /^watch$/i], action: () => { setMode('watchlist'); return '⭐ Opened watchlist.'; } },
       { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
@@ -4437,7 +4592,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / trending / watchlist\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\n\n🔥 **Discovery:**\ntrending — hottest tokens on Solana\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -4680,8 +4835,8 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
           <div class="tk-actions">
             <button class="tk-btn buy" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ BUY</button>
             <button class="tk-btn" onclick="$('intel-mint').value='${mint}';setMode('intel');fetchTokenIntel();">⬡ SCAN</button>
-            <button class="tk-btn" onclick="window.open('https://dexscreener.com/solana/${mint}','_blank')">📊 CHART</button>
-            <button class="tk-btn" onclick="window.open('https://solscan.io/token/${mint}','_blank')">🔍 SOLSCAN</button>
+            <button class="tk-btn" onclick="openChart('${mint}','${symbol}')">📊 CHART</button>
+            <button class="tk-btn" onclick="addToWatchlist('${mint}')">⭐ WATCH</button>
           </div>
         </div>`;
 
@@ -4775,8 +4930,8 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
           <div class="tk-actions">
             <button class="tk-btn buy" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ BUY</button>
             <button class="tk-btn" onclick="$('intel-mint').value='${mint}';setMode('intel');fetchTokenIntel();">⬡ SCAN</button>
-            <button class="tk-btn" onclick="window.open('https://dexscreener.com/solana/${mint}','_blank')">📊 CHART</button>
-            <button class="tk-btn" onclick="window.open('https://solscan.io/token/${mint}','_blank')">🔍 SOLSCAN</button>
+            <button class="tk-btn" onclick="openChart('${mint}','${symbol}')">📊 CHART</button>
+            <button class="tk-btn" onclick="addToWatchlist('${mint}')">⭐ WATCH</button>
           </div>`;
 
         // Find and update the card with this mint
@@ -4858,6 +5013,11 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
             case 'stop_alpha': stopAlphaBot(); break;
             case 'study_wallets': setMode('alpha'); setTimeout(alphaStudy, 200); break;
             case 'auto_learn': setMode('alpha'); setTimeout(alphaAutoLearn, 200); break;
+            case 'open_trending': setMode('trending'); break;
+            case 'open_watchlist': setMode('watchlist'); break;
+            case 'open_chart':
+              if (parts[1]) openChart(parts[1], parts[2] || '');
+              break;
           }
         } catch(e) { console.warn('Action failed:', action, e); }
       }
@@ -4987,6 +5147,9 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:stop_alpha}} - Stop the Alpha bot
 {{ACTION:study_wallets}} - Analyze tracked wallets and generate strategy
 {{ACTION:auto_learn}} - Bot analyzes its own performance
+{{ACTION:open_trending}} - Open trending tokens feed
+{{ACTION:open_watchlist}} - Open token watchlist
+{{ACTION:open_chart|MINT}} - Open embedded chart for a token
 
 RULES:
 - CRYPTO ONLY. You are a crypto trading assistant. Keep all responses focused on crypto, blockchain, DeFi, trading, and related topics. If someone asks off-topic questions, steer back to crypto.
@@ -5129,6 +5292,279 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     $('input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     $('intel-mint').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fetchTokenIntel(); } });
     $('alpha-addr').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addAlphaWallet(); } });
+    $('watch-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addToWatchlist($('watch-input').value.trim()); } });
+
+    // ═══════ MEV PROTECTION (JITO) ═══════
+    let mevEnabled = localStorage.getItem('ghost-mev') !== 'false'; // default on
+    if ($('mev-toggle')) $('mev-toggle').classList.toggle('on', mevEnabled);
+
+    function toggleMev() {
+      mevEnabled = !mevEnabled;
+      localStorage.setItem('ghost-mev', mevEnabled);
+      $('mev-toggle').classList.toggle('on', mevEnabled);
+      toast(mevEnabled ? '🛡️ MEV Protection ON — Jito bundles' : '⚠️ MEV Protection OFF');
+    }
+
+    async function sendViaJito(rawTx) {
+      const base58Chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      function toBase58(bytes) {
+        let num = BigInt(0);
+        for (const b of bytes) num = num * 256n + BigInt(b);
+        let str = '';
+        while (num > 0n) { str = base58Chars[Number(num % 58n)] + str; num = num / 58n; }
+        for (const b of bytes) { if (b === 0) str = '1' + str; else break; }
+        return str || '1';
+      }
+      const b58 = toBase58(rawTx);
+      const res = await fetch('https://mainnet.block-engine.jito.wtf/api/v1/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 1,
+          method: 'sendTransaction',
+          params: [b58, { encoding: 'base58' }]
+        })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error('Jito: ' + (data.error.message || JSON.stringify(data.error)));
+      return data.result;
+    }
+
+    // ═══════ TRENDING FEED ═══════
+    let trendTab = 'trending';
+    let trendCache = {};
+
+    function setTrendTab(tab) {
+      trendTab = tab;
+      document.querySelectorAll('.trend-tab').forEach(t => t.classList.toggle('active', t.id === 'tt-' + tab));
+      fetchTrending();
+    }
+
+    async function fetchTrending() {
+      const el = $('trending-list');
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">Loading...</div>';
+
+      try {
+        let url, pairs = [];
+
+        if (trendTab === 'trending') {
+          // Use DexScreener boosted tokens
+          const res = await fetch('https://api.dexscreener.com/token-boosts/top/v1');
+          const data = await res.json();
+          // Filter Solana only and deduplicate
+          const seen = new Set();
+          const solTokens = (data || []).filter(t => t.chainId === 'solana' && !seen.has(t.tokenAddress) && seen.add(t.tokenAddress));
+          // Get details for each
+          const mints = solTokens.slice(0, 15).map(t => t.tokenAddress);
+          if (mints.length > 0) {
+            const detRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mints.join(',')}`);
+            const detData = await detRes.json();
+            pairs = (detData.pairs || []).filter(p => p.chainId === 'solana');
+            // Deduplicate by baseToken address, keep highest liq
+            const best = {};
+            for (const p of pairs) {
+              const addr = p.baseToken?.address;
+              if (!addr) continue;
+              if (!best[addr] || (p.liquidity?.usd || 0) > (best[addr].liquidity?.usd || 0)) best[addr] = p;
+            }
+            pairs = mints.map(m => best[m]).filter(Boolean);
+          }
+        } else if (trendTab === 'gainers') {
+          const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=SOL');
+          const data = await res.json();
+          pairs = (data.pairs || [])
+            .filter(p => p.chainId === 'solana' && (p.liquidity?.usd || 0) > 5000 && p.volume?.h24 > 1000)
+            .sort((a, b) => (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0))
+            .slice(0, 20);
+        } else if (trendTab === 'new') {
+          const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=SOL');
+          const data = await res.json();
+          pairs = (data.pairs || [])
+            .filter(p => p.chainId === 'solana' && (p.liquidity?.usd || 0) > 2000)
+            .sort((a, b) => (b.pairCreatedAt || 0) - (a.pairCreatedAt || 0))
+            .slice(0, 20);
+        }
+
+        if (pairs.length === 0) {
+          el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">No results found. Try refreshing.</div>';
+          return;
+        }
+
+        const fU = (n) => n >= 1e9 ? '$'+(n/1e9).toFixed(1)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(1)+'M' : n >= 1e3 ? '$'+(n/1e3).toFixed(1)+'K' : '$'+n.toFixed(0);
+        const fP = (p) => p===0?'$0':p<0.0000001?'$'+p.toExponential(2):p<0.000001?'$'+p.toFixed(10):p<0.01?'$'+p.toFixed(6):p<1?'$'+p.toFixed(4):'$'+p.toFixed(2);
+        const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c','#c084fc','#f472b6'];
+
+        let html = '';
+        pairs.forEach((p, i) => {
+          const sym = p.baseToken?.symbol || '???';
+          const name = p.baseToken?.name || sym;
+          const mint = p.baseToken?.address || '';
+          const price = p.priceUsd ? parseFloat(p.priceUsd) : 0;
+          const chg = p.priceChange?.h24 || 0;
+          const vol = p.volume?.h24 || 0;
+          const liq = p.liquidity?.usd || 0;
+          const age = p.pairCreatedAt ? timeSince(p.pairCreatedAt) : '?';
+          const color = colors[Math.abs(sym.charCodeAt(0)) % colors.length];
+          const initial = sym.slice(0,2).toUpperCase();
+          const imgUrl = p.info?.imageUrl || '';
+
+          html += `<div class="trend-card" onclick="quickTokenCard('${mint}');setMode('chat')">
+            <div class="trend-rank">${i + 1}</div>
+            ${imgUrl ? `<img src="${imgUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div class=\\'trend-icon\\' style=\\'background:${color}\\'>${initial}</div>'">` : `<div class="trend-icon" style="background:${color}">${initial}</div>`}
+            <div class="trend-info">
+              <div class="trend-name">${name}</div>
+              <div class="trend-ticker">$${sym}</div>
+              <div class="trend-meta"><span>Vol: ${fU(vol)}</span><span>Liq: ${fU(liq)}</span><span>${age}</span></div>
+            </div>
+            <div class="trend-right">
+              <div class="trend-price">${fP(price)}</div>
+              <div class="trend-chg ${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>
+            </div>
+          </div>`;
+        });
+
+        el.innerHTML = html;
+      } catch (e) {
+        el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red);font-size:12px;">Error: ${e.message}</div>`;
+      }
+    }
+
+    // ═══════ WATCHLIST ═══════
+    let watchlist = JSON.parse(localStorage.getItem('ghost-watchlist') || '[]');
+
+    function saveWatchlist() {
+      localStorage.setItem('ghost-watchlist', JSON.stringify(watchlist));
+    }
+
+    async function addToWatchlist(mint) {
+      if (!mint || mint.length < 32) { toast('Paste a valid token address'); return; }
+      mint = mint.trim();
+      if (watchlist.find(w => w.mint === mint)) { toast('Already on watchlist'); return; }
+
+      try {
+        const res = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
+        const data = await res.json();
+        const pairs = (data.pairs || []).filter(p => p.chainId === 'solana');
+        if (pairs.length === 0) { toast('Token not found on DEX'); return; }
+
+        const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+        watchlist.push({
+          mint,
+          symbol: pair.baseToken?.symbol || '???',
+          name: pair.baseToken?.name || mint.slice(0, 8),
+          addedPrice: pair.priceUsd ? parseFloat(pair.priceUsd) : 0,
+          addedAt: Date.now(),
+        });
+        saveWatchlist();
+        if ($('watch-input')) $('watch-input').value = '';
+        toast('⭐ Added to watchlist');
+        renderWatchlist();
+        refreshWatchlistPrices();
+      } catch (e) {
+        toast('Error: ' + e.message);
+      }
+    }
+
+    function removeFromWatchlist(mint) {
+      watchlist = watchlist.filter(w => w.mint !== mint);
+      saveWatchlist();
+      renderWatchlist();
+    }
+
+    function renderWatchlist() {
+      const el = $('watchlist-list');
+      if (watchlist.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">
+          <div style="font-size:28px;margin-bottom:10px;">⭐</div>
+          Your watchlist is empty.<br>Paste a contract address above or tap ⭐ on any token card.
+        </div>`;
+        return;
+      }
+
+      const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c'];
+      let html = '';
+      watchlist.forEach(w => {
+        const color = colors[Math.abs(w.symbol.charCodeAt(0)) % colors.length];
+        const initial = w.symbol.slice(0, 2).toUpperCase();
+        const priceStr = w.currentPrice ? formatWatchPrice(w.currentPrice) : '...';
+        const chg24 = w.change24h;
+        const chgHtml = chg24 !== undefined
+          ? `<div class="watch-chg ${chg24 >= 0 ? 'up' : 'down'}">${chg24 >= 0 ? '+' : ''}${chg24.toFixed(1)}%</div>`
+          : `<div class="watch-chg" style="color:var(--text-faint)">—</div>`;
+
+        html += `<div class="watch-card">
+          <div class="watch-icon" style="background:${color};cursor:pointer;" onclick="quickTokenCard('${w.mint}');setMode('chat')">${initial}</div>
+          <div class="watch-info" style="cursor:pointer;" onclick="quickTokenCard('${w.mint}');setMode('chat')">
+            <div class="watch-name">${w.name} <span style="color:var(--accent);font-size:10px;">$${w.symbol}</span></div>
+            <div class="watch-mint">${w.mint.slice(0, 6)}...${w.mint.slice(-4)}</div>
+          </div>
+          <div class="watch-right">
+            <div class="watch-price">${priceStr}</div>
+            ${chgHtml}
+          </div>
+          <button class="tk-btn" onclick="openChart('${w.mint}','${w.symbol}')" style="flex:none;padding:5px 8px;font-size:9px;">📊</button>
+          <button class="watch-del" onclick="removeFromWatchlist('${w.mint}')" title="Remove">✕</button>
+        </div>`;
+      });
+      el.innerHTML = html;
+    }
+
+    function formatWatchPrice(p) {
+      if (p === 0) return '$0';
+      if (p < 0.0000001) return '$' + p.toExponential(2);
+      if (p < 0.000001) return '$' + p.toFixed(10);
+      if (p < 0.01) return '$' + p.toFixed(6);
+      if (p < 1) return '$' + p.toFixed(4);
+      return '$' + p.toFixed(2);
+    }
+
+    async function refreshWatchlistPrices() {
+      if (watchlist.length === 0) return;
+      try {
+        const mints = watchlist.map(w => w.mint);
+        // Batch fetch from DexScreener (max 30 addresses comma-separated)
+        const chunks = [];
+        for (let i = 0; i < mints.length; i += 30) chunks.push(mints.slice(i, i + 30));
+
+        for (const chunk of chunks) {
+          const res = await fetch(`${DEXSCREENER_API}/tokens/${chunk.join(',')}`);
+          const data = await res.json();
+          const pairs = (data.pairs || []).filter(p => p.chainId === 'solana');
+
+          // Best pair per token
+          const best = {};
+          for (const p of pairs) {
+            const addr = p.baseToken?.address;
+            if (!addr) continue;
+            if (!best[addr] || (p.liquidity?.usd || 0) > (best[addr].liquidity?.usd || 0)) best[addr] = p;
+          }
+
+          for (const w of watchlist) {
+            const p = best[w.mint];
+            if (p) {
+              w.currentPrice = p.priceUsd ? parseFloat(p.priceUsd) : 0;
+              w.change24h = p.priceChange?.h24 || 0;
+            }
+          }
+        }
+        saveWatchlist();
+        renderWatchlist();
+      } catch (e) {
+        console.error('Watchlist refresh error:', e);
+      }
+    }
+
+    // ═══════ EMBEDDED CHART ═══════
+    function openChart(mint, symbol) {
+      $('chart-embed').src = `https://dexscreener.com/solana/${mint}?embed=1&theme=dark&trades=0&info=0`;
+      $('chart-token-label').textContent = symbol ? `$${symbol}` : mint.slice(0, 8);
+      // Wire up action buttons
+      $('chart-buy-btn').onclick = () => { setMode('trade'); $('tr-mint').value = mint; onMintInput(mint); };
+      $('chart-scan-btn').onclick = () => { $('intel-mint').value = mint; setMode('intel'); fetchTokenIntel(); };
+      $('chart-solscan-btn').onclick = () => window.open('https://solscan.io/token/' + mint, '_blank');
+      $('chart-watch-btn').onclick = () => addToWatchlist(mint);
+      setMode('chart');
+    }
 
     // ═══════ INIT ═══════
     $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
