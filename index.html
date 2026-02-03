@@ -4654,6 +4654,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
               <div class="tk-ticker">$${symbol} · ${dexId.toUpperCase()} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
             </div>
             <div class="tk-price-big">${fP(price)}</div>
+            <button onclick="quickTokenCardRefresh('${mint}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;" title="Refresh">↻</button>
           </div>
 
           <div class="tk-changes">
@@ -4693,6 +4694,103 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       } catch (e) {
         const lastMsg = $('messages').lastElementChild;
         if (lastMsg) lastMsg.querySelector('.mc').innerHTML = `<div class="tk-card" style="padding:14px;text-align:center;color:var(--red);font-size:12px;">⚠️ Error scanning token: ${e.message}</div>`;
+      }
+    }
+
+    async function quickTokenCardRefresh(mint) {
+      // Find the card that triggered refresh and replace it in-place
+      const cards = document.querySelectorAll('.tk-card');
+      const card = cards[cards.length - 1]; // Latest card, or find by mint
+      for (const c of cards) {
+        if (c.querySelector('.tk-addr') && c.querySelector('.tk-addr').textContent.trim() === mint) {
+          c.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">Refreshing...</div>';
+          break;
+        }
+      }
+
+      try {
+        const dsRes = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
+        const dsData = await dsRes.json();
+        let pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+        if (pairs.length === 0) { toast('No data found'); return; }
+
+        const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+        const symbol = pair.baseToken?.symbol || '???';
+        const name = pair.baseToken?.name || symbol;
+        const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+        const fdv = pair.fdv || pair.marketCap || 0;
+        const mcap = pair.marketCap || fdv;
+        const liq = pair.liquidity?.usd || 0;
+        const vol24 = pair.volume?.h24 || 0;
+        const vol1 = pair.volume?.h1 || 0;
+        const chg5m = pair.priceChange?.m5 || 0;
+        const chg1h = pair.priceChange?.h1 || 0;
+        const chg6h = pair.priceChange?.h6 || 0;
+        const chg24h = pair.priceChange?.h24 || 0;
+        const buys24 = pair.txns?.h24?.buys || 0;
+        const sells24 = pair.txns?.h24?.sells || 0;
+        const pairAge = pair.pairCreatedAt ? timeSince(pair.pairCreatedAt) : '?';
+        const dexId = pair.dexId || '?';
+        const imgUrl = pair.info?.imageUrl || '';
+
+        const fU = (n) => n >= 1e9 ? '$'+(n/1e9).toFixed(2)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(2)+'M' : n >= 1e3 ? '$'+(n/1e3).toFixed(1)+'K' : '$'+n.toFixed(0);
+        const fP = (p) => p===0?'$0':p<0.0000001?'$'+p.toExponential(2):p<0.000001?'$'+p.toFixed(10):p<0.01?'$'+p.toFixed(6):p<1?'$'+p.toFixed(4):'$'+p.toFixed(2);
+        const chgHtml = (v) => !v ? '<span style="color:var(--text-faint)">0%</span>' : v > 0 ? `<span class="tk-chg-val up">+${v.toFixed(1)}%</span>` : `<span class="tk-chg-val down">${v.toFixed(1)}%</span>`;
+
+        const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c'];
+        const color = colors[Math.abs(symbol.charCodeAt(0)) % colors.length];
+        const initial = symbol.slice(0,2).toUpperCase();
+        let safetyLabel='',safetyColor='';
+        if(liq>100000){safetyLabel='🟢 HIGH LIQ';safetyColor='var(--green)';}
+        else if(liq>10000){safetyLabel='🟡 MED LIQ';safetyColor='#ffd93d';}
+        else{safetyLabel='🔴 LOW LIQ';safetyColor='var(--red)';}
+
+        const newHtml = `
+          <div class="tk-head">
+            ${imgUrl ? `<img src="${imgUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="tk-icon" style="background:${color};display:none;">${initial}</div>` : `<div class="tk-icon" style="background:${color};">${initial}</div>`}
+            <div class="tk-title">
+              <div class="tk-name">${name}</div>
+              <div class="tk-ticker">$${symbol} · ${dexId.toUpperCase()} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
+            </div>
+            <div class="tk-price-big">${fP(price)}</div>
+            <button onclick="quickTokenCardRefresh('${mint}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;" title="Refresh">↻</button>
+          </div>
+          <div class="tk-changes">
+            <div class="tk-chg"><div class="tk-chg-label">5m</div>${chgHtml(chg5m)}</div>
+            <div class="tk-chg"><div class="tk-chg-label">1h</div>${chgHtml(chg1h)}</div>
+            <div class="tk-chg"><div class="tk-chg-label">6h</div>${chgHtml(chg6h)}</div>
+            <div class="tk-chg"><div class="tk-chg-label">24h</div>${chgHtml(chg24h)}</div>
+          </div>
+          <div class="tk-grid">
+            <div class="tk-cell"><div class="tk-label">FDV</div><div class="tk-val">${fU(fdv)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Market Cap</div><div class="tk-val">${fU(mcap)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Liquidity</div><div class="tk-val">${fU(liq)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Vol 24h</div><div class="tk-val">${fU(vol24)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Vol 1h</div><div class="tk-val">${fU(vol1)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Age</div><div class="tk-val">${pairAge}</div></div>
+            <div class="tk-cell"><div class="tk-label">Buys 24h</div><div class="tk-val green">${buys24}</div></div>
+            <div class="tk-cell"><div class="tk-label">Sells 24h</div><div class="tk-val red">${sells24}</div></div>
+          </div>
+          <div class="tk-addr" onclick="navigator.clipboard.writeText('${mint}');toast('📋 Copied!')" title="Click to copy">${mint}</div>
+          <div class="tk-actions">
+            <button class="tk-btn buy" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ BUY</button>
+            <button class="tk-btn" onclick="$('intel-mint').value='${mint}';setMode('intel');fetchTokenIntel();">⬡ SCAN</button>
+            <button class="tk-btn" onclick="window.open('https://dexscreener.com/solana/${mint}','_blank')">📊 CHART</button>
+            <button class="tk-btn" onclick="window.open('https://solscan.io/token/${mint}','_blank')">🔍 SOLSCAN</button>
+          </div>`;
+
+        // Find and update the card with this mint
+        const allCards = document.querySelectorAll('.tk-card');
+        for (const c of allCards) {
+          const addr = c.querySelector('.tk-addr');
+          if ((addr && addr.textContent.trim() === mint) || c.innerHTML.includes('Refreshing')) {
+            c.innerHTML = newHtml;
+            toast('↻ Refreshed');
+            return;
+          }
+        }
+      } catch (e) {
+        toast('Refresh failed: ' + e.message);
       }
     }
 
