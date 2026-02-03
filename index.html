@@ -234,6 +234,75 @@
     .wallet-btn.on { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
     .wallet-btn:hover { opacity: 0.9; }
 
+    /* ═══════ WALLET PANEL ═══════ */
+    .wp-header {
+      padding: 20px 16px; text-align: center;
+      background: linear-gradient(180deg, rgba(0,255,204,0.04) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .wp-avatar {
+      width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 10px;
+      background: linear-gradient(135deg, #9b8ce8, #00ffc8); display: flex;
+      align-items: center; justify-content: center; font-size: 22px;
+    }
+    .wp-balance { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .wp-balance-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: 0.08em; }
+    .wp-addr {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin-top: 10px; padding: 6px 12px; border-radius: 20px;
+      background: var(--card-bg); border: 1px solid var(--border);
+      font-size: 11px; color: var(--text-muted); font-family: 'SF Mono', 'Fira Code', monospace;
+      max-width: 260px; margin-left: auto; margin-right: auto;
+    }
+    .wp-addr-copy {
+      background: none; border: none; color: var(--accent); cursor: pointer;
+      font-size: 12px; padding: 0; flex-shrink: 0;
+    }
+    .wp-addr-copy:hover { opacity: 0.7; }
+    .wp-actions {
+      display: flex; gap: 8px; padding: 14px 16px; justify-content: center;
+    }
+    .wp-action {
+      flex: 1; max-width: 130px; padding: 10px 0; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card-bg); color: var(--text); cursor: pointer;
+      font-size: 11px; font-weight: 600; font-family: inherit; text-align: center;
+      transition: all 0.15s;
+    }
+    .wp-action:hover { border-color: var(--accent); color: var(--accent); }
+    .wp-action.danger { color: var(--red); }
+    .wp-action.danger:hover { border-color: var(--red); background: var(--red-bg); }
+    .wp-action-icon { font-size: 16px; display: block; margin-bottom: 3px; }
+    .wp-section {
+      padding: 0 16px;
+    }
+    .wp-stitle {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-muted);
+      text-transform: uppercase; padding: 12px 0 8px; border-bottom: 1px solid var(--border);
+      margin-bottom: 2px;
+    }
+    .wp-holding {
+      display: flex; align-items: center; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .wp-holding:last-child { border-bottom: none; }
+    .wp-holding-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .wp-holding-info { flex: 1; min-width: 0; }
+    .wp-holding-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .wp-holding-amt { font-size: 11px; color: var(--text-muted); }
+    .wp-holding-val { text-align: right; }
+    .wp-holding-usd { font-size: 13px; font-weight: 600; color: var(--text); }
+    .wp-holding-price { font-size: 10px; color: var(--text-faint); }
+    .wp-empty {
+      text-align: center; padding: 24px; color: var(--text-faint); font-size: 12px;
+    }
+    .wp-loading {
+      text-align: center; padding: 16px; color: var(--text-muted); font-size: 11px;
+    }
+
     .sbadge {
       display: flex; align-items: center; gap: 5px;
       padding: 4px 10px; border: 1px solid; border-radius: 20px;
@@ -1313,9 +1382,10 @@
           <div id="p-wallet" style="display:none">
             <div class="ph"><button class="ph-back" onclick="goBack()">←</button>PHANTOM WALLET</div>
             <div class="winfo" id="wallet-content">
-              <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
-                <div style="font-size:32px;margin-bottom:12px;">👻</div>
-                <div style="font-size:14px;margin-bottom:16px;">Connect your Phantom wallet</div>
+              <div style="text-align:center;padding:48px 20px;color:var(--text-muted);">
+                <div style="font-size:40px;margin-bottom:14px;">👻</div>
+                <div style="font-size:14px;margin-bottom:6px;color:var(--text);font-weight:600;">Not Connected</div>
+                <div style="font-size:12px;margin-bottom:20px;">Connect your Phantom wallet to view holdings</div>
                 <button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button>
               </div>
             </div>
@@ -2160,14 +2230,129 @@
 
     function updateWalletPanel() {
       if (!walletAddress) return;
+      const shortAddr = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
       $('wallet-content').innerHTML = `
-        <div class="wbal"><span class="wbal-amt">${typeof walletBalance === 'number' ? walletBalance.toFixed(4) : '—'}</span><span class="wbal-lbl">SOL</span></div>
-        <div class="waddr"><div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">ADDRESS</div>${walletAddress}</div>
-        <div class="wactions">
-          <button class="wact-btn" onclick="navigator.clipboard.writeText('${walletAddress}');toast('Copied!')">📋 Copy</button>
-          <button class="wact-btn" onclick="window.open('https://solscan.io/account/${walletAddress}','_blank')">🔍 Explorer</button>
-          <button class="wact-btn" onclick="disconnectWallet()">⏏ Disconnect</button>
+        <div class="wp-header">
+          <div class="wp-avatar">👻</div>
+          <div class="wp-balance">${typeof walletBalance === 'number' ? walletBalance.toFixed(4) : '—'}</div>
+          <div class="wp-balance-label">SOL BALANCE</div>
+          <div class="wp-addr">
+            <span>${shortAddr}</span>
+            <button class="wp-addr-copy" onclick="navigator.clipboard.writeText('${walletAddress}');toast('📋 Copied!')">Copy</button>
+          </div>
+        </div>
+        <div class="wp-actions">
+          <button class="wp-action" onclick="window.open('https://solscan.io/account/${walletAddress}','_blank')">
+            <span class="wp-action-icon">🔍</span>Explorer
+          </button>
+          <button class="wp-action" onclick="setMode('portfolio')">
+            <span class="wp-action-icon">◐</span>Portfolio
+          </button>
+          <button class="wp-action danger" onclick="disconnectWallet()">
+            <span class="wp-action-icon">⏏</span>Disconnect
+          </button>
+        </div>
+        <div class="wp-section">
+          <div class="wp-stitle">Holdings</div>
+          <div id="wp-holdings"><div class="wp-loading">Loading tokens...</div></div>
         </div>`;
+      // Fetch holdings
+      fetchWalletHoldings();
+    }
+
+    async function fetchWalletHoldings() {
+      const holdingsEl = $('wp-holdings');
+      if (!holdingsEl || !walletAddress) return;
+
+      try {
+        const conn = new solanaWeb3.Connection(RPC_URL);
+        const pubkey = new solanaWeb3.PublicKey(walletAddress);
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
+          programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+        });
+
+        // Filter for tokens with balance > 0
+        const tokens = tokenAccounts.value
+          .map(ta => ({
+            mint: ta.account.data.parsed.info.mint,
+            amount: ta.account.data.parsed.info.tokenAmount.uiAmount || 0,
+            decimals: ta.account.data.parsed.info.tokenAmount.decimals,
+          }))
+          .filter(t => t.amount > 0)
+          .sort((a, b) => b.amount - a.amount);
+
+        if (tokens.length === 0) {
+          holdingsEl.innerHTML = '<div class="wp-empty">No token holdings found</div>';
+          return;
+        }
+
+        // Get prices + metadata from Jupiter + DexScreener
+        const mints = tokens.slice(0, 15).map(t => t.mint);
+        let prices = {};
+        try {
+          const priceRes = await fetch(`${JUP_PRICE}?ids=${mints.join(',')}`);
+          if (priceRes.ok) {
+            const priceData = await priceRes.json();
+            prices = priceData.data || {};
+          }
+        } catch (e) {}
+
+        // Build holdings HTML — SOL first
+        const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c','#a6e86b','#e86bb5','#6b7ae8','#e8c86b'];
+        let html = '';
+
+        // SOL entry
+        let solPrice = 0;
+        try {
+          const sp = await fetch(`${JUP_PRICE}?ids=${SOL_MINT}`);
+          if (sp.ok) { const spd = await sp.json(); solPrice = parseFloat(spd.data?.[SOL_MINT]?.price || 0); }
+        } catch(e) {}
+        const solVal = typeof walletBalance === 'number' ? (walletBalance * solPrice) : 0;
+        html += `<div class="wp-holding">
+          <div class="wp-holding-icon" style="background:linear-gradient(135deg,#9945FF,#14F195);">◎</div>
+          <div class="wp-holding-info">
+            <div class="wp-holding-name">SOL</div>
+            <div class="wp-holding-amt">${typeof walletBalance === 'number' ? walletBalance.toFixed(4) : '—'} SOL</div>
+          </div>
+          <div class="wp-holding-val">
+            <div class="wp-holding-usd">$${solVal.toFixed(2)}</div>
+            <div class="wp-holding-price">$${solPrice.toFixed(2)}</div>
+          </div>
+        </div>`;
+
+        for (let i = 0; i < Math.min(tokens.length, 15); i++) {
+          const t = tokens[i];
+          const price = parseFloat(prices[t.mint]?.price || 0);
+          const usdVal = t.amount * price;
+          const sym = prices[t.mint]?.mintSymbol || t.mint.slice(0, 4).toUpperCase();
+          const color = colors[i % colors.length];
+          const initial = sym.slice(0, 2);
+          const amtStr = t.amount > 1000000 ? (t.amount / 1000000).toFixed(2) + 'M' :
+                         t.amount > 1000 ? (t.amount / 1000).toFixed(2) + 'K' :
+                         t.amount.toFixed(t.amount < 1 ? 6 : 2);
+
+          html += `<div class="wp-holding">
+            <div class="wp-holding-icon" style="background:${color};">${initial}</div>
+            <div class="wp-holding-info">
+              <div class="wp-holding-name">${sym}</div>
+              <div class="wp-holding-amt">${amtStr} ${sym}</div>
+            </div>
+            <div class="wp-holding-val">
+              <div class="wp-holding-usd">${price > 0 ? '$' + (usdVal > 1 ? usdVal.toFixed(2) : usdVal.toFixed(6)) : '—'}</div>
+              <div class="wp-holding-price">${price > 0 ? '$' + (price > 0.01 ? price.toFixed(4) : price.toExponential(2)) : ''}</div>
+            </div>
+          </div>`;
+        }
+
+        if (tokens.length > 15) {
+          html += `<div class="wp-empty">+ ${tokens.length - 15} more tokens</div>`;
+        }
+
+        holdingsEl.innerHTML = html;
+
+      } catch (e) {
+        holdingsEl.innerHTML = `<div class="wp-empty">Could not load holdings</div>`;
+      }
     }
 
     async function disconnectWallet() {
@@ -2176,7 +2361,7 @@
       $('wbtn').className = 'wallet-btn off'; $('wbtn-t').textContent = 'Connect Phantom';
       $('lbtn').className = 'lbtn dis'; $('lbtn').textContent = 'CONNECT WALLET TO LAUNCH';
       $('ph-stat').style.background = 'var(--red-dim)'; $('ph-stat').style.color = 'var(--red)'; $('ph-stat').textContent = 'DISCONNECTED';
-      $('wallet-content').innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);"><div style="font-size:32px;margin-bottom:12px;">👻</div><div style="font-size:14px;margin-bottom:16px;">Connect your Phantom wallet</div><button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button></div>`;
+      $('wallet-content').innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-muted);"><div style="font-size:40px;margin-bottom:14px;">👻</div><div style="font-size:14px;margin-bottom:6px;color:var(--text);font-weight:600;">Not Connected</div><div style="font-size:12px;margin-bottom:20px;">Connect your Phantom wallet to view holdings</div><button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button></div>`;
       $('tr-buy-btn').disabled = true;
       $('tr-sell-btn').disabled = true;
       $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
