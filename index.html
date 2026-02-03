@@ -519,6 +519,369 @@
     }
     .tcard-d { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
 
+    /* ═══════ PERPS TERMINAL ═══════ */
+    .perps-panel { padding: 0; }
+    .perps-header {
+      padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border-primary);
+    }
+    .perps-header .ph-back { margin-right: 2px; }
+    .perps-title {
+      font-size: 14px; font-weight: 800; letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .perps-badge {
+      font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
+      background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(251,191,36,0.15));
+      color: #fbbf24; letter-spacing: 0.08em; border: 1px solid rgba(251,191,36,0.2);
+    }
+
+    /* Market Selector */
+    .perps-markets {
+      display: flex; gap: 0; border-bottom: 1px solid var(--border-primary);
+      background: var(--bg-secondary);
+    }
+    .perps-market-btn {
+      flex: 1; padding: 10px 8px; background: none; border: none; border-bottom: 2px solid transparent;
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .perps-market-btn:hover { background: var(--bg-glass); }
+    .perps-market-btn.active {
+      border-bottom-color: #fbbf24;
+      background: rgba(251,191,36,0.04);
+    }
+    .perps-market-sym {
+      font-size: 12px; font-weight: 800; color: var(--text-primary);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .perps-market-sym .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .perps-market-price {
+      font-size: 10px; font-weight: 600; font-family: 'Fira Code', monospace;
+      color: var(--text-muted);
+    }
+    .perps-market-price.up { color: var(--green); }
+    .perps-market-price.down { color: var(--red); }
+
+    /* Price Display */
+    .perps-price-row {
+      padding: 12px 16px; display: flex; justify-content: space-between; align-items: flex-end;
+      border-bottom: 1px solid var(--border-primary);
+      background: linear-gradient(180deg, var(--bg-secondary), transparent);
+    }
+    .perps-big-price {
+      font-size: 28px; font-weight: 800; font-family: 'Fira Code', monospace;
+      color: var(--text-primary); line-height: 1; letter-spacing: -0.02em;
+      transition: color 0.3s;
+    }
+    .perps-big-price.flash-green { color: var(--green); }
+    .perps-big-price.flash-red { color: var(--red); }
+    .perps-price-stats {
+      display: flex; gap: 14px; align-items: flex-end;
+    }
+    .perps-stat {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+    }
+    .perps-stat-label {
+      font-size: 8px; font-weight: 700; color: var(--text-ghost); letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .perps-stat-val {
+      font-size: 11px; font-weight: 600; font-family: 'Fira Code', monospace; color: var(--text-secondary);
+    }
+
+    /* Chart Section */
+    .perps-chart-wrap {
+      height: 280px; border-bottom: 1px solid var(--border-primary);
+      position: relative; overflow: hidden;
+      background: var(--bg-primary);
+    }
+    .perps-chart-wrap iframe {
+      width: 100%; height: 100%; border: none;
+    }
+    .perps-chart-overlay {
+      position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; z-index: 2;
+    }
+    .perps-tf-btn {
+      padding: 3px 8px; font-size: 9px; font-weight: 700; border-radius: 4px;
+      background: rgba(0,0,0,0.6); border: 1px solid var(--border-primary);
+      color: var(--text-muted); cursor: pointer; font-family: 'Fira Code', monospace;
+      backdrop-filter: blur(4px);
+    }
+    .perps-tf-btn:hover { color: var(--text-primary); border-color: var(--border-glow); }
+    .perps-tf-btn.active { color: #fbbf24; border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.1); }
+
+    /* Trading Section */
+    .perps-trade {
+      padding: 14px 16px;
+    }
+
+    /* Long/Short Toggle */
+    .perps-side-toggle {
+      display: flex; gap: 0; margin-bottom: 14px; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border-primary); background: var(--bg-secondary);
+    }
+    .perps-side-btn {
+      flex: 1; padding: 11px; border: none; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px; font-weight: 800; letter-spacing: 0.06em;
+      transition: all 0.25s; color: var(--text-muted); background: transparent;
+    }
+    .perps-side-btn.long-active {
+      background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08));
+      color: var(--green);
+      box-shadow: inset 0 -2px 0 var(--green);
+    }
+    .perps-side-btn.short-active {
+      background: linear-gradient(135deg, rgba(248,113,113,0.15), rgba(248,113,113,0.08));
+      color: var(--red);
+      box-shadow: inset 0 -2px 0 var(--red);
+    }
+    .perps-side-btn:hover:not(.long-active):not(.short-active) {
+      background: var(--bg-glass); color: var(--text-secondary);
+    }
+
+    /* Order Type */
+    .perps-order-type {
+      display: flex; gap: 4px; margin-bottom: 14px;
+    }
+    .perps-otype-btn {
+      flex: 1; padding: 7px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 8px; font-size: 11px; font-weight: 700; color: var(--text-muted);
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s;
+    }
+    .perps-otype-btn:hover { border-color: var(--border-glow); color: var(--text-secondary); }
+    .perps-otype-btn.active {
+      background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.3); color: #fbbf24;
+    }
+
+    /* Leverage Slider */
+    .perps-leverage-section { margin-bottom: 14px; }
+    .perps-lev-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+    .perps-lev-label {
+      font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.08em;
+    }
+    .perps-lev-val {
+      font-size: 16px; font-weight: 800; font-family: 'Fira Code', monospace;
+      color: #fbbf24; min-width: 50px; text-align: right;
+    }
+    .perps-lev-slider-wrap {
+      position: relative; height: 32px; display: flex; align-items: center;
+    }
+    .perps-lev-slider {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+      border-radius: 3px; outline: none; cursor: pointer;
+      background: linear-gradient(90deg,
+        var(--green) 0%, var(--green) 10%,
+        #fbbf24 10%, #fbbf24 40%,
+        var(--red) 40%, var(--red) 100%
+      );
+    }
+    .perps-lev-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--bg-elevated); border: 3px solid #fbbf24;
+      box-shadow: 0 0 10px rgba(251,191,36,0.4), 0 2px 8px rgba(0,0,0,0.4);
+      cursor: grab; transition: box-shadow 0.2s;
+    }
+    .perps-lev-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 16px rgba(251,191,36,0.6), 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .perps-lev-slider::-moz-range-thumb {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--bg-elevated); border: 3px solid #fbbf24;
+      box-shadow: 0 0 10px rgba(251,191,36,0.4); cursor: grab;
+    }
+    .perps-lev-presets {
+      display: flex; gap: 4px; margin-top: 6px;
+    }
+    .perps-lev-preset {
+      flex: 1; padding: 5px; font-size: 10px; font-weight: 700; border-radius: 6px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      color: var(--text-muted); cursor: pointer; font-family: 'Fira Code', monospace;
+      text-align: center; transition: all 0.15s;
+    }
+    .perps-lev-preset:hover { border-color: rgba(251,191,36,0.3); color: #fbbf24; }
+    .perps-lev-preset.active { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.4); color: #fbbf24; }
+
+    /* Collateral Input */
+    .perps-input-section { margin-bottom: 12px; }
+    .perps-input-label {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
+    }
+    .perps-input-label span {
+      font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.08em;
+    }
+    .perps-input-label .bal {
+      font-size: 10px; color: var(--text-faint); font-family: 'Fira Code', monospace;
+    }
+    .perps-input-wrap {
+      position: relative; display: flex; align-items: center;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .perps-input-wrap:focus-within { border-color: rgba(251,191,36,0.3); }
+    .perps-input-wrap input {
+      flex: 1; padding: 12px 14px; background: none; border: none; outline: none;
+      font-size: 16px; font-weight: 700; font-family: 'Fira Code', monospace;
+      color: var(--text-primary);
+    }
+    .perps-input-wrap input::placeholder { color: var(--text-ghost); }
+    .perps-input-token {
+      padding: 6px 12px; margin-right: 6px; background: var(--bg-elevated);
+      border-radius: 8px; font-size: 11px; font-weight: 800; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .perps-input-token img { width: 14px; height: 14px; border-radius: 50%; }
+    .perps-collat-presets {
+      display: flex; gap: 4px; margin-top: 6px;
+    }
+    .perps-collat-preset {
+      flex: 1; padding: 6px; font-size: 10px; font-weight: 600; border-radius: 6px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      color: var(--text-muted); cursor: pointer; font-family: 'Fira Code', monospace;
+      text-align: center; transition: all 0.15s;
+    }
+    .perps-collat-preset:hover { border-color: var(--border-glow); color: var(--text-secondary); }
+
+    /* Limit Price */
+    .perps-limit-row {
+      margin-bottom: 12px; display: none;
+    }
+    .perps-limit-row.visible { display: block; }
+
+    /* Order Summary */
+    .perps-summary {
+      padding: 12px 14px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; margin-bottom: 14px;
+    }
+    .perps-summary-row {
+      display: flex; justify-content: space-between; padding: 5px 0;
+      border-bottom: 1px solid var(--border-secondary);
+    }
+    .perps-summary-row:last-child { border-bottom: none; }
+    .perps-summary-row span:first-child {
+      font-size: 11px; color: var(--text-muted);
+    }
+    .perps-summary-row span:last-child {
+      font-size: 11px; font-weight: 700; font-family: 'Fira Code', monospace;
+      color: var(--text-primary);
+    }
+    .perps-summary-row .liq-price { color: var(--red); }
+    .perps-summary-row .pos-size { color: #fbbf24; }
+
+    /* Execute Button */
+    .perps-exec {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: 0.04em; transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .perps-exec::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .perps-exec:hover::before { opacity: 1; }
+    .perps-exec:disabled { opacity: 0.35; cursor: not-allowed; }
+    .perps-exec.long-btn {
+      background: linear-gradient(135deg, #059669, #34d399);
+      color: #fff; box-shadow: 0 4px 16px rgba(52,211,153,0.15);
+    }
+    .perps-exec.long-btn:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(52,211,153,0.3); }
+    .perps-exec.short-btn {
+      background: linear-gradient(135deg, #dc2626, #f87171);
+      color: #fff; box-shadow: 0 4px 16px rgba(248,113,113,0.15);
+    }
+    .perps-exec.short-btn:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(248,113,113,0.3); }
+
+    /* Positions */
+    .perps-positions { border-top: 1px solid var(--border-primary); }
+    .perps-pos-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; font-size: 10px; font-weight: 700;
+      color: var(--text-muted); letter-spacing: 0.1em;
+    }
+    .perps-pos-header button {
+      background: none; border: none; color: var(--text-tertiary);
+      cursor: pointer; font-family: 'Fira Code', monospace; font-size: 11px;
+    }
+    .perps-pos-header button:hover { color: #fbbf24; }
+    .perps-pos-card {
+      margin: 0 12px 8px; padding: 12px 14px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; font-size: 12px; transition: all 0.2s;
+    }
+    .perps-pos-card:hover { border-color: var(--border-glow); }
+    .perps-pos-top {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+    }
+    .perps-pos-sym {
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px;
+    }
+    .perps-pos-side {
+      font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
+      letter-spacing: 0.06em;
+    }
+    .perps-pos-side.long { background: var(--green-dim); color: var(--green); }
+    .perps-pos-side.short { background: var(--red-dim); color: var(--red); }
+    .perps-pos-lev {
+      font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
+      background: rgba(251,191,36,0.1); color: #fbbf24;
+    }
+    .perps-pos-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    }
+    .perps-pos-stat {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+    .perps-pos-stat-label {
+      font-size: 8px; font-weight: 700; color: var(--text-ghost);
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .perps-pos-stat-val {
+      font-size: 11px; font-weight: 700; font-family: 'Fira Code', monospace;
+      color: var(--text-secondary);
+    }
+    .perps-pos-close {
+      margin-top: 8px; width: 100%; padding: 7px; background: var(--bg-elevated);
+      border: 1px solid var(--border-primary); border-radius: 8px;
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: all 0.15s;
+    }
+    .perps-pos-close:hover {
+      border-color: var(--red-border); color: var(--red); background: var(--red-bg);
+    }
+    .perps-pos-empty {
+      padding: 20px 16px; text-align: center; color: var(--text-ghost); font-size: 12px;
+    }
+
+    /* Info Banner */
+    .perps-info {
+      margin: 0 16px 14px; padding: 10px 12px; border-radius: 8px;
+      background: rgba(251,191,36,0.04); border: 1px solid rgba(251,191,36,0.12);
+      font-size: 10px; color: var(--text-muted); line-height: 1.5;
+    }
+    .perps-info a { color: #fbbf24; text-decoration: none; }
+    .perps-info a:hover { text-decoration: underline; }
+
+    /* Funding/Borrow Rate */
+    .perps-rates {
+      display: flex; gap: 8px; padding: 6px 16px 10px; font-size: 10px;
+    }
+    .perps-rate-chip {
+      padding: 3px 8px; border-radius: 6px; font-weight: 600;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      font-family: 'Fira Code', monospace; color: var(--text-muted);
+    }
+
     /* ═══════ TRADE PANEL ═══════ */
     .trade-section { padding: 14px; }
     .trade-amt-row {
@@ -1523,6 +1886,7 @@
           <div id="p-tools" style="display:none">
             <div class="ph">CRYPTO PLUGINS</div>
             <div class="tcard" onclick="toolOpen('trade')"><div class="tcard-h"><span class="tcard-n">⟡ Jupiter Swap</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Buy & sell any Solana token via Jupiter aggregator</div></div>
+            <div class="tcard" onclick="setMode('perps')"><div class="tcard-h"><span class="tcard-n">⚡ Leverage Trading</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">ACTIVE</span></div><div class="tcard-d">Trade SOL, BTC, ETH with up to 100x leverage via Jupiter Perps</div></div>
             <div class="tcard" onclick="toolOpen('launch')"><div class="tcard-h"><span class="tcard-n">🎰 Token Launcher</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Launch directly on pump.fun, bonk.fun, bags.fm</div></div>
             <div class="tcard" onclick="toolOpen('wallet')"><div class="tcard-h"><span class="tcard-n">👻 Phantom Wallet</span><span class="tcard-s" id="ph-stat" style="background:var(--red-dim);color:var(--red);">DISCONNECTED</span></div><div class="tcard-d">Sign transactions, view balance, portfolio</div></div>
             <div class="tcard" onclick="setMode('sniper')"><div class="tcard-h"><span class="tcard-n">⚡ Sniper Bot</span><span class="tcard-s" id="sniper-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Auto-buy your token launches with multiple wallets</div></div>
@@ -1755,6 +2119,168 @@
             </div>
           </div>
 
+          <!-- PERPS TERMINAL -->
+          <div id="p-perps" style="display:none" class="perps-panel">
+            <div class="perps-header">
+              <button class="ph-back" onclick="goBack()">←</button>
+              <span class="perps-title">⚡ LEVERAGE TERMINAL</span>
+              <span class="perps-badge">JUPITER PERPS</span>
+              <span style="flex:1"></span>
+              <span id="perps-connection" style="font-size:9px;color:var(--green);font-weight:600;">● LIVE</span>
+            </div>
+
+            <!-- Market Selector -->
+            <div class="perps-markets" id="perps-markets">
+              <button class="perps-market-btn active" data-market="SOL" onclick="selectPerpsMarket('SOL')">
+                <span class="perps-market-sym"><span class="dot" style="background:#9945FF;"></span>SOL</span>
+                <span class="perps-market-price" id="perps-mp-SOL">—</span>
+              </button>
+              <button class="perps-market-btn" data-market="BTC" onclick="selectPerpsMarket('BTC')">
+                <span class="perps-market-sym"><span class="dot" style="background:#f7931a;"></span>BTC</span>
+                <span class="perps-market-price" id="perps-mp-BTC">—</span>
+              </button>
+              <button class="perps-market-btn" data-market="ETH" onclick="selectPerpsMarket('ETH')">
+                <span class="perps-market-sym"><span class="dot" style="background:#627eea;"></span>ETH</span>
+                <span class="perps-market-price" id="perps-mp-ETH">—</span>
+              </button>
+            </div>
+
+            <!-- Live Price -->
+            <div class="perps-price-row">
+              <div id="perps-big-price" class="perps-big-price">$—</div>
+              <div class="perps-price-stats">
+                <div class="perps-stat">
+                  <span class="perps-stat-label">24h Change</span>
+                  <span class="perps-stat-val" id="perps-24h-chg">—</span>
+                </div>
+                <div class="perps-stat">
+                  <span class="perps-stat-label">24h High</span>
+                  <span class="perps-stat-val" id="perps-24h-high">—</span>
+                </div>
+                <div class="perps-stat">
+                  <span class="perps-stat-label">24h Low</span>
+                  <span class="perps-stat-val" id="perps-24h-low">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rates -->
+            <div class="perps-rates">
+              <span class="perps-rate-chip">Borrow: <span id="perps-borrow-rate">~0.012%/hr</span></span>
+              <span class="perps-rate-chip">Max: <span id="perps-max-lev">100x</span></span>
+              <span class="perps-rate-chip">OI: <span id="perps-oi">—</span></span>
+            </div>
+
+            <!-- Chart -->
+            <div class="perps-chart-wrap">
+              <iframe id="perps-chart-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups" style="width:100%;height:100%;border:none;"></iframe>
+              <div class="perps-chart-overlay">
+                <button class="perps-tf-btn" onclick="setPerpsTimeframe('5')">5m</button>
+                <button class="perps-tf-btn" onclick="setPerpsTimeframe('15')">15m</button>
+                <button class="perps-tf-btn active" onclick="setPerpsTimeframe('60')">1h</button>
+                <button class="perps-tf-btn" onclick="setPerpsTimeframe('240')">4h</button>
+                <button class="perps-tf-btn" onclick="setPerpsTimeframe('D')">1D</button>
+              </div>
+            </div>
+
+            <!-- Trading Controls -->
+            <div class="perps-trade">
+              <!-- Long / Short -->
+              <div class="perps-side-toggle">
+                <button class="perps-side-btn long-active" id="perps-long-btn" onclick="setPerpsPosition('long')">🟢 LONG</button>
+                <button class="perps-side-btn" id="perps-short-btn" onclick="setPerpsPosition('short')">🔴 SHORT</button>
+              </div>
+
+              <!-- Order Type -->
+              <div class="perps-order-type">
+                <button class="perps-otype-btn active" onclick="setPerpsOrderType('market')">MARKET</button>
+                <button class="perps-otype-btn" onclick="setPerpsOrderType('limit')">LIMIT</button>
+              </div>
+
+              <!-- Limit Price (hidden by default) -->
+              <div class="perps-limit-row" id="perps-limit-row">
+                <div class="perps-input-section" style="margin-bottom:0;">
+                  <div class="perps-input-label">
+                    <span>LIMIT PRICE</span>
+                  </div>
+                  <div class="perps-input-wrap">
+                    <input type="number" id="perps-limit-price" placeholder="0.00" step="0.01" oninput="updatePerpsOrder()">
+                    <div class="perps-input-token">USD</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Leverage -->
+              <div class="perps-leverage-section">
+                <div class="perps-lev-header">
+                  <span class="perps-lev-label">LEVERAGE</span>
+                  <span class="perps-lev-val" id="perps-lev-val">5x</span>
+                </div>
+                <div class="perps-lev-slider-wrap">
+                  <input type="range" class="perps-lev-slider" id="perps-lev-slider" min="1" max="100" value="5" step="1" oninput="updatePerpsLeverage(this.value)">
+                </div>
+                <div class="perps-lev-presets">
+                  <button class="perps-lev-preset" onclick="setPerpsLeverage(2)">2x</button>
+                  <button class="perps-lev-preset active" onclick="setPerpsLeverage(5)">5x</button>
+                  <button class="perps-lev-preset" onclick="setPerpsLeverage(10)">10x</button>
+                  <button class="perps-lev-preset" onclick="setPerpsLeverage(25)">25x</button>
+                  <button class="perps-lev-preset" onclick="setPerpsLeverage(50)">50x</button>
+                  <button class="perps-lev-preset" onclick="setPerpsLeverage(100)">100x</button>
+                </div>
+              </div>
+
+              <!-- Collateral -->
+              <div class="perps-input-section">
+                <div class="perps-input-label">
+                  <span>PAY / COLLATERAL</span>
+                  <span class="bal" id="perps-bal">Bal: —</span>
+                </div>
+                <div class="perps-input-wrap">
+                  <input type="number" id="perps-collateral" placeholder="0.00" step="0.01" min="0" oninput="updatePerpsOrder()">
+                  <div class="perps-input-token" id="perps-collat-token">SOL</div>
+                </div>
+                <div class="perps-collat-presets">
+                  <button class="perps-collat-preset" onclick="setPerpsCollateral(0.1)">0.1</button>
+                  <button class="perps-collat-preset" onclick="setPerpsCollateral(0.5)">0.5</button>
+                  <button class="perps-collat-preset" onclick="setPerpsCollateral(1)">1.0</button>
+                  <button class="perps-collat-preset" onclick="setPerpsCollateral(5)">5.0</button>
+                  <button class="perps-collat-preset" onclick="setPerpsCollateral(10)">10</button>
+                </div>
+              </div>
+
+              <!-- Order Summary -->
+              <div class="perps-summary">
+                <div class="perps-summary-row"><span>Position Size</span><span class="pos-size" id="perps-pos-size">$0.00</span></div>
+                <div class="perps-summary-row"><span>Entry Price</span><span id="perps-entry-price">$—</span></div>
+                <div class="perps-summary-row"><span>Liq. Price</span><span class="liq-price" id="perps-liq-price">$—</span></div>
+                <div class="perps-summary-row"><span>Open Fee</span><span id="perps-open-fee">—</span></div>
+                <div class="perps-summary-row"><span>Borrow Rate</span><span id="perps-borrow-disp">—</span></div>
+              </div>
+
+              <!-- Execute -->
+              <button class="perps-exec long-btn" id="perps-exec-btn" onclick="executePerps()">
+                OPEN LONG — $0.00
+              </button>
+
+              <!-- Info -->
+              <div class="perps-info">
+                ⚡ Trades execute on <a href="https://jup.ag/perps" target="_blank">Jupiter Perps</a> — oracle-priced, up to 100x leverage. Collateral borrowed from the JLP pool.
+                No funding rates — borrow fees only. <strong>Liquidation is real.</strong>
+              </div>
+            </div>
+
+            <!-- Open Positions -->
+            <div class="perps-positions">
+              <div class="perps-pos-header">
+                <span>OPEN POSITIONS</span>
+                <button onclick="refreshPerpsPositions()">↻ Refresh</button>
+              </div>
+              <div id="perps-positions-list">
+                <div class="perps-pos-empty">No open positions</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1903,6 +2429,7 @@
       $('p-trending').style.display = mode === 'trending' ? 'block' : 'none';
       $('p-watchlist').style.display = mode === 'watchlist' ? 'block' : 'none';
       $('p-chart').style.display = mode === 'chart' ? 'block' : 'none';
+      $('p-perps').style.display = mode === 'perps' ? 'block' : 'none';
       $('sidebar').classList.toggle('open', mode !== 'chat');
       if (mode === 'history') { renderChatHistory(); renderTxHistory(); }
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
@@ -1910,6 +2437,7 @@
       if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); renderAlphaBotWallet(); refreshAlphaBotBalance(); }
       if (mode === 'trending') { fetchTrending(); }
       if (mode === 'watchlist') { renderWatchlist(); refreshWatchlistPrices(); }
+      if (mode === 'perps') { initPerpsPanel(); }
     }
 
     function goBack() {
@@ -4667,6 +5195,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^open\s+alpha/i, /^alpha$/i, /^alpha\s*bot$/i, /^bot$/i, /^copy\s*trade$/i], action: () => { setMode('alpha'); return '🧠 Opened Alpha Bot.'; } },
       { patterns: [/^open\s+trending/i, /^trending$/i, /^hot$/i, /^trend$/i], action: () => { setMode('trending'); return '🔥 Opened trending feed.'; } },
       { patterns: [/^open\s+watchlist/i, /^watchlist$/i, /^watch$/i], action: () => { setMode('watchlist'); return '⭐ Opened watchlist.'; } },
+      { patterns: [/^open\s+perps/i, /^perps$/i, /^leverage$/i, /^lev$/i, /^futures$/i], action: () => { setMode('perps'); return '⚡ Opened leverage terminal.'; } },
       { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
@@ -4681,7 +5210,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / trending / watchlist\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\n\n🔥 **Discovery:**\ntrending — hottest tokens on Solana\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / trending / watchlist / perps\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 100x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\n\n🔥 **Discovery:**\ntrending — hottest tokens on Solana\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -5104,6 +5633,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
             case 'auto_learn': setMode('alpha'); setTimeout(alphaAutoLearn, 200); break;
             case 'open_trending': setMode('trending'); break;
             case 'open_watchlist': setMode('watchlist'); break;
+            case 'open_perps': setMode('perps'); break;
             case 'open_chart':
               if (parts[1]) openChart(parts[1], parts[2] || '');
               break;
@@ -5240,6 +5770,7 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:open_trending}} - Open trending tokens feed
 {{ACTION:open_watchlist}} - Open token watchlist
 {{ACTION:open_chart|MINT}} - Open embedded chart for a token
+{{ACTION:open_perps}} - Open leverage trading terminal (Jupiter Perps)
 
 RULES:
 - CRYPTO ONLY. You are a crypto trading assistant. Keep all responses focused on crypto, blockchain, DeFi, trading, and related topics. If someone asks off-topic questions, steer back to crypto.
@@ -5656,6 +6187,576 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       setMode('chart');
     }
 
+    // ═══════ PERPS TERMINAL ═══════
+    let perpsMarket = 'SOL';
+    let perpsSide = 'long';
+    let perpsOrderType = 'market';
+    let perpsLeverage = 5;
+    let perpsTimeframe = '60';
+    let perpsPrices = { SOL: 0, BTC: 0, ETH: 0 };
+    let perpsPrev = { SOL: 0, BTC: 0, ETH: 0 };
+    let perps24h = { SOL: {}, BTC: {}, ETH: {} };
+    let perpsWs = null;
+    let perpsPositions = JSON.parse(localStorage.getItem('ghost-perps-positions') || '[]');
+    let perpsWsRetries = 0;
+
+    const PERPS_SYMBOLS = {
+      SOL: { binance: 'SOLUSDT', jup: 'SOL', decimals: 2, color: '#9945FF' },
+      BTC: { binance: 'BTCUSDT', jup: 'BTC', decimals: 1, color: '#f7931a' },
+      ETH: { binance: 'ETHUSDT', jup: 'ETH', decimals: 2, color: '#627eea' },
+    };
+
+    function initPerpsPanel() {
+      connectPerpsWs();
+      loadPerpsChart();
+      updatePerpsOrder();
+      renderPerpsPositions();
+      fetchPerps24hStats();
+    }
+
+    // ── Binance WebSocket for Live Prices ──
+    function connectPerpsWs() {
+      if (perpsWs && perpsWs.readyState < 2) return;
+
+      // Try multiple WebSocket endpoints
+      const wsEndpoints = [
+        'wss://stream.binance.com:9443',
+        'wss://stream.binance.com:443',
+        'wss://data-stream.binance.vision',
+      ];
+
+      function tryConnect(idx) {
+        if (idx >= wsEndpoints.length) {
+          console.warn('All WS endpoints failed, using REST polling');
+          startPerpsPolling();
+          return;
+        }
+
+        try {
+          const streams = Object.values(PERPS_SYMBOLS).map(s => `${s.binance.toLowerCase()}@ticker`).join('/');
+          perpsWs = new WebSocket(`${wsEndpoints[idx]}/stream?streams=${streams}`);
+
+          const timeout = setTimeout(() => {
+            if (perpsWs.readyState !== 1) {
+              perpsWs.close();
+              tryConnect(idx + 1);
+            }
+          }, 5000);
+
+          perpsWs.onopen = () => {
+            clearTimeout(timeout);
+            perpsWsRetries = 0;
+            const el = $('perps-connection');
+            if (el) { el.style.color = 'var(--green)'; el.textContent = '● LIVE'; }
+          };
+
+          perpsWs.onmessage = (e) => {
+            try {
+              const msg = JSON.parse(e.data);
+              if (!msg.data) return;
+              const d = msg.data;
+              const sym = d.s;
+
+              for (const [key, cfg] of Object.entries(PERPS_SYMBOLS)) {
+                if (cfg.binance === sym) {
+                  perpsPrev[key] = perpsPrices[key];
+                  perpsPrices[key] = parseFloat(d.c);
+                  perps24h[key] = {
+                    change: parseFloat(d.P),
+                    high: parseFloat(d.h),
+                    low: parseFloat(d.l),
+                    volume: parseFloat(d.q),
+                  };
+                  updatePerpsMarketPrice(key);
+                  if (key === perpsMarket) updatePerpsDisplay();
+                  break;
+                }
+              }
+            } catch (err) {}
+          };
+
+          perpsWs.onclose = () => {
+            clearTimeout(timeout);
+            const el = $('perps-connection');
+            if (el) { el.style.color = 'var(--yellow)'; el.textContent = '○ RECONNECTING'; }
+            if (perpsWsRetries < 5) {
+              perpsWsRetries++;
+              setTimeout(() => connectPerpsWs(), 3000 * perpsWsRetries);
+            } else {
+              startPerpsPolling();
+            }
+          };
+
+          perpsWs.onerror = () => {
+            clearTimeout(timeout);
+            perpsWs.close();
+            tryConnect(idx + 1);
+          };
+        } catch (e) {
+          tryConnect(idx + 1);
+        }
+      }
+
+      tryConnect(0);
+    }
+
+    // REST polling fallback if WebSocket fails
+    let perpsPollingTimer = null;
+    function startPerpsPolling() {
+      if (perpsPollingTimer) return;
+      const el = $('perps-connection');
+      if (el) { el.style.color = 'var(--yellow)'; el.textContent = '● POLLING'; }
+      fetchPerps24hStats();
+      perpsPollingTimer = setInterval(fetchPerps24hStats, 5000);
+    }
+
+    function stopPerpsPolling() {
+      if (perpsPollingTimer) { clearInterval(perpsPollingTimer); perpsPollingTimer = null; }
+    }
+
+    function disconnectPerpsWs() {
+      stopPerpsPolling();
+      if (perpsWs) { perpsWs.close(); perpsWs = null; }
+    }
+
+    function fetchPerps24hStats() {
+      // Try Binance REST first, then CoinGecko as fallback
+      let loaded = 0;
+      const total = Object.keys(PERPS_SYMBOLS).length;
+
+      for (const [key, cfg] of Object.entries(PERPS_SYMBOLS)) {
+        fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cfg.binance}`)
+          .then(r => { if (!r.ok) throw new Error('Binance fail'); return r.json(); })
+          .then(d => {
+            perpsPrices[key] = parseFloat(d.lastPrice);
+            perps24h[key] = {
+              change: parseFloat(d.priceChangePercent),
+              high: parseFloat(d.highPrice),
+              low: parseFloat(d.lowPrice),
+              volume: parseFloat(d.quoteVolume),
+            };
+            updatePerpsMarketPrice(key);
+            if (key === perpsMarket) updatePerpsDisplay();
+            loaded++;
+          })
+          .catch(() => {
+            // Fallback: try data-api.binance.vision
+            fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${cfg.binance}`)
+              .then(r => r.json())
+              .then(d => {
+                perpsPrices[key] = parseFloat(d.lastPrice);
+                perps24h[key] = {
+                  change: parseFloat(d.priceChangePercent),
+                  high: parseFloat(d.highPrice),
+                  low: parseFloat(d.lowPrice),
+                  volume: parseFloat(d.quoteVolume),
+                };
+                updatePerpsMarketPrice(key);
+                if (key === perpsMarket) updatePerpsDisplay();
+                loaded++;
+              })
+              .catch(() => {
+                loaded++;
+                // Final fallback: CoinGecko
+                if (loaded >= total && perpsPrices.SOL === 0) fetchFromCoinGecko();
+              });
+          });
+      }
+    }
+
+    function fetchFromCoinGecko() {
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana,bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_24hr_high=true&include_24hr_low=true')
+        .then(r => r.json())
+        .then(d => {
+          const map = { SOL: 'solana', BTC: 'bitcoin', ETH: 'ethereum' };
+          for (const [key, cgId] of Object.entries(map)) {
+            if (d[cgId]) {
+              perpsPrices[key] = d[cgId].usd || 0;
+              perps24h[key] = {
+                change: d[cgId].usd_24h_change || 0,
+                high: d[cgId].usd_24h_high || 0,
+                low: d[cgId].usd_24h_low || 0,
+                volume: d[cgId].usd_24h_vol || 0,
+              };
+              updatePerpsMarketPrice(key);
+              if (key === perpsMarket) updatePerpsDisplay();
+            }
+          }
+          const el = $('perps-connection');
+          if (el) { el.style.color = 'var(--yellow)'; el.textContent = '● CG'; }
+        })
+        .catch(() => {
+          const el = $('perps-connection');
+          if (el) { el.style.color = 'var(--red)'; el.textContent = '○ OFFLINE'; }
+        });
+    }
+
+    function updatePerpsMarketPrice(key) {
+      const el = $('perps-mp-' + key);
+      if (!el) return;
+      const price = perpsPrices[key];
+      const chg = perps24h[key]?.change || 0;
+      const cfg = PERPS_SYMBOLS[key];
+      el.textContent = '$' + formatPerpsPrice(price, cfg.decimals);
+      el.className = 'perps-market-price ' + (chg >= 0 ? 'up' : 'down');
+    }
+
+    function updatePerpsDisplay() {
+      const price = perpsPrices[perpsMarket];
+      const prev = perpsPrev[perpsMarket];
+      const stats = perps24h[perpsMarket] || {};
+      const cfg = PERPS_SYMBOLS[perpsMarket];
+
+      // Big price with flash animation
+      const bigEl = $('perps-big-price');
+      if (bigEl) {
+        bigEl.textContent = '$' + formatPerpsPrice(price, cfg.decimals);
+        if (prev && price !== prev) {
+          bigEl.classList.remove('flash-green', 'flash-red');
+          void bigEl.offsetWidth; // force reflow
+          bigEl.classList.add(price > prev ? 'flash-green' : 'flash-red');
+          setTimeout(() => bigEl.classList.remove('flash-green', 'flash-red'), 800);
+        }
+      }
+
+      // 24h stats
+      const chgEl = $('perps-24h-chg');
+      if (chgEl && stats.change !== undefined) {
+        const pct = stats.change;
+        chgEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+        chgEl.style.color = pct >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+      const highEl = $('perps-24h-high');
+      if (highEl && stats.high) highEl.textContent = '$' + formatPerpsPrice(stats.high, cfg.decimals);
+      const lowEl = $('perps-24h-low');
+      if (lowEl && stats.low) lowEl.textContent = '$' + formatPerpsPrice(stats.low, cfg.decimals);
+
+      // Update order summary
+      updatePerpsOrder();
+    }
+
+    function formatPerpsPrice(price, decimals) {
+      if (!price || isNaN(price)) return '—';
+      if (price >= 1000) return price.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+      if (price >= 1) return price.toFixed(decimals);
+      return price.toFixed(4);
+    }
+
+    // ── Market Selection ──
+    function selectPerpsMarket(market) {
+      perpsMarket = market;
+      document.querySelectorAll('.perps-market-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.market === market)
+      );
+      loadPerpsChart();
+      updatePerpsDisplay();
+      updatePerpsOrder();
+
+      // Update collateral token label
+      const collatToken = $('perps-collat-token');
+      if (collatToken) collatToken.textContent = market === 'SOL' ? 'SOL' : 'USDC';
+    }
+
+    // ── Chart ──
+    function loadPerpsChart() {
+      const iframe = $('perps-chart-iframe');
+      if (!iframe) return;
+      const sym = PERPS_SYMBOLS[perpsMarket].binance;
+      iframe.src = `https://s.tradingview.com/widgetembed/?frameElementId=perps-chart-iframe&symbol=BINANCE%3A${sym}&interval=${perpsTimeframe}&hidesidetoolbar=1&hidetoptoolbar=0&symboledit=0&saveimage=0&toolbarbg=060910&theme=dark&style=1&timezone=Etc%2FUTC&withdateranges=0&locale=en`;
+    }
+
+    function setPerpsTimeframe(tf) {
+      perpsTimeframe = tf;
+      document.querySelectorAll('.perps-tf-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      loadPerpsChart();
+    }
+
+    // ── Trading Controls ──
+    function setPerpsPosition(side) {
+      perpsSide = side;
+      $('perps-long-btn').className = 'perps-side-btn' + (side === 'long' ? ' long-active' : '');
+      $('perps-short-btn').className = 'perps-side-btn' + (side === 'short' ? ' short-active' : '');
+
+      const execBtn = $('perps-exec-btn');
+      if (execBtn) {
+        execBtn.className = 'perps-exec ' + (side === 'long' ? 'long-btn' : 'short-btn');
+      }
+      updatePerpsOrder();
+    }
+
+    function setPerpsOrderType(type) {
+      perpsOrderType = type;
+      document.querySelectorAll('.perps-otype-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const limitRow = $('perps-limit-row');
+      if (limitRow) limitRow.className = 'perps-limit-row' + (type === 'limit' ? ' visible' : '');
+      updatePerpsOrder();
+    }
+
+    function updatePerpsLeverage(val) {
+      perpsLeverage = parseInt(val);
+      const levEl = $('perps-lev-val');
+      if (levEl) levEl.textContent = perpsLeverage + 'x';
+
+      // Update preset buttons
+      document.querySelectorAll('.perps-lev-preset').forEach(b => b.classList.remove('active'));
+
+      // Color the leverage value
+      if (levEl) {
+        if (perpsLeverage <= 5) levEl.style.color = 'var(--green)';
+        else if (perpsLeverage <= 25) levEl.style.color = '#fbbf24';
+        else levEl.style.color = 'var(--red)';
+      }
+
+      updatePerpsOrder();
+    }
+
+    function setPerpsLeverage(val) {
+      perpsLeverage = val;
+      $('perps-lev-slider').value = val;
+      updatePerpsLeverage(val);
+      document.querySelectorAll('.perps-lev-preset').forEach(b => {
+        b.classList.toggle('active', parseInt(b.textContent) === val);
+      });
+    }
+
+    function setPerpsCollateral(val) {
+      $('perps-collateral').value = val;
+      updatePerpsOrder();
+    }
+
+    // ── Order Calculation ──
+    function updatePerpsOrder() {
+      const price = perpsPrices[perpsMarket] || 0;
+      const collateral = parseFloat($('perps-collateral')?.value) || 0;
+      const leverage = perpsLeverage;
+      const side = perpsSide;
+      const cfg = PERPS_SYMBOLS[perpsMarket];
+
+      // For SOL market: collateral in SOL → position size = collateral * price * leverage
+      // For BTC/ETH: collateral in USDC → position size = collateral * leverage
+      let positionSizeUSD;
+      if (perpsMarket === 'SOL') {
+        positionSizeUSD = collateral * price * leverage;
+      } else {
+        positionSizeUSD = collateral * leverage;
+      }
+
+      // Entry price
+      const entryPrice = perpsOrderType === 'limit'
+        ? (parseFloat($('perps-limit-price')?.value) || price)
+        : price;
+
+      // Liquidation price calculation
+      // Long: liqPrice = entryPrice * (1 - 1/leverage) * 1.01 (1% buffer)
+      // Short: liqPrice = entryPrice * (1 + 1/leverage) * 0.99
+      let liqPrice = 0;
+      if (leverage > 0 && entryPrice > 0) {
+        if (side === 'long') {
+          liqPrice = entryPrice * (1 - 0.9 / leverage);
+        } else {
+          liqPrice = entryPrice * (1 + 0.9 / leverage);
+        }
+      }
+
+      // Open fee: 0.07% of position size (Jupiter Perps standard)
+      const openFee = positionSizeUSD * 0.0007;
+
+      // Borrow rate
+      const hourlyBorrow = positionSizeUSD * 0.00012; // ~0.012%/hr
+
+      // Update DOM
+      const sizeEl = $('perps-pos-size');
+      if (sizeEl) sizeEl.textContent = '$' + (positionSizeUSD > 0 ? positionSizeUSD.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '0.00');
+
+      const entryEl = $('perps-entry-price');
+      if (entryEl) entryEl.textContent = '$' + formatPerpsPrice(entryPrice, cfg.decimals);
+
+      const liqEl = $('perps-liq-price');
+      if (liqEl) {
+        liqEl.textContent = liqPrice > 0 ? '$' + formatPerpsPrice(liqPrice, cfg.decimals) : '$—';
+        liqEl.style.color = 'var(--red)';
+      }
+
+      const feeEl = $('perps-open-fee');
+      if (feeEl) feeEl.textContent = openFee > 0 ? '$' + openFee.toFixed(4) : '—';
+
+      const borrowEl = $('perps-borrow-disp');
+      if (borrowEl) borrowEl.textContent = hourlyBorrow > 0 ? '$' + hourlyBorrow.toFixed(4) + '/hr' : '—';
+
+      // Execute button text
+      const execBtn = $('perps-exec-btn');
+      if (execBtn) {
+        const sideText = side === 'long' ? 'LONG' : 'SHORT';
+        const emoji = side === 'long' ? '🟢' : '🔴';
+        const sizeStr = positionSizeUSD > 0 ? '$' + positionSizeUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '$0';
+        execBtn.textContent = `${emoji} OPEN ${sideText} ${perpsMarket} — ${sizeStr}`;
+        execBtn.disabled = collateral <= 0 || price <= 0;
+      }
+    }
+
+    // ── Execute Trade via Jupiter Perps ──
+    async function executePerps() {
+      const price = perpsPrices[perpsMarket];
+      const collateral = parseFloat($('perps-collateral')?.value) || 0;
+
+      if (!price || collateral <= 0) {
+        toast('Enter a collateral amount'); return;
+      }
+
+      // Check if Phantom is connected
+      if (!userPublicKey) {
+        toast('Connect Phantom wallet first'); return;
+      }
+
+      const side = perpsSide;
+      const leverage = perpsLeverage;
+      const market = perpsMarket;
+      const cfg = PERPS_SYMBOLS[market];
+
+      let positionSizeUSD = market === 'SOL'
+        ? collateral * price * leverage
+        : collateral * leverage;
+
+      // Open Jupiter Perps with correct market pre-selected
+      const jupUrl = `https://jup.ag/perps/${cfg.jup}-PERP`;
+      window.open(jupUrl, '_blank');
+
+      // Track position locally
+      const pos = {
+        id: Date.now().toString(36),
+        market, side, leverage,
+        collateral,
+        collateralToken: market === 'SOL' ? 'SOL' : 'USDC',
+        entryPrice: price,
+        positionSizeUSD,
+        liqPrice: side === 'long'
+          ? price * (1 - 0.9 / leverage)
+          : price * (1 + 0.9 / leverage),
+        openTime: Date.now(),
+        status: 'pending',
+      };
+
+      perpsPositions.unshift(pos);
+      localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+      renderPerpsPositions();
+
+      toast(`⚡ Opening ${side.toUpperCase()} ${market} — complete in Jupiter Perps tab`);
+
+      // After 10 seconds, mark as open (user should have confirmed)
+      setTimeout(() => {
+        const found = perpsPositions.find(p => p.id === pos.id);
+        if (found && found.status === 'pending') {
+          found.status = 'open';
+          localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+          renderPerpsPositions();
+        }
+      }, 12000);
+    }
+
+    // ── Positions ──
+    function renderPerpsPositions() {
+      const list = $('perps-positions-list');
+      if (!list) return;
+
+      const open = perpsPositions.filter(p => p.status !== 'closed');
+      if (open.length === 0) {
+        list.innerHTML = '<div class="perps-pos-empty">No open positions</div>';
+        return;
+      }
+
+      list.innerHTML = open.map(pos => {
+        const cfg = PERPS_SYMBOLS[pos.market];
+        const currentPrice = perpsPrices[pos.market] || pos.entryPrice;
+        let pnlPct = 0;
+        if (pos.side === 'long') {
+          pnlPct = ((currentPrice - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
+        } else {
+          pnlPct = ((pos.entryPrice - currentPrice) / pos.entryPrice) * pos.leverage * 100;
+        }
+        const pnlUsd = pos.positionSizeUSD * (pnlPct / 100);
+        const isProfit = pnlPct >= 0;
+        const age = timeSince(pos.openTime);
+        const statusLabel = pos.status === 'pending' ? ' <span style="color:#fbbf24;font-size:9px;">⏳ PENDING</span>' : '';
+
+        return `
+          <div class="perps-pos-card">
+            <div class="perps-pos-top">
+              <div class="perps-pos-sym">
+                ${pos.market}/USD
+                <span class="perps-pos-side ${pos.side}">${pos.side.toUpperCase()}</span>
+                <span class="perps-pos-lev">${pos.leverage}x</span>
+                ${statusLabel}
+              </div>
+              <span style="font-size:12px;font-weight:800;font-family:'Fira Code',monospace;color:${isProfit ? 'var(--green)' : 'var(--red)'};">${isProfit ? '+' : ''}${pnlPct.toFixed(2)}%</span>
+            </div>
+            <div class="perps-pos-grid">
+              <div class="perps-pos-stat">
+                <span class="perps-pos-stat-label">Size</span>
+                <span class="perps-pos-stat-val">$${pos.positionSizeUSD.toFixed(0)}</span>
+              </div>
+              <div class="perps-pos-stat">
+                <span class="perps-pos-stat-label">Entry</span>
+                <span class="perps-pos-stat-val">$${formatPerpsPrice(pos.entryPrice, cfg.decimals)}</span>
+              </div>
+              <div class="perps-pos-stat">
+                <span class="perps-pos-stat-label">Mark</span>
+                <span class="perps-pos-stat-val">$${formatPerpsPrice(currentPrice, cfg.decimals)}</span>
+              </div>
+              <div class="perps-pos-stat">
+                <span class="perps-pos-stat-label">Liq. Price</span>
+                <span class="perps-pos-stat-val" style="color:var(--red);">$${formatPerpsPrice(pos.liqPrice, cfg.decimals)}</span>
+              </div>
+              <div class="perps-pos-stat">
+                <span class="perps-pos-stat-label">PnL</span>
+                <span class="perps-pos-stat-val" style="color:${isProfit ? 'var(--green)' : 'var(--red)'};">${isProfit ? '+' : ''}$${pnlUsd.toFixed(2)}</span>
+              </div>
+              <div class="perps-pos-stat">
+                <span class="perps-pos-stat-label">Age</span>
+                <span class="perps-pos-stat-val">${age}</span>
+              </div>
+            </div>
+            <button class="perps-pos-close" onclick="closePerpsPosition('${pos.id}')">✕ Close Position</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function closePerpsPosition(id) {
+      const pos = perpsPositions.find(p => p.id === id);
+      if (!pos) return;
+
+      // Open Jupiter Perps for closing
+      const cfg = PERPS_SYMBOLS[pos.market];
+      window.open(`https://jup.ag/perps/${cfg.jup}-PERP`, '_blank');
+
+      // Mark as closed locally
+      pos.status = 'closed';
+      const currentPrice = perpsPrices[pos.market] || pos.entryPrice;
+      pos.closePrice = currentPrice;
+      pos.closeTime = Date.now();
+
+      localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+      renderPerpsPositions();
+      toast(`⚡ Closing ${pos.side.toUpperCase()} ${pos.market} — complete in Jupiter tab`);
+    }
+
+    function refreshPerpsPositions() {
+      fetchPerps24hStats();
+      renderPerpsPositions();
+      toast('Positions refreshed');
+    }
+
+    function timeSince(ts) {
+      const seconds = Math.floor((Date.now() - ts) / 1000);
+      if (seconds < 60) return seconds + 's';
+      if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
+      if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
+      return Math.floor(seconds / 86400) + 'd';
+    }
+
     // ═══════ INIT ═══════
     $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
     $('model-sel').value = currentModel;
@@ -5718,6 +6819,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     // Save state before user leaves
     window.addEventListener('beforeunload', () => {
       saveCurrentSession();
+      disconnectPerpsWs();
     });
 
     window.addEventListener('load', async () => {
