@@ -1659,9 +1659,26 @@
             </div>
             <div id="alpha-settings-body" class="alpha-settings-body">
               <div class="alpha-section">
-                <div class="alpha-stitle">Bot Wallet</div>
-                <div style="font-size:10px;color:var(--text-faint);margin-bottom:6px;">Uses sniper wallets for auto-signing · <span style="color:var(--accent);cursor:pointer;" onclick="setMode('sniper')">Manage wallets →</span></div>
-                <select id="alpha-wallet-sel" class="fi" style="font-size:11px;margin-bottom:4px;"></select>
+                <div class="alpha-stitle">🔑 Bot Wallet</div>
+                <div style="font-size:10px;color:var(--text-faint);margin-bottom:8px;">This wallet auto-signs trades. Only fund what you can afford to lose.</div>
+                <div id="alpha-wallet-display" style="display:none;padding:10px 12px;background:var(--bg-glass);border:1px solid var(--border-primary);border-radius:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div id="alpha-wallet-label" style="font-size:12px;font-weight:700;color:var(--text);"></div>
+                      <div id="alpha-wallet-addr" style="font-size:9px;color:var(--text-faint);font-family:'Fira Code',monospace;cursor:pointer;" onclick="navigator.clipboard.writeText(this.textContent);toast('📋 Copied!')"></div>
+                      <div id="alpha-wallet-bal" style="font-size:10px;color:var(--accent);margin-top:2px;"></div>
+                    </div>
+                    <button onclick="removeAlphaBotWallet()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;" title="Remove wallet">✕</button>
+                  </div>
+                </div>
+                <div id="alpha-wallet-form">
+                  <div class="alpha-add-row" style="margin-bottom:4px;">
+                    <input type="text" id="alpha-bot-label" class="fi" placeholder="Label (e.g. Alpha Wallet)" style="flex:0.4;font-size:11px;">
+                    <input type="password" id="alpha-bot-privkey" class="fi" placeholder="Paste private key (base58)..." style="flex:1;font-size:11px;">
+                    <button class="alpha-add-btn" onclick="saveAlphaBotWallet()">💾 Save</button>
+                  </div>
+                  <div style="font-size:9px;color:var(--text-faint);">⚠️ Key is stored in your browser's localStorage. Never share it.</div>
+                </div>
               </div>
 
               <div class="alpha-section">
@@ -1671,7 +1688,6 @@
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Max Daily Trades</span><input type="number" id="alpha-max-daily" class="alpha-cfg-input" value="10" step="1" min="1"></div>
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Stop Loss %</span><input type="number" id="alpha-sl" class="alpha-cfg-input" value="30" step="5" min="5"></div>
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Take Profit %</span><input type="number" id="alpha-tp" class="alpha-cfg-input" value="100" step="10" min="10"></div>
-                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Min Liquidity $</span><input type="number" id="alpha-min-liq" class="alpha-cfg-input" value="5000" step="1000" min="0"></div>
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Slippage %</span><input type="number" id="alpha-slip" class="alpha-cfg-input" value="15" step="1" min="1"></div>
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Poll Interval (s)</span><input type="number" id="alpha-poll" class="alpha-cfg-input" value="15" step="5" min="10"></div>
                 <div class="alpha-cfg-row"><span class="alpha-cfg-label">Auto-Learn Every</span><input type="number" id="alpha-learn-n" class="alpha-cfg-input" value="5" step="1" min="2" title="Re-study after this many closed trades"> <span style="font-size:9px;color:var(--text-faint);position:absolute;right:90px;">trades</span></div>
@@ -1891,7 +1907,7 @@
       if (mode === 'history') { renderChatHistory(); renderTxHistory(); }
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
       if (mode === 'portfolio') { refreshPortfolio(); }
-      if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); populateAlphaWalletSel(); }
+      if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); renderAlphaBotWallet(); refreshAlphaBotBalance(); }
       if (mode === 'trending') { fetchTrending(); }
       if (mode === 'watchlist') { renderWatchlist(); refreshWatchlistPrices(); }
     }
@@ -3762,13 +3778,66 @@
       arrow.textContent = isOpen ? '▾' : '▸';
     }
 
-    function populateAlphaWalletSel() {
-      const sel = $('alpha-wallet-sel');
-      if (!sel) return;
-      sel.innerHTML = '<option value="">— Select bot wallet —</option>';
-      sniperWallets.forEach((w, i) => {
-        sel.innerHTML += `<option value="${i}">${w.label} (${w.publicKey.slice(0, 4)}...${w.publicKey.slice(-4)})</option>`;
-      });
+    // ── Alpha Bot Dedicated Wallet ──
+    let alphaBotWallet = JSON.parse(localStorage.getItem('ghost-alpha-bot-wallet') || 'null');
+
+    function saveAlphaBotWallet() {
+      const label = $('alpha-bot-label').value.trim() || 'Alpha Wallet';
+      const privkey = $('alpha-bot-privkey').value.trim();
+      if (!privkey) { toast('Paste a private key'); return; }
+
+      try {
+        const secretKey = bs58Decode(privkey);
+        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+        const publicKey = keypair.publicKey.toString();
+
+        alphaBotWallet = { label, publicKey, secretKey: privkey };
+        localStorage.setItem('ghost-alpha-bot-wallet', JSON.stringify(alphaBotWallet));
+
+        $('alpha-bot-label').value = '';
+        $('alpha-bot-privkey').value = '';
+        renderAlphaBotWallet();
+        refreshAlphaBotBalance();
+        toast('🔑 Bot wallet saved: ' + publicKey.slice(0, 4) + '...' + publicKey.slice(-4));
+      } catch (e) {
+        toast('Invalid private key: ' + e.message);
+      }
+    }
+
+    function removeAlphaBotWallet() {
+      alphaBotWallet = null;
+      localStorage.removeItem('ghost-alpha-bot-wallet');
+      renderAlphaBotWallet();
+      toast('Wallet removed');
+    }
+
+    function renderAlphaBotWallet() {
+      const display = $('alpha-wallet-display');
+      const form = $('alpha-wallet-form');
+      if (alphaBotWallet) {
+        display.style.display = 'block';
+        form.style.display = 'none';
+        $('alpha-wallet-label').textContent = alphaBotWallet.label;
+        $('alpha-wallet-addr').textContent = alphaBotWallet.publicKey;
+      } else {
+        display.style.display = 'none';
+        form.style.display = 'block';
+      }
+    }
+
+    async function refreshAlphaBotBalance() {
+      if (!alphaBotWallet) return;
+      try {
+        const conn = await getWorkingConnection();
+        const bal = await conn.getBalance(new solanaWeb3.PublicKey(alphaBotWallet.publicKey));
+        $('alpha-wallet-bal').textContent = '◎ ' + (bal / 1e9).toFixed(4) + ' SOL';
+      } catch (e) {
+        $('alpha-wallet-bal').textContent = 'Balance: error';
+      }
+    }
+
+    function getAlphaBotWallet() {
+      return alphaBotWallet;
     }
 
     // ── Helius API Key (optional enhancement) ──
@@ -4075,9 +4144,8 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     }
 
     function startAlphaBot() {
-      const walletIdx = parseInt($('alpha-wallet-sel').value);
-      if (isNaN(walletIdx) || !sniperWallets[walletIdx]) {
-        toast('Select a bot wallet first'); return;
+      if (!alphaBotWallet) {
+        toast('Add a bot wallet first (Settings → Bot Wallet)'); return;
       }
       if (alphaWallets.length === 0) {
         toast('Add wallets to track first'); return;
@@ -4238,8 +4306,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         return;
       }
 
-      // Check liquidity via DexScreener
-      const minLiq = parseFloat($('alpha-min-liq').value) || 5000;
+      // Check token on DexScreener (info only, no liquidity gate)
       try {
         const dsRes = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
         const dsData = await dsRes.json();
@@ -4247,15 +4314,13 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         if (pairs.length > 0) {
           const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
           const liq = best.liquidity?.usd || 0;
-          if (liq < minLiq) {
-            alphaLog(`Skipped ${mint.slice(0, 6)}... — liquidity $${liq.toFixed(0)} < $${minLiq}`, 'warn');
-            return;
-          }
           const symbol = best.baseToken?.symbol || mint.slice(0, 6);
-          alphaLog(`✅ ${symbol} passed checks (liq: $${liq.toFixed(0)}). Executing buy...`);
+          alphaLog(`✅ ${symbol} — liq: $${liq.toFixed(0)}. Executing buy...`);
           await alphaExecuteBuy(mint, symbol, trackedWallet.label);
         } else {
-          alphaLog(`Skipped ${mint.slice(0, 6)}... — no DEX data found`, 'warn');
+          // No DEX data yet (might be new pump.fun token) — try buying anyway
+          alphaLog(`⚡ ${mint.slice(0, 6)}... — no DEX data yet, buying anyway...`);
+          await alphaExecuteBuy(mint, mint.slice(0, 6), trackedWallet.label);
         }
       } catch (e) {
         alphaLog(`Could not check ${mint.slice(0, 6)}... — ${e.message}`, 'warn');
@@ -4263,9 +4328,8 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     }
 
     async function alphaExecuteBuy(mint, symbol, copiedFrom = 'unknown') {
-      const walletIdx = parseInt($('alpha-wallet-sel').value);
-      const botWallet = sniperWallets[walletIdx];
-      if (!botWallet) { alphaLog('No bot wallet selected', 'error'); return; }
+      const botWallet = getAlphaBotWallet();
+      if (!botWallet) { alphaLog('No bot wallet — add one in Settings', 'error'); return; }
 
       const buyAmt = parseFloat($('alpha-buy-amt').value) || 0.01;
       const slippage = parseFloat($('alpha-slip').value) || 15;
@@ -4300,11 +4364,22 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
         tx.sign([keypair]);
 
-        // Send
-        const conn = await getWorkingConnection();
-        const sig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 });
+        // Send (via Jito if MEV protection enabled)
+        const rawTx = tx.serialize();
+        let sig;
+        if (mevEnabled) {
+          try { sig = await sendViaJito(rawTx); }
+          catch (e) {
+            const conn = await getWorkingConnection();
+            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+          }
+        } else {
+          const conn = await getWorkingConnection();
+          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+        }
 
-        await conn.confirmTransaction(sig, 'confirmed');
+        const confirmConn = await getWorkingConnection();
+        await confirmConn.confirmTransaction(sig, 'confirmed');
 
         // Track position
         const outAmt = parseInt(quote.outAmount) / Math.pow(10, 6); // approximate
@@ -4336,8 +4411,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     }
 
     async function alphaExecuteSell(mint) {
-      const walletIdx = parseInt($('alpha-wallet-sel').value);
-      const botWallet = sniperWallets[walletIdx];
+      const botWallet = getAlphaBotWallet();
       if (!botWallet) return;
 
       const pos = alphaPositions[mint];
@@ -4387,7 +4461,15 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
         tx.sign([keypair]);
 
-        const sig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 });
+        // Send (via Jito if MEV protection enabled)
+        const rawTx = tx.serialize();
+        let sig;
+        if (mevEnabled) {
+          try { sig = await sendViaJito(rawTx); }
+          catch (e) { sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 }); }
+        } else {
+          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+        }
         await conn.confirmTransaction(sig, 'confirmed');
 
         const solReceived = parseInt(quote.outAmount) / 1e9;
@@ -4504,7 +4586,6 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           buyAmount: parseFloat($('alpha-buy-amt').value) || 0.01,
           stopLoss: parseFloat($('alpha-sl').value) || 30,
           takeProfit: parseFloat($('alpha-tp').value) || 100,
-          minLiquidity: parseFloat($('alpha-min-liq').value) || 5000,
           slippage: parseFloat($('alpha-slip').value) || 15,
         };
 
@@ -5628,6 +5709,8 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     }
     // Render saved log on load
     if (alphaBotLog.length > 0) renderAlphaLog();
+    // Render alpha bot wallet
+    renderAlphaBotWallet();
 
     // Auto-prompt for key if not set
     if (!apiKey) setTimeout(promptApiKey, 500);
