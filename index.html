@@ -1,0 +1,2591 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghost — Crypto AI Command Center</title>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
+
+    /* ═══════ OBSIDIAN TERMINAL — DARK ═══════ */
+    :root {
+      --bg-primary: #060910;
+      --bg-secondary: #080c14;
+      --bg-surface: rgba(12,17,28,0.65);
+      --bg-elevated: #0e1420;
+      --bg-overlay: rgba(6,9,16,0.8);
+      --bg-sidebar: rgba(8,12,20,0.85);
+      --bg-glass: rgba(14,20,32,0.55);
+      --border-primary: rgba(100,120,160,0.08);
+      --border-secondary: rgba(100,120,160,0.06);
+      --border-tertiary: rgba(100,120,160,0.12);
+      --border-glow: rgba(34,209,238,0.2);
+      --text-primary: #f8fafc;
+      --text-secondary: #d1dae6;
+      --text-tertiary: #a8b8cc;
+      --text-muted: #8a9bb3;
+      --text-faint: #6a7d96;
+      --text-ghost: #4a5f78;
+      --accent: #22d1ee;
+      --accent-dim: rgba(34,209,238,0.1);
+      --accent-glow: rgba(34,209,238,0.06);
+      --accent-gradient: linear-gradient(135deg, #06b6d4, #22d1ee, #67e8f9);
+      --accent-gradient-btn: linear-gradient(135deg, #0891b2, #22d1ee);
+      --green: #34d399;
+      --green-dim: rgba(52,211,153,0.12);
+      --green-bg: rgba(52,211,153,0.08);
+      --green-border: rgba(52,211,153,0.25);
+      --red: #f87171;
+      --red-dim: rgba(248,113,113,0.12);
+      --red-bg: rgba(248,113,113,0.08);
+      --red-border: rgba(248,113,113,0.25);
+      --yellow: #fbbf24;
+      --yellow-dim: rgba(251,191,36,0.12);
+      --yellow-bg: rgba(251,191,36,0.06);
+      --yellow-border: rgba(251,191,36,0.15);
+      --msg-user: rgba(14,20,32,0.6);
+      --msg-ai-bg: linear-gradient(135deg, rgba(34,209,238,0.04) 0%, rgba(6,182,212,0.02) 100%);
+      --msg-ai-border: rgba(34,209,238,0.12);
+      --msg-system-bg: rgba(251,191,36,0.04);
+      --msg-system-border: rgba(251,191,36,0.12);
+      --msg-success-bg: rgba(52,211,153,0.04);
+      --msg-success-border: rgba(52,211,153,0.12);
+      --scrollbar: rgba(100,120,160,0.12);
+      --shadow: 0 0 120px rgba(34,209,238,0.03);
+      --glass-blur: 16px;
+      --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f1f5f9;
+      --bg-secondary: #e8ecf2;
+      --bg-surface: rgba(255,255,255,0.7);
+      --bg-elevated: #f8fafc;
+      --bg-overlay: rgba(241,245,249,0.9);
+      --bg-sidebar: rgba(248,250,252,0.9);
+      --bg-glass: rgba(255,255,255,0.6);
+      --border-primary: rgba(51,65,85,0.08);
+      --border-secondary: rgba(51,65,85,0.06);
+      --border-tertiary: rgba(51,65,85,0.12);
+      --border-glow: rgba(6,182,212,0.3);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #64748b;
+      --text-muted: #94a3b8;
+      --text-faint: #cbd5e1;
+      --text-ghost: #e2e8f0;
+      --accent: #0891b2;
+      --accent-dim: rgba(8,145,178,0.08);
+      --accent-glow: rgba(8,145,178,0.04);
+      --accent-gradient: linear-gradient(135deg, #0e7490, #0891b2, #22d1ee);
+      --accent-gradient-btn: linear-gradient(135deg, #0e7490, #0891b2);
+      --green: #059669;
+      --green-dim: rgba(5,150,105,0.08);
+      --green-bg: rgba(5,150,105,0.06);
+      --green-border: rgba(5,150,105,0.2);
+      --red: #dc2626;
+      --red-dim: rgba(220,38,38,0.08);
+      --red-bg: rgba(220,38,38,0.05);
+      --red-border: rgba(220,38,38,0.18);
+      --yellow: #d97706;
+      --yellow-dim: rgba(217,119,6,0.08);
+      --yellow-bg: rgba(217,119,6,0.05);
+      --yellow-border: rgba(217,119,6,0.15);
+      --msg-user: rgba(241,245,249,0.8);
+      --msg-ai-bg: linear-gradient(135deg, rgba(8,145,178,0.04) 0%, rgba(6,182,212,0.02) 100%);
+      --msg-ai-border: rgba(8,145,178,0.12);
+      --msg-system-bg: rgba(217,119,6,0.04);
+      --msg-system-border: rgba(217,119,6,0.12);
+      --msg-success-bg: rgba(5,150,105,0.04);
+      --msg-success-border: rgba(5,150,105,0.12);
+      --scrollbar: rgba(51,65,85,0.1);
+      --shadow: 0 4px 24px rgba(0,0,0,0.04);
+      --glass-blur: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary); height: 100vh; overflow: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: var(--noise); background-repeat: repeat; opacity: 0.4;
+    }
+
+    /* Mesh gradient background */
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(34,209,238,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 80% 80%, rgba(99,102,241,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(52,211,153,0.02) 0%, transparent 50%);
+    }
+
+    /* Smooth theme transitions */
+    *, *::before, *::after {
+      transition: background-color 0.4s ease, border-color 0.4s ease, color 0.3s ease, box-shadow 0.4s ease;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+    #app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 1; }
+
+    .glow {
+      position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+      width: 60%; height: 260px;
+      background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none; animation: glow 6s ease-in-out infinite; z-index: 0;
+    }
+
+    @keyframes glow { 0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); } 50% { opacity: 0.8; transform: translateX(-50%) scale(1.05); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes breathe { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,209,238,0); } 50% { box-shadow: 0 0 16px 2px rgba(34,209,238,0.08); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* ═══════ HEADER ═══════ */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; height: 56px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-bottom: 1px solid var(--border-primary);
+      position: relative; z-index: 10;
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      font-size: 22px; color: var(--accent);
+      filter: drop-shadow(0 0 8px rgba(34,209,238,0.3));
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .logo-text {
+      font-size: 15px; font-weight: 800; letter-spacing: 0.25em;
+      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .logo-sub {
+      font-size: 10px; color: var(--text-muted); letter-spacing: 0.15em;
+      font-weight: 600; text-transform: uppercase;
+    }
+
+    .mode-bar {
+      display: flex; gap: 1px; background: var(--bg-glass);
+      backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+      padding: 3px; border-radius: 10px; border: 1px solid var(--border-primary);
+    }
+    .mode-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; background: transparent; border: none;
+      border-radius: 8px; font-size: 12px; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; font-family: inherit;
+      letter-spacing: 0.02em; position: relative;
+    }
+    .mode-btn:hover { color: var(--text-secondary); }
+    .mode-btn.active {
+      background: var(--bg-elevated); color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .mode-btn .ic { color: var(--accent); font-size: 13px; }
+
+    .header-right { display: flex; align-items: center; gap: 6px; }
+
+    .theme-toggle {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+      color: var(--text-tertiary); font-size: 15px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+    .theme-toggle:hover { border-color: var(--border-glow); color: var(--accent); }
+
+    .model-select {
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: 8px; padding: 6px 10px; color: var(--text-primary);
+      font-family: 'Fira Code', monospace; font-size: 11px; cursor: pointer;
+      font-weight: 500;
+    }
+    .model-select option { background: var(--bg-elevated); }
+
+    .wallet-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit; border: 1px solid;
+      letter-spacing: 0.02em;
+    }
+    .wallet-btn.off {
+      background: var(--accent-gradient-btn); border-color: transparent; color: #fff;
+      box-shadow: 0 2px 12px rgba(34,209,238,0.2);
+    }
+    .wallet-btn.off:hover { box-shadow: 0 2px 20px rgba(34,209,238,0.3); }
+    .wallet-btn.on { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
+    .wallet-btn:hover { opacity: 0.9; }
+
+    .sbadge {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border: 1px solid; border-radius: 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .sbadge.on { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
+    .sbadge.off { background: var(--red-bg); border-color: var(--red-border); color: var(--red); }
+    .sdot { width: 5px; height: 5px; border-radius: 50%; animation: pulse 2s infinite; }
+    .sbadge.on .sdot { background: var(--green); }
+    .sbadge.off .sdot { background: var(--red); }
+
+    /* ═══════ LAYOUT ═══════ */
+    .main-layout { flex: 1; display: flex; overflow: hidden; }
+    .sidebar {
+      width: 0; overflow: hidden;
+      border-right: 1px solid var(--border-primary);
+      background: var(--bg-sidebar);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar.open { width: 340px; }
+    .sidebar-inner { width: 340px; height: 100%; overflow-y: auto; padding-bottom: 20px; }
+
+    .ph {
+      padding: 16px 18px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.14em; color: var(--text-muted);
+      border-bottom: 1px solid var(--border-secondary);
+      display: flex; justify-content: space-between; align-items: center;
+      text-transform: uppercase;
+    }
+
+    /* ═══════ LAUNCH ═══════ */
+    .lsection { padding: 14px; }
+    .lplatform {
+      padding: 14px 16px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .lplatform:hover { border-color: var(--border-glow); }
+    .lplatform.sel {
+      border-color: var(--accent); background: var(--accent-dim);
+      box-shadow: 0 0 16px rgba(34,209,238,0.06);
+    }
+    .lp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .lp-name { font-size: 14px; font-weight: 700; }
+    .lp-tag {
+      font-size: 9px; padding: 3px 8px; border-radius: 6px;
+      background: var(--accent-dim); color: var(--accent);
+      font-weight: 700; letter-spacing: 0.06em;
+    }
+    .lp-desc { font-size: 12px; color: var(--text-muted); }
+
+    .lform { padding: 14px; }
+    .fg { margin-bottom: 14px; }
+    .fl {
+      font-size: 10px; color: var(--text-tertiary); margin-bottom: 7px; display: block;
+      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .fi {
+      width: 100%; padding: 11px 14px;
+      background: var(--bg-glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-primary); border-radius: 10px;
+      color: var(--text-primary); font-family: 'Fira Code', monospace; font-size: 13px;
+    }
+    .fi:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .fi::placeholder { color: var(--text-faint); }
+    .fi-ta { resize: vertical; min-height: 60px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .frow { display: flex; gap: 10px; }
+    .frow .fg { flex: 1; }
+
+    .file-upload {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 26px 16px; background: var(--bg-glass);
+      border: 2px dashed var(--border-tertiary); border-radius: 12px;
+      color: var(--text-muted); font-size: 13px; text-align: center;
+      cursor: pointer; font-family: inherit; box-sizing: border-box;
+    }
+    .file-upload:hover { border-color: var(--accent); background: var(--accent-dim); }
+    .file-upload.has-file {
+      border-color: var(--green); color: var(--green); border-style: solid;
+      word-break: break-all; font-size: 12px;
+    }
+    .file-upload input { display: none; }
+
+    .lbtn {
+      width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.06em;
+    }
+    .lbtn.dis { background: var(--bg-elevated); color: var(--text-muted); cursor: not-allowed; }
+    .lbtn.ready {
+      background: var(--accent-gradient-btn); color: #fff;
+      box-shadow: 0 4px 16px rgba(34,209,238,0.2);
+    }
+    .lbtn.ready:hover { box-shadow: 0 4px 24px rgba(34,209,238,0.35); transform: translateY(-1px); }
+    .lbtn.loading {
+      background: var(--accent-gradient-btn); color: #fff; opacity: 0.7;
+      animation: pulse 1.5s infinite;
+    }
+    .lwarn {
+      margin-top: 14px; padding: 12px; background: var(--yellow-bg);
+      border: 1px solid var(--yellow-border); border-radius: 10px;
+      font-size: 11px; color: var(--yellow); line-height: 1.6;
+    }
+
+    .launch-steps { padding: 14px; }
+    .launch-step {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 14px; margin-bottom: 4px; border-radius: 10px; font-size: 13px;
+    }
+    .launch-step .step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .launch-step .step-label { flex: 1; }
+    .launch-step .step-status { font-size: 12px; font-weight: 600; margin-left: auto; }
+    .launch-step.pending { color: var(--text-muted); }
+    .launch-step.pending .step-num { background: var(--bg-elevated); color: var(--text-muted); }
+    .launch-step.active { color: var(--accent); background: var(--accent-dim); }
+    .launch-step.active .step-num { background: var(--accent); color: #fff; }
+    .launch-step.done { color: var(--green); }
+    .launch-step.done .step-num { background: var(--green-dim); color: var(--green); }
+    .launch-step.error { color: var(--red); }
+    .launch-step.error .step-num { background: var(--red-dim); color: var(--red); }
+
+    /* ═══════ TOOLS / PLUGINS ═══════ */
+    .tcard {
+      margin: 8px 14px; padding: 16px;
+      background: var(--bg-glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-primary); border-radius: 12px;
+      cursor: pointer;
+    }
+    .tcard:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 4px 16px rgba(34,209,238,0.06);
+      transform: translateY(-1px);
+    }
+    .tcard.disabled { opacity: 0.45; cursor: not-allowed; }
+    .tcard.disabled:hover { transform: none; border-color: var(--border-primary); box-shadow: none; }
+    .tcard-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .tcard-n { font-size: 14px; font-weight: 700; }
+    .tcard-s {
+      font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 6px;
+      letter-spacing: 0.06em;
+    }
+    .tcard-d { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+    /* ═══════ TRADE PANEL ═══════ */
+    .trade-section { padding: 14px; }
+    .trade-amt-row {
+      display: flex; gap: 4px; margin-bottom: 14px;
+    }
+    .trade-preset {
+      flex: 1; padding: 8px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; font-family: 'Fira Code', monospace;
+    }
+    .trade-preset:hover { border-color: var(--border-glow); color: var(--accent); }
+    .trade-preset.sel { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .trade-settings { display: flex; gap: 8px; margin-bottom: 12px; }
+    .trade-settings .fg { flex: 1; margin-bottom: 0; }
+    .trade-quote {
+      padding: 12px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; margin-bottom: 12px; font-size: 12px;
+    }
+    .tq-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border-secondary); }
+    .tq-row:last-child { border-bottom: none; }
+    .tq-row span:first-child { color: var(--text-muted); }
+    .tq-val { color: var(--text-primary); font-weight: 600; font-family: 'Fira Code', monospace; font-size: 11px; }
+    .trade-exec {
+      width: 100%; padding: 13px; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+      margin-bottom: 6px; letter-spacing: 0.03em;
+    }
+    .trade-exec:disabled { opacity: 0.35; cursor: not-allowed; }
+    .trade-buy { background: linear-gradient(135deg, #059669, #34d399); color: #fff; }
+    .trade-buy:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(52,211,153,0.25); }
+    .trade-sell { background: linear-gradient(135deg, #dc2626, #f87171); color: #fff; }
+    .trade-sell:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(248,113,113,0.25); }
+    .trade-divider { border: none; border-top: 1px solid var(--border-secondary); margin: 0; }
+    .pos-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 14px; font-size: 10px; font-weight: 700; color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+    .pos-header button {
+      background: none; border: none; color: var(--text-tertiary);
+      cursor: pointer; font-family: 'Fira Code', monospace; font-size: 11px;
+    }
+    .pos-header button:hover { color: var(--accent); }
+    .pos-card {
+      margin: 0 14px 6px; padding: 10px 12px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; font-size: 12px;
+    }
+    .pos-card:hover { border-color: var(--border-glow); }
+    .pos-top { display: flex; justify-content: space-between; align-items: center; }
+    .pos-sym { font-weight: 700; font-size: 13px; }
+    .pos-bottom { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: var(--text-muted); }
+    .pos-empty { padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 12px; }
+    .trade-history { max-height: 180px; overflow-y: auto; }
+    .th-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+      font-size: 12px; border-bottom: 1px solid var(--border-secondary);
+    }
+    .th-action { font-weight: 700; font-size: 10px; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; }
+    .th-buy { background: var(--green-dim); color: var(--green); }
+    .th-sell { background: var(--red-dim); color: var(--red); }
+    .th-details { flex: 1; color: var(--text-secondary); font-family: 'Fira Code', monospace; font-size: 11px; }
+    .th-time { color: var(--text-muted); font-size: 10px; }
+
+    /* ═══════ CHAT AREA ═══════ */
+    .chat-area { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; }
+    .messages { flex: 1; overflow-y: auto; padding: 16px 20px; scroll-behavior: smooth; }
+
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; text-align: center; animation: fadeIn 0.6s ease;
+    }
+    .eicon {
+      font-size: 48px; color: var(--accent); margin-bottom: 16px;
+      filter: drop-shadow(0 0 20px rgba(34,209,238,0.3));
+      animation: breathe 4s ease-in-out infinite;
+    }
+    .etitle {
+      font-size: 28px; font-weight: 800; margin-bottom: 10px;
+      background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; letter-spacing: 0.02em;
+    }
+    .edesc { font-size: 14px; color: var(--text-muted); max-width: 420px; line-height: 1.6; }
+
+    .message {
+      padding: 14px 18px; border-radius: 14px; margin-bottom: 10px;
+      animation: slideIn 0.25s ease; line-height: 1.65; font-size: 14px;
+      max-width: 85%;
+    }
+    .message.user {
+      background: var(--msg-user); border: 1px solid var(--border-primary);
+      margin-left: auto; border-radius: 14px 14px 4px 14px;
+    }
+    .message.assistant {
+      background: var(--msg-ai-bg); border: 1px solid var(--msg-ai-border);
+      border-left: 3px solid var(--accent); border-radius: 4px 14px 14px 14px;
+    }
+    .message.system {
+      background: var(--msg-system-bg); border: 1px solid var(--msg-system-border);
+      border-left: 3px solid var(--yellow); font-size: 13px;
+    }
+    .message.success {
+      background: var(--msg-success-bg); border: 1px solid var(--msg-success-border);
+      border-left: 3px solid var(--green); font-size: 13px;
+    }
+    .message.error {
+      background: var(--red-bg); border: 1px solid var(--red-border);
+      border-left: 3px solid var(--red); font-size: 13px;
+    }
+
+    .mh {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .mt { color: var(--text-faint); font-weight: 500; font-size: 10px; letter-spacing: 0; text-transform: none; }
+    .mr { font-family: 'Fira Code', monospace; }
+
+    .message a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .message a:hover { text-decoration: underline; }
+    .message code {
+      background: rgba(34,209,238,0.08); padding: 2px 6px; border-radius: 4px;
+      font-family: 'Fira Code', monospace; font-size: 0.9em; color: var(--accent);
+    }
+    .message strong { color: var(--text-primary); font-weight: 700; }
+    .message .streaming-cursor { animation: blink 0.8s infinite; color: var(--accent); font-weight: 300; }
+
+    /* ═══════ INPUT AREA ═══════ */
+    .input-area {
+      padding: 14px 20px; border-top: 1px solid var(--border-primary);
+      background: var(--bg-glass);
+      backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    }
+    .input-box {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-primary); border-radius: 14px;
+    }
+    .input-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim), 0 4px 20px rgba(34,209,238,0.06);
+    }
+    .pc { font-size: 16px; color: var(--accent); font-weight: 700; }
+    #input {
+      flex: 1; background: none; border: none; outline: none;
+      font-size: 14px; color: var(--text-primary); font-family: inherit;
+      font-weight: 500;
+    }
+    #input::placeholder { color: var(--text-faint); font-weight: 400; }
+    .send-btn {
+      padding: 8px 14px;
+      background: var(--accent-gradient-btn); border: none;
+      border-radius: 8px; color: #fff; font-weight: 700;
+      font-size: 16px; cursor: pointer; font-family: inherit;
+      box-shadow: 0 2px 8px rgba(34,209,238,0.15);
+    }
+    .send-btn:hover { box-shadow: 0 2px 16px rgba(34,209,238,0.3); }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+
+    .chat-mode-toggle {
+      display: flex; background: var(--bg-elevated); border-radius: 8px;
+      padding: 2px; gap: 2px; flex-shrink: 0;
+      border: 1px solid var(--border-primary);
+    }
+    .cmt-btn {
+      padding: 5px 12px; border: none; border-radius: 7px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      font-family: inherit; letter-spacing: 0.04em;
+      background: transparent; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+      white-space: nowrap;
+    }
+    .cmt-btn.active {
+      background: var(--bg-surface); color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+    .cmt-btn:hover:not(.active) { color: var(--text-secondary); }
+    .cmt-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .cmt-btn.active .cmt-dot.agent-dot { background: var(--accent); animation: pulse 2s infinite; }
+    .cmt-btn.active .cmt-dot.chat-dot { background: var(--green); }
+
+    .lb { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--green); letter-spacing: 0.08em; }
+    .ld { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+
+    /* ═══════ FOOTER ═══════ */
+    .footer {
+      padding: 8px 20px; text-align: center;
+      font-size: 10px; color: var(--text-faint); font-weight: 500;
+      letter-spacing: 0.06em; border-top: 1px solid var(--border-secondary);
+    }
+    .footer .g { color: var(--accent); font-weight: 600; }
+
+    /* ═══════ TOAST ═══════ */
+    .toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      padding: 10px 20px;
+      background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-tertiary);
+      border-radius: 12px; font-size: 13px; font-weight: 600; color: var(--text-primary);
+      opacity: 0; z-index: 999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ═══════ KEY MODAL ═══════ */
+    .key-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(6,9,16,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      animation: fadeIn 0.25s ease;
+    }
+    .key-modal {
+      background: var(--bg-elevated); border: 1px solid var(--border-tertiary);
+      border-radius: 20px; padding: 32px; width: 420px; max-width: 90vw;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 40px rgba(34,209,238,0.04);
+      animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .key-modal-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--accent-dim); border: 1px solid rgba(34,209,238,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+    }
+    .key-modal h3 {
+      font-size: 18px; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.01em;
+      color: var(--text-primary);
+    }
+    .key-modal p {
+      font-size: 13px; color: var(--text-tertiary); margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .key-modal input {
+      width: 100%; padding: 12px 14px;
+      background: var(--bg-glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border-primary); border-radius: 10px;
+      color: var(--text-primary); font-family: 'Fira Code', monospace; font-size: 13px;
+    }
+    .key-modal input:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    .key-modal input::placeholder { color: var(--text-faint); }
+    .key-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .key-cancel {
+      padding: 11px 20px; background: var(--bg-glass);
+      border: 1px solid var(--border-tertiary); border-radius: 10px;
+      color: var(--text-secondary); cursor: pointer; font-family: inherit;
+      font-size: 13px; font-weight: 600;
+    }
+    .key-cancel:hover { border-color: var(--border-glow); color: var(--text-primary); }
+    .key-save {
+      flex: 1; padding: 11px; background: var(--accent-gradient-btn);
+      border: none; border-radius: 10px; color: #fff; font-weight: 700;
+      cursor: pointer; font-family: inherit; font-size: 13px;
+      box-shadow: 0 2px 12px rgba(34,209,238,0.2);
+    }
+    .key-save:hover { box-shadow: 0 4px 20px rgba(34,209,238,0.35); }
+
+    /* ═══════ WEB SEARCH TOGGLE ═══════ */
+    .ws-toggle {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 10px; border-radius: 8px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+      cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 600;
+      color: var(--text-muted); white-space: nowrap;
+    }
+    .ws-toggle:hover { border-color: var(--border-glow); color: var(--text-secondary); }
+    .ws-toggle.on { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
+    .ws-toggle .ws-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-muted);
+    }
+    .ws-toggle.on .ws-dot { background: var(--green); animation: pulse 2s infinite; }
+
+    /* ═══════ NEW CHAT BUTTON ═══════ */
+    .new-chat-btn {
+      background: none; border: 1px solid var(--border-primary); color: var(--text-muted);
+      width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .new-chat-btn:hover { border-color: var(--border-glow); color: var(--accent); background: var(--accent-dim); }
+
+    /* ═══════ HISTORY PANEL ═══════ */
+    .hist-tabs {
+      display: flex; gap: 0; margin: 12px 14px; border-radius: 10px; overflow: hidden;
+      border: 1px solid var(--border-primary);
+    }
+    .hist-tab {
+      flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 700;
+      font-family: inherit; letter-spacing: 0.06em; cursor: pointer;
+      background: var(--bg-glass); color: var(--text-muted); border: none;
+    }
+    .hist-tab:first-child { border-right: 1px solid var(--border-primary); }
+    .hist-tab.active {
+      background: var(--accent-gradient-btn); color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .hist-tab:hover:not(.active) { color: var(--text-primary); }
+
+    .hist-list { padding: 0 14px; }
+
+    .chat-card {
+      padding: 14px; background: var(--bg-glass); border-radius: 12px;
+      border: 1px solid var(--border-primary); margin-bottom: 8px; cursor: pointer;
+      position: relative; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .chat-card:hover { border-color: var(--border-glow); box-shadow: 0 2px 12px rgba(34,209,238,0.04); }
+    .chat-card.active-session { border-color: var(--accent); background: var(--accent-dim); }
+    .chat-card-title {
+      font-size: 13px; font-weight: 700; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      padding-right: 24px;
+    }
+    .chat-card-meta {
+      font-size: 10px; color: var(--text-muted); margin-top: 5px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Fira Code', monospace;
+    }
+    .chat-card-del {
+      position: absolute; top: 12px; right: 12px;
+      background: none; border: none; color: var(--text-faint); cursor: pointer;
+      font-size: 13px; padding: 2px 5px; border-radius: 4px;
+      opacity: 0;
+    }
+    .chat-card:hover .chat-card-del { opacity: 1; }
+    .chat-card-del:hover { color: var(--red); background: var(--red-dim); }
+
+    .tx-card {
+      padding: 12px 14px; background: var(--bg-glass); border-radius: 10px;
+      border: 1px solid var(--border-primary); margin-bottom: 6px;
+    }
+    .tx-card-top {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;
+    }
+    .tx-badge {
+      font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 5px;
+      letter-spacing: 0.06em;
+    }
+    .tx-buy { background: var(--green-dim); color: var(--green); }
+    .tx-sell { background: var(--red-dim); color: var(--red); }
+    .tx-time { font-size: 10px; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+    .tx-detail { font-size: 12px; color: var(--text-secondary); font-family: 'Fira Code', monospace; }
+    .tx-sig {
+      font-size: 10px; color: var(--accent); cursor: pointer; margin-top: 4px;
+      display: inline-block; opacity: 0.8; font-family: 'Fira Code', monospace;
+    }
+    .tx-sig:hover { opacity: 1; text-decoration: underline; }
+
+    .hist-empty {
+      text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px;
+    }
+    .hist-empty-icon { font-size: 28px; margin-bottom: 10px; }
+
+    /* ═══════ SNIPER BOT ═══════ */
+    .sniper-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px; margin: 12px 14px; background: var(--bg-glass);
+      border: 1px solid var(--border-primary); border-radius: 12px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .sniper-toggle-label { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .sniper-toggle-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .sniper-switch {
+      width: 44px; height: 24px; border-radius: 12px; border: none;
+      background: var(--border-tertiary); cursor: pointer; position: relative;
+    }
+    .sniper-switch.on { background: var(--green); box-shadow: 0 0 12px rgba(52,211,153,0.3); }
+    .sniper-switch::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #fff; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .sniper-switch.on::after { transform: translateX(20px); }
+
+    .sniper-wallets { padding: 0 14px; }
+    .sniper-wallet {
+      padding: 14px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 12px; margin-bottom: 8px; position: relative;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .sw-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sw-label { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; }
+    .sw-remove {
+      background: none; border: none; color: var(--text-faint); cursor: pointer;
+      font-size: 13px; padding: 2px 6px; border-radius: 4px;
+    }
+    .sw-remove:hover { color: var(--red); background: var(--red-dim); }
+    .sw-addr {
+      font-size: 10px; color: var(--text-muted); font-family: 'Fira Code', monospace;
+      margin-bottom: 8px; word-break: break-all;
+    }
+    .sw-bal-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sw-bal { font-size: 12px; font-weight: 600; color: var(--text-secondary); font-family: 'Fira Code', monospace; }
+    .sw-bal-refresh {
+      background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 12px;
+    }
+    .sw-amt-row { display: flex; gap: 6px; align-items: center; }
+    .sw-amt-row .fi { font-size: 12px; padding: 8px 10px; }
+    .sw-amt-label { font-size: 10px; color: var(--text-muted); white-space: nowrap; font-weight: 600; }
+    .sw-status {
+      font-size: 11px; margin-top: 8px; padding: 5px 10px; border-radius: 6px; display: none;
+    }
+    .sw-status.show { display: block; }
+    .sw-status.success { background: var(--green-dim); color: var(--green); }
+    .sw-status.error { background: var(--red-dim); color: var(--red); }
+    .sw-status.pending { background: var(--yellow-bg); color: var(--yellow); }
+
+    .sniper-add {
+      width: calc(100% - 28px); margin: 0 14px 12px; padding: 12px;
+      background: var(--bg-glass); border: 2px dashed var(--border-tertiary);
+      border-radius: 12px; color: var(--text-muted); font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit; text-align: center;
+    }
+    .sniper-add:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .sniper-add:disabled { opacity: 0.3; cursor: not-allowed; }
+    .sniper-add:disabled:hover { border-color: var(--border-tertiary); color: var(--text-muted); background: transparent; }
+
+    .sniper-import {
+      padding: 14px; margin: 0 14px 12px; background: var(--bg-glass);
+      border: 1px solid var(--border-primary); border-radius: 12px; display: none;
+    }
+    .sniper-import.show { display: block; }
+    .sniper-import .fi { font-size: 11px; margin-bottom: 10px; }
+    .sniper-import-btns { display: flex; gap: 6px; }
+    .sniper-import-btns button {
+      flex: 1; padding: 9px; border: none; border-radius: 8px; font-size: 11px;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .si-gen { background: var(--accent-gradient-btn); color: #fff; }
+    .si-gen:hover { box-shadow: 0 2px 12px rgba(34,209,238,0.2); }
+    .si-import {
+      background: var(--bg-elevated); color: var(--text-secondary);
+      border: 1px solid var(--border-tertiary) !important;
+    }
+    .si-cancel {
+      background: var(--bg-elevated); color: var(--text-muted);
+      border: 1px solid var(--border-tertiary) !important;
+    }
+
+    .sniper-warn {
+      margin: 0 14px 12px; padding: 12px; background: var(--yellow-bg);
+      border: 1px solid var(--yellow-border); border-radius: 10px;
+      font-size: 11px; color: var(--yellow); line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="glow"></div>
+
+    <div class="header">
+      <div class="logo-area">
+        <span class="logo-icon">◬</span>
+        <span class="logo-text">GHOST</span>
+        <span class="logo-sub">CRYPTO</span>
+        <div id="api-s" class="sbadge off">
+          <span class="sdot"></span>
+          <span id="api-st">NO KEY</span>
+        </div>
+      </div>
+
+      <div class="mode-bar">
+        <button class="new-chat-btn" onclick="newChat()" title="New Chat">+</button>
+        <button class="mode-btn active" data-mode="chat" onclick="setMode('chat')"><span class="ic">◇</span> CHAT</button>
+        <button class="mode-btn" data-mode="history" onclick="setMode('history')"><span class="ic">☰</span> HISTORY</button>
+        <button class="mode-btn" data-mode="trade" onclick="setMode('trade')"><span class="ic">⟡</span> TRADE</button>
+        <button class="mode-btn" data-mode="launch" onclick="setMode('launch')"><span class="ic">◆</span> LAUNCH</button>
+        <button class="mode-btn" data-mode="tools" onclick="setMode('tools')"><span class="ic">◈</span> TOOLS</button>
+        <button class="mode-btn" data-mode="wallet" onclick="setMode('wallet')"><span class="ic">◎</span> WALLET</button>
+      </div>
+
+      <div class="header-right">
+        <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+        <button class="ws-toggle" id="ws-btn" onclick="toggleWebSearch()" title="Toggle web search">
+          <span class="ws-dot"></span><span id="ws-label">🔍 Web</span>
+        </button>
+        <select id="model-sel" class="model-select">
+          <option value="claude-sonnet-4-20250514">Sonnet 4</option>
+          <option value="claude-haiku-4-5-20250929">Haiku 4.5</option>
+          <option value="claude-opus-4-5-20251101">Opus 4.5</option>
+        </select>
+        <button class="theme-toggle" id="key-btn" onclick="promptApiKey()" title="Set Claude API Key">🔑</button>
+        <button id="wbtn" class="wallet-btn off" onclick="connectWallet()">
+          <span>👻</span> <span id="wbtn-t">Connect Phantom</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="main-layout">
+      <div id="sidebar" class="sidebar">
+        <div class="sidebar-inner">
+
+          <!-- TRADE -->
+          <div id="p-trade" style="display:none">
+            <div class="ph">⟡ SWAP TERMINAL <span style="font-size:10px;font-weight:400;color:var(--text-faint);">via Jupiter</span></div>
+
+            <div class="trade-section">
+              <div class="fg">
+                <label class="fl">TOKEN ADDRESS</label>
+                <input type="text" id="tr-mint" class="fi" placeholder="Paste token mint address..." oninput="onMintInput(this.value)">
+              </div>
+              <div id="tr-token-info" style="display:none;padding:10px 12px;background:var(--bg-glass);border:1px solid var(--border-primary);border-radius:10px;margin-bottom:12px;font-size:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span id="tr-token-name" style="font-weight:700;color:var(--text-primary);"></span>
+                  <span id="tr-token-price" style="color:var(--accent);font-weight:600;font-family:'Fira Code',monospace;"></span>
+                </div>
+              </div>
+
+              <div class="fg">
+                <label class="fl">AMOUNT (SOL)</label>
+                <input type="number" id="tr-amount" class="fi" placeholder="0.00" step="0.01" min="0" oninput="getQuote()">
+              </div>
+              <div class="trade-amt-row">
+                <button class="trade-preset" onclick="setTradeAmt(0.01)">0.01</button>
+                <button class="trade-preset" onclick="setTradeAmt(0.05)">0.05</button>
+                <button class="trade-preset" onclick="setTradeAmt(0.1)">0.1</button>
+                <button class="trade-preset" onclick="setTradeAmt(0.5)">0.5</button>
+                <button class="trade-preset" onclick="setTradeAmt(1)">1.0</button>
+              </div>
+
+              <div class="trade-settings">
+                <div class="fg"><label class="fl">SLIPPAGE %</label><input type="number" id="tr-slippage" class="fi" value="1" step="0.5" min="0.1" max="50"></div>
+                <div class="fg"><label class="fl">PRIORITY (SOL)</label><input type="number" id="tr-priority" class="fi" value="0.0005" step="0.0001" min="0"></div>
+              </div>
+
+              <div id="tr-quote" class="trade-quote">
+                <div class="tq-row"><span>You pay</span><span class="tq-val" id="tq-pay">—</span></div>
+                <div class="tq-row"><span>You receive</span><span class="tq-val" id="tq-receive">—</span></div>
+                <div class="tq-row"><span>Price impact</span><span class="tq-val" id="tq-impact">—</span></div>
+                <div class="tq-row"><span>Route</span><span class="tq-val" id="tq-route">—</span></div>
+              </div>
+
+              <button id="tr-buy-btn" class="trade-exec trade-buy" onclick="executeTrade('buy')" disabled>🟢 BUY TOKEN</button>
+              <button id="tr-sell-btn" class="trade-exec trade-sell" onclick="executeTrade('sell')" disabled>🔴 SELL TOKEN</button>
+
+              <div class="lwarn" style="font-size:11px;">⚠️ Trades execute on-chain via Jupiter. You approve each transaction in Phantom. Always DYOR.</div>
+            </div>
+
+            <hr class="trade-divider">
+
+            <div class="pos-header">
+              <span>POSITIONS</span>
+              <button onclick="refreshPositions()">↻ Refresh</button>
+            </div>
+            <div id="positions-list">
+              <div class="pos-empty">Connect wallet to see positions</div>
+            </div>
+
+            <hr class="trade-divider">
+
+            <div class="pos-header">
+              <span>TRADE HISTORY</span>
+              <button onclick="clearTradeHistory()">Clear</button>
+            </div>
+            <div id="trade-history" class="trade-history">
+              <div class="pos-empty" style="padding:16px;">No trades yet</div>
+            </div>
+          </div>
+
+          <!-- LAUNCH -->
+          <div id="p-launch" style="display:none">
+            <div class="ph">🚀 TOKEN LAUNCHER</div>
+            <div class="launch-steps" id="launch-steps" style="display:none">
+              <div class="launch-step pending" id="step-1"><span class="step-num">1</span><span class="step-label">Upload metadata to IPFS</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-2"><span class="step-num">2</span><span class="step-label">Build transaction</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-3"><span class="step-num">3</span><span class="step-label">Sign with Phantom</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-4"><span class="step-num">4</span><span class="step-label">Submit to Solana</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-5"><span class="step-num">5</span><span class="step-label">Token is live!</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-6" style="display:none"><span class="step-num">6</span><span class="step-label">Sniper buys</span><span class="step-status"></span></div>
+            </div>
+            <div id="launch-form-area">
+              <div class="lsection">
+                <div class="lplatform sel" data-p="pumpfun" onclick="selPlatform('pumpfun')">
+                  <div class="lp-head"><span class="lp-name">🎰 Pump.fun</span><span class="lp-tag">SOL</span></div>
+                  <div class="lp-desc">Fair launch, bonding curve, auto-LP</div>
+                </div>
+                <div class="lplatform" data-p="bonkfun" onclick="selPlatform('bonkfun')">
+                  <div class="lp-head"><span class="lp-name">🐕 Bonk.fun</span><span class="lp-tag">SOL</span></div>
+                  <div class="lp-desc">Bonk ecosystem launcher</div>
+                </div>
+                <div class="lplatform" data-p="bagsfm" onclick="selPlatform('bagsfm')">
+                  <div class="lp-head"><span class="lp-name">💰 Bags.fm</span><span class="lp-tag">SOL</span></div>
+                  <div class="lp-desc">Social token launcher</div>
+                </div>
+              </div>
+              <div class="lform">
+                <div class="fg"><label class="fl">TOKEN NAME *</label><input type="text" id="t-name" class="fi" placeholder="e.g. Ghost Protocol"></div>
+                <div class="fg"><label class="fl">TICKER *</label><input type="text" id="t-ticker" class="fi" placeholder="e.g. $GHOST" maxlength="10" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9$]/g,'')"></div>
+                <div class="fg"><label class="fl">DESCRIPTION</label><textarea id="t-desc" class="fi fi-ta" placeholder="What's your token about?"></textarea></div>
+                <div class="fg"><label class="fl">TOKEN IMAGE *</label><label class="file-upload" id="file-label">📁 Click to upload image (PNG, JPG, GIF)<input type="file" id="t-image" accept="image/*" onchange="handleImageUpload(event)"></label></div>
+                <div class="fg"><label class="fl">INITIAL BUY (SOL)</label><input type="number" id="t-buy" class="fi" placeholder="0 = no initial buy" step="0.01" min="0"></div>
+                <div class="fg"><label class="fl">TWITTER (optional)</label><input type="text" id="t-twitter" class="fi" placeholder="https://x.com/yourtoken"></div>
+                <div class="fg"><label class="fl">TELEGRAM (optional)</label><input type="text" id="t-telegram" class="fi" placeholder="https://t.me/yourtoken"></div>
+                <div class="fg"><label class="fl">WEBSITE (optional)</label><input type="text" id="t-website" class="fi" placeholder="https://yourtoken.com"></div>
+                <button id="lbtn" class="lbtn dis" onclick="launchToken()">CONNECT WALLET TO LAUNCH</button>
+                <div class="lwarn">⚠️ This creates a real token on Solana. You need SOL for gas (~0.02 SOL). DYOR. Ghost is a tool — you are responsible for your actions.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOLS -->
+          <div id="p-tools" style="display:none">
+            <div class="ph">CRYPTO PLUGINS</div>
+            <div class="tcard" onclick="toolOpen('trade')"><div class="tcard-h"><span class="tcard-n">⟡ Jupiter Swap</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Buy & sell any Solana token via Jupiter aggregator</div></div>
+            <div class="tcard" onclick="toolOpen('launch')"><div class="tcard-h"><span class="tcard-n">🎰 Token Launcher</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Launch directly on pump.fun, bonk.fun, bags.fm</div></div>
+            <div class="tcard" onclick="toolOpen('wallet')"><div class="tcard-h"><span class="tcard-n">👻 Phantom Wallet</span><span class="tcard-s" id="ph-stat" style="background:var(--red-dim);color:var(--red);">DISCONNECTED</span></div><div class="tcard-d">Sign transactions, view balance, portfolio</div></div>
+            <div class="tcard" onclick="setMode('sniper')"><div class="tcard-h"><span class="tcard-n">⚡ Sniper Bot</span><span class="tcard-s" id="sniper-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Auto-buy your token launches with multiple wallets</div></div>
+            <div class="tcard disabled" onclick="toast('🔔 Whale Alerts coming soon!')"><div class="tcard-h"><span class="tcard-n">🔔 Whale Alerts</span><span class="tcard-s" style="background:var(--yellow-dim);color:var(--yellow);">COMING SOON</span></div><div class="tcard-d">Track whale wallet movements</div></div>
+          </div>
+
+          <!-- WALLET -->
+          <div id="p-wallet" style="display:none">
+            <div class="ph">PHANTOM WALLET</div>
+            <div class="winfo" id="wallet-content">
+              <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+                <div style="font-size:32px;margin-bottom:12px;">👻</div>
+                <div style="font-size:14px;margin-bottom:16px;">Connect your Phantom wallet</div>
+                <button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- HISTORY -->
+          <div id="p-history" style="display:none">
+            <div class="ph">HISTORY</div>
+            <div class="hist-tabs">
+              <button class="hist-tab active" id="ht-chats" onclick="setHistTab('chats')">💬 CHATS</button>
+              <button class="hist-tab" id="ht-txs" onclick="setHistTab('txs')">📋 TRANSACTIONS</button>
+            </div>
+            <div id="hist-chats" class="hist-list"></div>
+            <div id="hist-txs" class="hist-list" style="display:none"></div>
+          </div>
+
+          <!-- SNIPER -->
+          <div id="p-sniper" style="display:none">
+            <div class="ph">⚡ SNIPER BOT</div>
+
+            <div class="sniper-toggle-row">
+              <div>
+                <div class="sniper-toggle-label">Auto-snipe on Launch</div>
+                <div class="sniper-toggle-sub">Buy with all wallets after token deploys</div>
+              </div>
+              <button class="sniper-switch" id="sniper-sw" onclick="toggleSniper()"></button>
+            </div>
+
+            <div class="sniper-warn">
+              ⚠️ Private keys are stored in your browser only. Use fresh wallets with only the SOL you need. Never reuse keys from your main wallet.
+            </div>
+
+            <div id="sniper-wallets" class="sniper-wallets"></div>
+
+            <button class="sniper-add" id="sniper-add-btn" onclick="showSniperImport()">+ Add Wallet</button>
+
+            <div class="sniper-import" id="sniper-import">
+              <input type="password" id="sniper-key-input" class="fi" placeholder="Paste base58 private key...">
+              <div class="sniper-import-btns">
+                <button class="si-gen" onclick="generateSniperWallet()">🎲 Generate New</button>
+                <button class="si-import" onclick="importSniperWallet()">📥 Import</button>
+                <button class="si-cancel" onclick="hideSniperImport()">✕</button>
+              </div>
+            </div>
+
+            <div id="sniper-log" style="padding:0 14px;"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="chat-area">
+        <div id="messages" class="messages">
+          <div class="empty-state" id="empty-state">
+            <div class="eicon">◬</div>
+            <div class="etitle">Ghost Crypto</div>
+            <div class="edesc">AI-powered crypto command center. Chat with Claude, trade tokens via Jupiter, launch on pump.fun, manage your wallet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-box">
+        <div class="chat-mode-toggle" id="cmt">
+          <button class="cmt-btn active" id="cmt-agent" onclick="setChatMode('agent')"><span class="cmt-dot agent-dot"></span>Agent</button>
+          <button class="cmt-btn" id="cmt-chat" onclick="setChatMode('chat')"><span class="cmt-dot chat-dot"></span>Chat</button>
+        </div>
+        <input type="text" id="input" placeholder="Tell Ghost what to do..." autocomplete="off">
+        <button id="send-btn" class="send-btn" onclick="sendMessage()">↵</button>
+      </div>
+    </div>
+
+    <div class="footer">Ghost Crypto v0.8 • <span class="g">Powered by Claude</span> • Swaps via Jupiter • Wallet via Phantom</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+    const PUMP_API = 'https://pump.fun/api';
+    const PUMPPORTAL_API = 'https://pumpportal.fun/api';
+    const RPC_URL = 'https://api.mainnet-beta.solana.com';
+    const JUP_API = 'https://quote-api.jup.ag/v6';
+    const JUP_PRICE = 'https://api.jup.ag/price/v2';
+    const SOL_MINT = 'So11111111111111111111111111111111111111112';
+
+    let currentModel = 'claude-sonnet-4-20250514';
+    let apiKey = localStorage.getItem('ghost-claude-key') || '';
+    let isGenerating = false;
+    let chatMessages = [];
+    let walletPubkey = null;
+    let walletAddress = null;
+    let walletBalance = null;
+    let selectedPlatform = 'pumpfun';
+    let currentMode = 'chat';
+    let chatMode = localStorage.getItem('ghost-chat-mode') || 'agent'; // 'agent' or 'chat'
+    let tokenImageFile = null;
+
+    // Chat session management
+    let chatSessions = JSON.parse(localStorage.getItem('ghost-chat-sessions') || '[]');
+    let currentSessionId = null;
+
+    // Trade state
+    let currentQuote = null;
+    let tradeHistory = JSON.parse(localStorage.getItem('ghost-trades') || '[]');
+    let quoteTimer = null;
+    let isTrading = false;
+    let webSearchEnabled = localStorage.getItem('ghost-websearch') === 'true';
+
+    const $ = id => document.getElementById(id);
+
+    // ═══════ THEME ═══════
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      $('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+      localStorage.setItem('ghost-theme', next);
+    }
+
+    // Restore saved theme on load
+    (function initTheme() {
+      const saved = localStorage.getItem('ghost-theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+      // Icon will be set after DOM ready below
+    })();
+
+    // ═══════ TOAST ═══════
+    function toast(msg, dur = 3000) {
+      const t = $('toast'); t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), dur);
+    }
+
+    // ═══════ WEB SEARCH ═══════
+    function toggleWebSearch() {
+      webSearchEnabled = !webSearchEnabled;
+      localStorage.setItem('ghost-websearch', webSearchEnabled);
+      updateWsBtn();
+      toast(webSearchEnabled ? '🔍 Web search enabled' : 'Web search disabled');
+    }
+
+    function updateWsBtn() {
+      const btn = $('ws-btn');
+      btn.classList.toggle('on', webSearchEnabled);
+      $('input').placeholder = webSearchEnabled
+        ? 'Ask anything — web search enabled 🔍'
+        : 'Ask about crypto, trade tokens, launch, analyze...';
+    }
+
+    // ═══════ MODES ═══════
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      $('p-trade').style.display = mode === 'trade' ? 'block' : 'none';
+      $('p-launch').style.display = mode === 'launch' ? 'block' : 'none';
+      $('p-tools').style.display = mode === 'tools' ? 'block' : 'none';
+      $('p-wallet').style.display = mode === 'wallet' ? 'block' : 'none';
+      $('p-history').style.display = mode === 'history' ? 'block' : 'none';
+      $('p-sniper').style.display = mode === 'sniper' ? 'block' : 'none';
+      $('sidebar').classList.toggle('open', mode !== 'chat');
+      if (mode === 'history') { renderChatHistory(); renderTxHistory(); }
+      if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
+    }
+
+    function selPlatform(p) {
+      selectedPlatform = p;
+      document.querySelectorAll('.lplatform').forEach(el => el.classList.toggle('sel', el.dataset.p === p));
+    }
+
+    // ═══════ TOOL ACTIONS ═══════
+    function toolOpen(mode) {
+      setMode(mode);
+    }
+
+    function toolChat(prompt) {
+      setMode('chat');
+      $('input').value = prompt;
+      setTimeout(() => sendMessage(), 100);
+    }
+
+    // ═══════ CHAT SESSIONS ═══════
+    function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+    function saveCurrentSession() {
+      if (chatMessages.length === 0) return;
+      if (!currentSessionId) currentSessionId = generateId();
+      const firstUserMsg = chatMessages.find(m => m.role === 'user');
+      const title = firstUserMsg ? firstUserMsg.content.slice(0, 60) : 'New Chat';
+      const existing = chatSessions.findIndex(s => s.id === currentSessionId);
+      const session = {
+        id: currentSessionId,
+        title: title,
+        messages: chatMessages,
+        msgCount: chatMessages.length,
+        created: existing >= 0 ? chatSessions[existing].created : Date.now(),
+        updated: Date.now()
+      };
+      if (existing >= 0) {
+        chatSessions[existing] = session;
+      } else {
+        chatSessions.unshift(session);
+      }
+      // Keep max 50 sessions
+      if (chatSessions.length > 50) chatSessions = chatSessions.slice(0, 50);
+      localStorage.setItem('ghost-chat-sessions', JSON.stringify(chatSessions));
+    }
+
+    function newChat() {
+      saveCurrentSession();
+      chatMessages = [];
+      currentSessionId = generateId();
+      $('messages').innerHTML = '';
+      const es = $('empty-state');
+      if (es) es.style.display = 'flex';
+      else {
+        const div = document.createElement('div');
+        div.className = 'empty-state'; div.id = 'empty-state';
+        div.innerHTML = '<div class="eicon">◬</div><div class="etitle">Ghost Crypto</div><div class="edesc">AI-powered crypto command center. Chat with Claude, trade tokens via Jupiter, launch on pump.fun, manage your wallet.</div>';
+        $('messages').appendChild(div);
+      }
+      setMode('chat');
+      $('input').focus();
+      toast('New chat started');
+    }
+
+    function loadSession(id) {
+      saveCurrentSession();
+      const session = chatSessions.find(s => s.id === id);
+      if (!session) return;
+      currentSessionId = session.id;
+      chatMessages = [...session.messages];
+      $('messages').innerHTML = '';
+      if ($('empty-state')) $('empty-state').style.display = 'none';
+      for (const msg of chatMessages) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          addMsg(msg.role, msg.content, false);
+        }
+      }
+      setMode('chat');
+      toast('Chat loaded');
+    }
+
+    function deleteSession(id, evt) {
+      evt.stopPropagation();
+      chatSessions = chatSessions.filter(s => s.id !== id);
+      localStorage.setItem('ghost-chat-sessions', JSON.stringify(chatSessions));
+      if (currentSessionId === id) {
+        currentSessionId = null;
+        chatMessages = [];
+        $('messages').innerHTML = '';
+        const div = document.createElement('div');
+        div.className = 'empty-state'; div.id = 'empty-state';
+        div.innerHTML = '<div class="eicon">◬</div><div class="etitle">Ghost Crypto</div><div class="edesc">AI-powered crypto command center. Chat with Claude, trade tokens via Jupiter, launch on pump.fun, manage your wallet.</div>';
+        $('messages').appendChild(div);
+      }
+      renderChatHistory();
+      toast('Chat deleted');
+    }
+
+    function setHistTab(tab) {
+      $('ht-chats').classList.toggle('active', tab === 'chats');
+      $('ht-txs').classList.toggle('active', tab === 'txs');
+      $('hist-chats').style.display = tab === 'chats' ? 'block' : 'none';
+      $('hist-txs').style.display = tab === 'txs' ? 'block' : 'none';
+    }
+
+    function renderChatHistory() {
+      const el = $('hist-chats');
+      if (chatSessions.length === 0) {
+        el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">💬</div>No saved chats yet.<br>Start chatting and your conversations will appear here.</div>';
+        return;
+      }
+      let html = '';
+      for (const s of chatSessions) {
+        const date = new Date(s.updated);
+        const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const msgs = s.msgCount || s.messages.length;
+        const isActive = s.id === currentSessionId;
+        html += `
+          <div class="chat-card${isActive ? ' active-session' : ''}" onclick="loadSession('${s.id}')">
+            <div class="chat-card-title">${s.title.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <div class="chat-card-meta">
+              <span>${msgs} messages · ${dateStr} ${timeStr}</span>
+            </div>
+            <button class="chat-card-del" onclick="deleteSession('${s.id}', event)" title="Delete">✕</button>
+          </div>`;
+      }
+      el.innerHTML = html;
+    }
+
+    function renderTxHistory() {
+      const el = $('hist-txs');
+      if (tradeHistory.length === 0) {
+        el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">📋</div>No transactions yet.<br>Trade tokens via Jupiter and your history will appear here.</div>';
+        return;
+      }
+      let html = '';
+      for (const t of tradeHistory) {
+        const date = new Date(t.time);
+        const dateStr = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isBuy = t.side === 'buy';
+        html += `
+          <div class="tx-card">
+            <div class="tx-card-top">
+              <span class="tx-badge ${isBuy ? 'tx-buy' : 'tx-sell'}">${t.side.toUpperCase()}</span>
+              <span class="tx-time">${dateStr} · ${timeStr}</span>
+            </div>
+            <div class="tx-detail"><strong>${t.symbol || 'Unknown'}</strong> · ${t.amountIn} → ${t.amountOut}</div>
+            ${t.sig ? `<a class="tx-sig" href="https://solscan.io/tx/${t.sig}" target="_blank">🔗 ${t.sig.slice(0,8)}...${t.sig.slice(-6)}</a>` : ''}
+          </div>`;
+      }
+      el.innerHTML = html;
+    }
+
+    // ═══════ IMAGE ═══════
+
+    // ═══════ BASE58 UTILITIES ═══════
+    const B58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    function bs58Decode(str) {
+      const bytes = [];
+      for (let i = 0; i < str.length; i++) {
+        const c = B58_ALPHABET.indexOf(str[i]);
+        if (c < 0) throw new Error('Invalid base58 character: ' + str[i]);
+        let carry = c;
+        for (let j = 0; j < bytes.length; j++) {
+          carry += bytes[j] * 58;
+          bytes[j] = carry & 0xff;
+          carry >>= 8;
+        }
+        while (carry > 0) { bytes.push(carry & 0xff); carry >>= 8; }
+      }
+      for (let i = 0; i < str.length && str[i] === '1'; i++) bytes.push(0);
+      return new Uint8Array(bytes.reverse());
+    }
+
+    function bs58Encode(bytes) {
+      let num = 0n;
+      for (const b of bytes) num = num * 256n + BigInt(b);
+      let str = '';
+      while (num > 0n) { str = B58_ALPHABET[Number(num % 58n)] + str; num /= 58n; }
+      for (const b of bytes) { if (b !== 0) break; str = '1' + str; }
+      return str || '1';
+    }
+
+    // ═══════ SNIPER BOT ═══════
+    let sniperEnabled = localStorage.getItem('ghost-sniper-enabled') === 'true';
+    let sniperWallets = JSON.parse(localStorage.getItem('ghost-sniper-wallets') || '[]');
+    const MAX_SNIPER_WALLETS = 3;
+
+    function toggleSniper() {
+      sniperEnabled = !sniperEnabled;
+      localStorage.setItem('ghost-sniper-enabled', sniperEnabled);
+      $('sniper-sw').classList.toggle('on', sniperEnabled);
+      toast(sniperEnabled ? '⚡ Sniper enabled' : 'Sniper disabled');
+    }
+
+    function updateSniperSwitch() {
+      $('sniper-sw').classList.toggle('on', sniperEnabled);
+    }
+
+    function showSniperImport() {
+      $('sniper-import').classList.add('show');
+      $('sniper-key-input').value = '';
+      $('sniper-key-input').focus();
+    }
+
+    function hideSniperImport() {
+      $('sniper-import').classList.remove('show');
+    }
+
+    function generateSniperWallet() {
+      if (sniperWallets.length >= MAX_SNIPER_WALLETS) {
+        toast('Max ' + MAX_SNIPER_WALLETS + ' wallets'); return;
+      }
+      try {
+        const keypair = solanaWeb3.Keypair.generate();
+        const secretKey = bs58Encode(keypair.secretKey);
+        const pubKey = keypair.publicKey.toBase58();
+        sniperWallets.push({
+          publicKey: pubKey,
+          secretKey: secretKey,
+          amount: 0.01,
+          label: 'Wallet ' + (sniperWallets.length + 1)
+        });
+        saveSniperWallets();
+        hideSniperImport();
+        renderSniperWallets();
+        toast('🎲 Generated ' + pubKey.slice(0, 4) + '...' + pubKey.slice(-4));
+      } catch (e) {
+        toast('Generation failed: ' + e.message);
+      }
+    }
+
+    function importSniperWallet() {
+      if (sniperWallets.length >= MAX_SNIPER_WALLETS) {
+        toast('Max ' + MAX_SNIPER_WALLETS + ' wallets'); return;
+      }
+      const key = $('sniper-key-input').value.trim();
+      if (!key) { toast('Paste a private key first'); return; }
+      try {
+        const decoded = bs58Decode(key);
+        if (decoded.length !== 64) throw new Error('Key must be 64 bytes, got ' + decoded.length);
+        const keypair = solanaWeb3.Keypair.fromSecretKey(decoded);
+        const pubKey = keypair.publicKey.toBase58();
+        if (sniperWallets.some(w => w.publicKey === pubKey)) {
+          toast('Wallet already added'); return;
+        }
+        sniperWallets.push({
+          publicKey: pubKey,
+          secretKey: key,
+          amount: 0.01,
+          label: 'Wallet ' + (sniperWallets.length + 1)
+        });
+        saveSniperWallets();
+        hideSniperImport();
+        renderSniperWallets();
+        toast('📥 Imported ' + pubKey.slice(0, 4) + '...' + pubKey.slice(-4));
+      } catch (e) {
+        toast('Invalid key: ' + e.message);
+      }
+    }
+
+    function removeSniperWallet(idx) {
+      const w = sniperWallets[idx];
+      if (!w) return;
+      sniperWallets.splice(idx, 1);
+      // Re-label
+      sniperWallets.forEach((w, i) => w.label = 'Wallet ' + (i + 1));
+      saveSniperWallets();
+      renderSniperWallets();
+      toast('Wallet removed');
+    }
+
+    function saveSniperWallets() {
+      localStorage.setItem('ghost-sniper-wallets', JSON.stringify(sniperWallets));
+      $('sniper-add-btn').disabled = sniperWallets.length >= MAX_SNIPER_WALLETS;
+    }
+
+    function updateSniperAmount(idx, val) {
+      if (sniperWallets[idx]) {
+        sniperWallets[idx].amount = parseFloat(val) || 0;
+        saveSniperWallets();
+      }
+    }
+
+    function renderSniperWallets() {
+      const el = $('sniper-wallets');
+      if (sniperWallets.length === 0) {
+        el.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">⚡</div>No sniper wallets yet.<br>Generate or import wallets below.</div>';
+        $('sniper-add-btn').disabled = false;
+        return;
+      }
+      let html = '';
+      for (let i = 0; i < sniperWallets.length; i++) {
+        const w = sniperWallets[i];
+        const addr = w.publicKey;
+        html += `
+          <div class="sniper-wallet" id="sw-${i}">
+            <div class="sw-header">
+              <span class="sw-label">⚡ ${w.label}</span>
+              <button class="sw-remove" onclick="removeSniperWallet(${i})" title="Remove">✕</button>
+            </div>
+            <div class="sw-addr">${addr}</div>
+            <div class="sw-bal-row">
+              <span class="sw-bal" id="sw-bal-${i}">Balance: loading...</span>
+              <button class="sw-bal-refresh" onclick="refreshSniperBalance(${i})">↻</button>
+            </div>
+            <div class="sw-amt-row">
+              <span class="sw-amt-label">Snipe:</span>
+              <input type="number" class="fi" value="${w.amount}" step="0.01" min="0.001" max="10"
+                style="flex:1;" onchange="updateSniperAmount(${i}, this.value)">
+              <span class="sw-amt-label">SOL</span>
+            </div>
+            <div class="sw-status" id="sw-status-${i}"></div>
+          </div>`;
+      }
+      el.innerHTML = html;
+      $('sniper-add-btn').disabled = sniperWallets.length >= MAX_SNIPER_WALLETS;
+      refreshSniperBalances();
+    }
+
+    async function refreshSniperBalance(idx) {
+      const w = sniperWallets[idx];
+      if (!w) return;
+      const balEl = $('sw-bal-' + idx);
+      if (balEl) balEl.textContent = 'Balance: loading...';
+      try {
+        const connection = new solanaWeb3.Connection(RPC_URL);
+        const pubkey = new solanaWeb3.PublicKey(w.publicKey);
+        const bal = await connection.getBalance(pubkey);
+        const sol = (bal / 1e9).toFixed(4);
+        if (balEl) balEl.textContent = `Balance: ${sol} SOL`;
+        if (parseFloat(sol) < w.amount + 0.005) {
+          if (balEl) balEl.innerHTML = `Balance: <span style="color:var(--red);">${sol} SOL</span> <span style="font-size:10px;color:var(--red);">⚠ low</span>`;
+        }
+      } catch (e) {
+        if (balEl) balEl.textContent = 'Balance: error';
+      }
+    }
+
+    async function refreshSniperBalances() {
+      for (let i = 0; i < sniperWallets.length; i++) {
+        refreshSniperBalance(i);
+      }
+    }
+
+    function setSniperStatus(idx, text, type) {
+      const el = $('sw-status-' + idx);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'sw-status show ' + type;
+    }
+
+    async function executeSniperBuys(mintAddress, ticker) {
+      const activeWallets = sniperWallets.filter(w => w.amount > 0);
+      if (activeWallets.length === 0) return;
+
+      setStep(6, 'active', `sniping (${activeWallets.length} wallets)...`);
+
+      const results = [];
+      // Fire all buy requests in parallel for speed
+      const promises = sniperWallets.map(async (w, idx) => {
+        if (w.amount <= 0) return;
+        setSniperStatus(idx, '⏳ Building buy tx...', 'pending');
+
+        try {
+          // 1. Get buy transaction from PumpPortal
+          const txRes = await fetch('https://pumpportal.fun/api/trade-local', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              publicKey: w.publicKey,
+              action: 'buy',
+              mint: mintAddress,
+              amount: w.amount,
+              denominatedInSol: 'true',
+              slippage: 50,
+              priorityFee: 0.001,
+              pool: 'pump',
+            }),
+          });
+
+          if (!txRes.ok) {
+            const errText = await txRes.text();
+            throw new Error('PumpPortal: ' + errText.slice(0, 60));
+          }
+
+          setSniperStatus(idx, '✍️ Signing...', 'pending');
+
+          // 2. Deserialize and sign
+          const txData = await txRes.arrayBuffer();
+          const tx = solanaWeb3.VersionedTransaction.deserialize(new Uint8Array(txData));
+          const secretKey = bs58Decode(w.secretKey);
+          const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+          tx.sign([keypair]);
+
+          setSniperStatus(idx, '📡 Submitting...', 'pending');
+
+          // 3. Send to Solana
+          const connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+          const sig = await connection.sendRawTransaction(tx.serialize(), {
+            skipPreflight: true, maxRetries: 3,
+          });
+
+          setSniperStatus(idx, '⏳ Confirming...', 'pending');
+
+          // 4. Confirm (with timeout)
+          const confirmPromise = connection.confirmTransaction(sig, 'confirmed');
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 30000)
+          );
+          await Promise.race([confirmPromise, timeoutPromise]);
+
+          setSniperStatus(idx, `✅ Bought! ${sig.slice(0, 8)}...`, 'success');
+          results.push({ wallet: w.label, success: true, sig });
+
+          // Add to trade history
+          tradeHistory.unshift({
+            side: 'buy', symbol: ticker || 'SNIPE', mint: mintAddress,
+            amountIn: w.amount + ' SOL', amountOut: 'snipe', sig, time: Date.now()
+          });
+          if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
+          localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+
+        } catch (e) {
+          const errMsg = e.message || 'Unknown error';
+          setSniperStatus(idx, '❌ ' + errMsg.slice(0, 40), 'error');
+          results.push({ wallet: w.label, success: false, error: errMsg });
+        }
+      });
+
+      await Promise.allSettled(promises);
+
+      const successes = results.filter(r => r.success);
+      const failures = results.filter(r => !r.success);
+
+      if (successes.length === activeWallets.length) {
+        setStep(6, 'done', `✓ ${successes.length}/${activeWallets.length} sniped`);
+      } else if (successes.length > 0) {
+        setStep(6, 'done', `⚠ ${successes.length}/${activeWallets.length} sniped`);
+      } else {
+        setStep(6, 'error', `✗ all failed`);
+      }
+
+      // Log to chat
+      let logMsg = `⚡ SNIPER RESULTS\n\n`;
+      for (const r of results) {
+        if (r.success) {
+          logMsg += `✅ ${r.wallet}: Bought! tx: ${r.sig.slice(0, 12)}...\n`;
+        } else {
+          logMsg += `❌ ${r.wallet}: ${r.error}\n`;
+        }
+      }
+      addMsg('system', logMsg);
+
+      renderTradeHistory();
+      return results;
+    }
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        tokenImageFile = file;
+        const label = $('file-label');
+        // Keep the hidden input
+        const input = e.target;
+        label.innerHTML = '';
+        // Add small preview
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          img.style.cssText = 'width:36px;height:36px;border-radius:6px;object-fit:cover;';
+          label.insertBefore(img, label.firstChild);
+        };
+        reader.readAsDataURL(file);
+        const txt = document.createTextNode('✓ ' + file.name);
+        label.appendChild(txt);
+        label.appendChild(input);
+        label.classList.add('has-file');
+      }
+    }
+
+    // ═══════ PHANTOM ═══════
+    let phantomReady = false;
+    
+    function getPhantom() {
+      if (window.phantom?.solana?.isPhantom) return window.phantom.solana;
+      if (window.solana?.isPhantom) return window.solana;
+      return null;
+    }
+
+    // Listen for Phantom's own ready event
+    window.addEventListener('phantom#initialized', () => { phantomReady = true; });
+    // Also detect if already loaded
+    if (getPhantom()) phantomReady = true;
+
+    function waitForPhantom(maxWait = 5000) {
+      return new Promise((resolve) => {
+        const p = getPhantom();
+        if (p) return resolve(p);
+
+        let elapsed = 0;
+        const interval = setInterval(() => {
+          elapsed += 200;
+          const p = getPhantom();
+          if (p) { clearInterval(interval); resolve(p); }
+          else if (elapsed >= maxWait) { clearInterval(interval); resolve(null); }
+        }, 200);
+
+        // Also resolve on the event
+        const handler = () => {
+          clearInterval(interval);
+          window.removeEventListener('phantom#initialized', handler);
+          setTimeout(() => resolve(getPhantom()), 100);
+        };
+        window.addEventListener('phantom#initialized', handler);
+      });
+    }
+
+    async function connectWallet() {
+      toast('🔍 Looking for Phantom...');
+      let phantom = await waitForPhantom(5000);
+
+      if (!phantom) {
+        const inIframe = window.self !== window.top;
+        if (inIframe) {
+          toast('⚠️ Download this file and open it directly in Chrome to use Phantom.');
+          addMsg('system', '👻 **Phantom can\'t connect inside this preview.**\n\nChrome extensions don\'t work inside embedded frames. To use Phantom:\n\n1. Download this HTML file\n2. Open it directly in Chrome\n3. If needed: chrome://extensions → Phantom → "Allow access to file URLs"\n\nThen Connect Phantom will work.');
+        } else {
+          toast('Phantom not found — check the instructions below.');
+          addMsg('system', '👻 **Phantom not detected after 5 seconds.**\n\nTry these steps:\n• Make sure Phantom is installed and enabled in Chrome\n• Go to chrome://extensions → Phantom → Details → enable **"Allow access to file URLs"**\n• **Close this tab completely** and reopen the file (the permission needs a fresh page load)\n• Try clicking Connect Phantom again after the page fully loads\n\nIf you just enabled "Allow access to file URLs", you **must** close and reopen this tab for it to take effect.');
+        }
+        return;
+      }
+
+      try {
+        const resp = await phantom.connect();
+        walletPubkey = resp.publicKey;
+        walletAddress = resp.publicKey.toString();
+        $('wbtn').className = 'wallet-btn on';
+        $('wbtn-t').textContent = walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4);
+        $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN';
+        $('ph-stat').style.background = 'var(--green-dim)'; $('ph-stat').style.color = 'var(--green)'; $('ph-stat').textContent = 'CONNECTED';
+        try {
+          const connection = new solanaWeb3.Connection(RPC_URL);
+          walletBalance = (await connection.getBalance(resp.publicKey)) / 1e9;
+        } catch(e) { walletBalance = '—'; }
+        updateWalletPanel();
+        toast('✅ Wallet connected: ' + walletAddress.slice(0, 8) + '...');
+        $('tr-buy-btn').disabled = false;
+        $('tr-sell-btn').disabled = false;
+        setTimeout(refreshPositions, 500);
+      } catch (err) { toast('Connection rejected'); }
+    }
+
+    function updateWalletPanel() {
+      if (!walletAddress) return;
+      $('wallet-content').innerHTML = `
+        <div class="wbal"><span class="wbal-amt">${typeof walletBalance === 'number' ? walletBalance.toFixed(4) : '—'}</span><span class="wbal-lbl">SOL</span></div>
+        <div class="waddr"><div style="font-size:10px;color:var(--text-muted);margin-bottom:4px;">ADDRESS</div>${walletAddress}</div>
+        <div class="wactions">
+          <button class="wact-btn" onclick="navigator.clipboard.writeText('${walletAddress}');toast('Copied!')">📋 Copy</button>
+          <button class="wact-btn" onclick="window.open('https://solscan.io/account/${walletAddress}','_blank')">🔍 Explorer</button>
+          <button class="wact-btn" onclick="disconnectWallet()">⏏ Disconnect</button>
+        </div>`;
+    }
+
+    async function disconnectWallet() {
+      const phantom = getPhantom(); if (phantom) await phantom.disconnect();
+      walletPubkey = null; walletAddress = null; walletBalance = null;
+      $('wbtn').className = 'wallet-btn off'; $('wbtn-t').textContent = 'Connect Phantom';
+      $('lbtn').className = 'lbtn dis'; $('lbtn').textContent = 'CONNECT WALLET TO LAUNCH';
+      $('ph-stat').style.background = 'var(--red-dim)'; $('ph-stat').style.color = 'var(--red)'; $('ph-stat').textContent = 'DISCONNECTED';
+      $('wallet-content').innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);"><div style="font-size:32px;margin-bottom:12px;">👻</div><div style="font-size:14px;margin-bottom:16px;">Connect your Phantom wallet</div><button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button></div>`;
+      $('tr-buy-btn').disabled = true;
+      $('tr-sell-btn').disabled = true;
+      $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
+      toast('Wallet disconnected');
+    }
+
+    // ═══════ TOKEN LAUNCH ═══════
+    function setStep(n, status, statusText) {
+      const el = $('step-' + n); el.className = 'launch-step ' + status;
+      el.querySelector('.step-status').textContent = statusText || '';
+    }
+
+    async function launchToken() {
+      if (!walletAddress) { toast('Connect Phantom first!'); return; }
+      const name = $('t-name').value.trim();
+      const ticker = $('t-ticker').value.trim().replace('$', '');
+      const desc = $('t-desc').value.trim();
+      const initialBuy = parseFloat($('t-buy').value) || 0;
+      const twitter = $('t-twitter').value.trim();
+      const telegram = $('t-telegram').value.trim();
+      const website = $('t-website').value.trim();
+
+      if (!name) { toast('Token name is required!'); return; }
+      if (!ticker) { toast('Ticker is required!'); return; }
+      if (!tokenImageFile) { toast('Token image is required!'); return; }
+
+      $('launch-steps').style.display = 'block';
+      $('lbtn').className = 'lbtn loading'; $('lbtn').textContent = 'LAUNCHING...';
+
+      try {
+        setStep(1, 'active', 'uploading...');
+        const formData = new FormData();
+        formData.append('file', tokenImageFile);
+        formData.append('name', name); formData.append('symbol', ticker);
+        formData.append('description', desc || `${name} — launched via Ghost`);
+        formData.append('twitter', twitter); formData.append('telegram', telegram);
+        formData.append('website', website); formData.append('showName', 'true');
+
+        const ipfsRes = await fetch(`${PUMP_API}/ipfs`, { method: 'POST', body: formData });
+        if (!ipfsRes.ok) throw new Error('IPFS upload failed: ' + ipfsRes.status);
+        const ipfsData = await ipfsRes.json();
+        setStep(1, 'done', '✓');
+
+        setStep(2, 'active', 'building...');
+        const mintKeypair = solanaWeb3.Keypair.generate();
+        const txRes = await fetch(`${PUMPPORTAL_API}/trade-local`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            publicKey: walletAddress, action: 'create',
+            tokenMetadata: { name, symbol: ticker, uri: ipfsData.metadataUri },
+            mint: mintKeypair.publicKey.toBase58(),
+            denominatedInSol: 'true', amount: initialBuy,
+            slippage: 15, priorityFee: 0.0005, pool: 'pump',
+          }),
+        });
+        if (!txRes.ok) throw new Error('Transaction build failed: ' + await txRes.text());
+        setStep(2, 'done', '✓');
+
+        setStep(3, 'active', 'sign in Phantom...');
+        const txData = await txRes.arrayBuffer();
+        const tx = solanaWeb3.VersionedTransaction.deserialize(new Uint8Array(txData));
+        tx.sign([mintKeypair]);
+        const signedTx = await getPhantom().signTransaction(tx);
+        setStep(3, 'done', '✓');
+
+        setStep(4, 'active', 'submitting...');
+        const connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+        const signature = await connection.sendRawTransaction(signedTx.serialize(), { skipPreflight: true, maxRetries: 3 });
+        await connection.confirmTransaction(signature, 'confirmed');
+        setStep(4, 'done', '✓');
+
+        setStep(5, 'done', '🎉 LIVE!');
+        const mintAddr = mintKeypair.publicKey.toBase58();
+        if ($('empty-state')) $('empty-state').style.display = 'none';
+        addMsg('success',
+          `🎉 TOKEN LAUNCHED!\n\nName: ${name}\nTicker: $${ticker}\nMint: ${mintAddr}\n${initialBuy > 0 ? `Initial Buy: ${initialBuy} SOL\n` : ''}Tx: ${signature.slice(0, 16)}...\n\n🔗 View: https://pump.fun/${mintAddr}\n🔍 Solscan: https://solscan.io/tx/${signature}`
+        );
+        toast('🎉 $' + ticker + ' is live!');
+
+        // ═══ SNIPER INTEGRATION ═══
+        if (sniperEnabled && sniperWallets.length > 0 && sniperWallets.some(w => w.amount > 0)) {
+          $('step-6').style.display = 'flex';
+          try {
+            await executeSniperBuys(mintAddr, ticker);
+          } catch (sniperErr) {
+            setStep(6, 'error', '✗ ' + (sniperErr.message || 'sniper failed').slice(0, 30));
+            addMsg('system', `⚡ Sniper error: ${sniperErr.message}\n\nToken launched OK — you can manually buy from the TRADE tab.`);
+          }
+          setTimeout(() => { $('launch-steps').style.display = 'none'; [1,2,3,4,5,6].forEach(n => { setStep(n, 'pending', ''); if (n === 6) $('step-6').style.display = 'none'; }); $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN'; }, 8000);
+        } else {
+          setTimeout(() => { $('launch-steps').style.display = 'none'; [1,2,3,4,5].forEach(n => setStep(n, 'pending', '')); $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN'; }, 5000);
+        }
+      } catch (err) {
+        console.error('Launch error:', err);
+        for (let i = 1; i <= 6; i++) { if ($('step-' + i) && $('step-' + i).classList.contains('active')) { setStep(i, 'error', '✗ ' + err.message.slice(0, 40)); break; } }
+        if ($('empty-state')) $('empty-state').style.display = 'none';
+        addMsg('system', `❌ Launch failed: ${err.message}\n\nCommon fixes:\n• Enough SOL? (0.02+ for gas)\n• Image under 5MB?\n• Approve in Phantom\n• Check internet connection`);
+        $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 RETRY LAUNCH';
+        setTimeout(() => { $('launch-steps').style.display = 'none'; [1,2,3,4,5,6].forEach(n => { setStep(n, 'pending', ''); if (n === 6) $('step-6').style.display = 'none'; }); }, 8000);
+      }
+    }
+
+    // ═══════ JUPITER TRADING ═══════
+    function setTradeAmt(amt) {
+      $('tr-amount').value = amt;
+      document.querySelectorAll('.trade-preset').forEach(b => b.classList.toggle('sel', parseFloat(b.textContent) === amt));
+      getQuote();
+    }
+
+    function onMintInput(val) {
+      const clean = val.trim();
+      if (clean.length >= 32 && clean.length <= 50) {
+        lookupToken(clean);
+      } else {
+        $('tr-token-info').style.display = 'none';
+        currentQuote = null;
+        $('tr-quote').style.display = 'none';
+      }
+    }
+
+    async function lookupToken(mint) {
+      try {
+        const res = await fetch(`${JUP_PRICE}?ids=${mint}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const info = data.data?.[mint];
+        if (info) {
+          $('tr-token-name').textContent = info.mintSymbol || mint.slice(0, 6) + '...';
+          $('tr-token-price').textContent = '$' + parseFloat(info.price).toFixed(info.price < 0.001 ? 8 : info.price < 1 ? 6 : 4);
+          $('tr-token-info').style.display = 'block';
+          $('tr-buy-btn').disabled = !walletAddress;
+          $('tr-sell-btn').disabled = !walletAddress;
+          if (parseFloat($('tr-amount').value) > 0) getQuote();
+        } else {
+          $('tr-token-name').textContent = mint.slice(0, 8) + '...';
+          $('tr-token-price').textContent = 'price unavailable';
+          $('tr-token-info').style.display = 'block';
+          $('tr-buy-btn').disabled = !walletAddress;
+          $('tr-sell-btn').disabled = !walletAddress;
+        }
+      } catch(e) {
+        $('tr-token-info').style.display = 'none';
+      }
+    }
+
+    async function getQuote() {
+      const mint = $('tr-mint').value.trim();
+      const amount = parseFloat($('tr-amount').value);
+      const slippage = parseFloat($('tr-slippage').value) || 1;
+      if (!mint || mint.length < 32 || !amount || amount <= 0) {
+        $('tr-quote').style.display = 'none';
+        currentQuote = null;
+        return;
+      }
+      clearTimeout(quoteTimer);
+      quoteTimer = setTimeout(async () => {
+        try {
+          const lamports = Math.round(amount * 1e9);
+          const url = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${Math.round(slippage * 100)}`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error('Quote failed');
+          const quote = await res.json();
+          currentQuote = quote;
+
+          $('tq-pay').textContent = amount + ' SOL';
+          const outAmt = parseInt(quote.outAmount);
+          const decimals = quote.outputMint === SOL_MINT ? 9 : (quote.routePlan?.[0]?.swapInfo?.outputMint === mint ? 6 : 6);
+          const tokenDecimals = await getTokenDecimals(mint);
+          const received = outAmt / Math.pow(10, tokenDecimals);
+          $('tq-receive').textContent = formatNum(received) + ' tokens';
+          $('tq-impact').textContent = (parseFloat(quote.priceImpactPct) * 100).toFixed(3) + '%';
+          const routeNames = quote.routePlan?.map(r => r.swapInfo?.label || '?').join(' → ') || 'Jupiter';
+          $('tq-route').textContent = routeNames;
+          $('tr-quote').style.display = 'block';
+        } catch(e) {
+          $('tr-quote').style.display = 'none';
+          currentQuote = null;
+        }
+      }, 400);
+    }
+
+    async function getTokenDecimals(mint) {
+      try {
+        const conn = new solanaWeb3.Connection(RPC_URL);
+        const info = await conn.getParsedAccountInfo(new solanaWeb3.PublicKey(mint));
+        return info?.value?.data?.parsed?.info?.decimals ?? 6;
+      } catch(e) { return 6; }
+    }
+
+    function formatNum(n) {
+      if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+      if (n >= 1) return n.toFixed(4);
+      return n.toFixed(8);
+    }
+
+    async function executeTrade(side) {
+      if (!walletAddress) { toast('Connect wallet first!'); return; }
+      if (isTrading) return;
+
+      const mint = $('tr-mint').value.trim();
+      const amount = parseFloat($('tr-amount').value);
+      const slippage = parseFloat($('tr-slippage').value) || 1;
+      const priority = parseFloat($('tr-priority').value) || 0.0005;
+
+      if (!mint || mint.length < 32) { toast('Paste a valid token address'); return; }
+      if (!amount || amount <= 0) { toast('Enter an amount'); return; }
+
+      isTrading = true;
+      const btn = side === 'buy' ? $('tr-buy-btn') : $('tr-sell-btn');
+      const origText = btn.textContent;
+      btn.classList.add('loading');
+      btn.textContent = side === 'buy' ? 'GETTING QUOTE...' : 'GETTING QUOTE...';
+      btn.disabled = true;
+
+      try {
+        // Step 1: Get quote
+        let inputMint, outputMint, lamports;
+        if (side === 'buy') {
+          inputMint = SOL_MINT;
+          outputMint = mint;
+          lamports = Math.round(amount * 1e9);
+        } else {
+          inputMint = mint;
+          outputMint = SOL_MINT;
+          // For sell: amount is in SOL worth, we need token amount
+          // Get token balance instead
+          const tokenBalance = await getTokenBalance(mint);
+          if (!tokenBalance || tokenBalance <= 0) {
+            throw new Error('No token balance to sell');
+          }
+          const tokenDecimals = await getTokenDecimals(mint);
+          // Sell all if amount >= token value, otherwise sell proportional
+          lamports = Math.round(tokenBalance * Math.pow(10, tokenDecimals));
+        }
+
+        btn.textContent = 'FETCHING ROUTE...';
+        const quoteUrl = `${JUP_API}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${lamports}&slippageBps=${Math.round(slippage * 100)}`;
+        const quoteRes = await fetch(quoteUrl);
+        if (!quoteRes.ok) throw new Error('Failed to get Jupiter quote');
+        const quote = await quoteRes.json();
+
+        // Step 2: Get swap transaction
+        btn.textContent = 'BUILDING TX...';
+        const swapRes = await fetch(`${JUP_API}/swap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quoteResponse: quote,
+            userPublicKey: walletAddress,
+            wrapAndUnwrapSol: true,
+            dynamicComputeUnitLimit: true,
+            prioritizationFeeLamports: Math.round(priority * 1e9),
+          }),
+        });
+        if (!swapRes.ok) throw new Error('Failed to build swap transaction');
+        const swapData = await swapRes.json();
+
+        // Step 3: Sign with Phantom
+        btn.textContent = 'SIGN IN PHANTOM...';
+        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+        const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        const phantom = getPhantom();
+        if (!phantom) throw new Error('Phantom not found');
+        const signed = await phantom.signTransaction(tx);
+
+        // Step 4: Send to Solana
+        btn.textContent = 'SUBMITTING...';
+        const conn = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+        const rawTx = signed.serialize();
+        const sig = await conn.sendRawTransaction(rawTx, {
+          skipPreflight: true,
+          maxRetries: 3,
+        });
+
+        btn.textContent = 'CONFIRMING...';
+        await conn.confirmTransaction(sig, 'confirmed');
+
+        // Success!
+        const tokenDecimals = await getTokenDecimals(side === 'buy' ? mint : SOL_MINT);
+        const outAmt = parseInt(quote.outAmount) / Math.pow(10, side === 'buy' ? tokenDecimals : 9);
+        const symbol = $('tr-token-name')?.textContent || mint.slice(0, 6);
+
+        toast(`✅ ${side === 'buy' ? 'Bought' : 'Sold'} ${symbol}!`, 5000);
+
+        // Add to history
+        const trade = {
+          side, symbol, mint,
+          amountIn: side === 'buy' ? amount + ' SOL' : formatNum(lamports / Math.pow(10, tokenDecimals)) + ' ' + symbol,
+          amountOut: side === 'buy' ? formatNum(outAmt) + ' ' + symbol : outAmt.toFixed(4) + ' SOL',
+          sig: sig,
+          time: Date.now(),
+        };
+        tradeHistory.unshift(trade);
+        if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
+        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        renderTradeHistory();
+
+        // Log to chat
+        if ($('empty-state')) $('empty-state').style.display = 'none';
+        addMsg('success',
+          `${side === 'buy' ? '🟢 BUY' : '🔴 SELL'} EXECUTED\n\nToken: ${symbol}\nPaid: ${trade.amountIn}\nReceived: ${trade.amountOut}\nTx: ${sig.slice(0, 20)}...\n\n🔍 https://solscan.io/tx/${sig}`
+        );
+
+        // Refresh balance
+        try {
+          walletBalance = (await conn.getBalance(walletPubkey)) / 1e9;
+          updateWalletPanel();
+        } catch(e) {}
+
+        // Refresh positions
+        setTimeout(refreshPositions, 2000);
+
+      } catch(e) {
+        console.error('Trade error:', e);
+        const errMsg = e.message || 'Trade failed';
+        if (errMsg.includes('User rejected')) {
+          toast('Transaction rejected in Phantom');
+        } else {
+          toast('❌ ' + errMsg.slice(0, 60));
+          if ($('empty-state')) $('empty-state').style.display = 'none';
+          addMsg('system', `❌ ${side.toUpperCase()} failed: ${errMsg}\n\nCheck: enough SOL? Slippage high enough? Token still liquid?`);
+        }
+      }
+
+      isTrading = false;
+      btn.classList.remove('loading');
+      btn.textContent = origText;
+      btn.disabled = !walletAddress;
+    }
+
+    async function getTokenBalance(mint) {
+      try {
+        const conn = new solanaWeb3.Connection(RPC_URL);
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
+          walletPubkey,
+          { mint: new solanaWeb3.PublicKey(mint) }
+        );
+        if (tokenAccounts.value.length > 0) {
+          return tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+        }
+        return 0;
+      } catch(e) { return 0; }
+    }
+
+    // ═══════ POSITIONS ═══════
+    async function refreshPositions() {
+      if (!walletAddress) {
+        $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
+        return;
+      }
+      $('positions-list').innerHTML = '<div class="pos-empty">Loading positions...</div>';
+
+      try {
+        const conn = new solanaWeb3.Connection(RPC_URL);
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
+          walletPubkey,
+          { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
+        );
+
+        const positions = tokenAccounts.value
+          .map(ta => {
+            const info = ta.account.data.parsed.info;
+            const amt = info.tokenAmount.uiAmount;
+            if (amt <= 0) return null;
+            return {
+              mint: info.mint,
+              amount: amt,
+              decimals: info.tokenAmount.decimals,
+            };
+          })
+          .filter(Boolean);
+
+        if (positions.length === 0) {
+          $('positions-list').innerHTML = '<div class="pos-empty">No token positions found</div>';
+          return;
+        }
+
+        // Get prices for all mints
+        const mints = positions.map(p => p.mint).join(',');
+        let prices = {};
+        try {
+          const priceRes = await fetch(`${JUP_PRICE}?ids=${mints}`);
+          if (priceRes.ok) {
+            const priceData = await priceRes.json();
+            prices = priceData.data || {};
+          }
+        } catch(e) {}
+
+        let html = '';
+        for (const pos of positions.slice(0, 20)) {
+          const priceInfo = prices[pos.mint];
+          const symbol = priceInfo?.mintSymbol || pos.mint.slice(0, 6) + '...';
+          const price = priceInfo ? parseFloat(priceInfo.price) : 0;
+          const value = price * pos.amount;
+          const valueStr = value > 0 ? '$' + (value < 0.01 ? value.toFixed(6) : value.toFixed(2)) : '—';
+
+          html += `
+            <div class="pos-card" onclick="$('tr-mint').value='${pos.mint}';onMintInput('${pos.mint}');">
+              <div class="pos-top">
+                <span class="pos-symbol">${symbol}</span>
+                <span class="pos-value">${valueStr}</span>
+              </div>
+              <div class="pos-bottom">
+                <span>${formatNum(pos.amount)} tokens</span>
+                <span>${price > 0 ? '$' + (price < 0.001 ? price.toFixed(8) : price.toFixed(6)) : '—'}</span>
+              </div>
+            </div>`;
+        }
+        $('positions-list').innerHTML = html;
+      } catch(e) {
+        console.error('Positions error:', e);
+        $('positions-list').innerHTML = '<div class="pos-empty">Failed to load positions</div>';
+      }
+    }
+
+    // ═══════ TRADE HISTORY ═══════
+    function renderTradeHistory() {
+      if (tradeHistory.length === 0) {
+        $('trade-history').innerHTML = '<div class="pos-empty" style="padding:16px;">No trades yet</div>';
+        return;
+      }
+      let html = '';
+      for (const t of tradeHistory.slice(0, 20)) {
+        const time = new Date(t.time);
+        const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        html += `
+          <div class="th-item">
+            <span class="th-action ${t.side === 'buy' ? 'th-buy' : 'th-sell'}">${t.side.toUpperCase()}</span>
+            <span class="th-details">${t.symbol} · ${t.amountIn} → ${t.amountOut}</span>
+            <span class="th-time">${timeStr}</span>
+          </div>`;
+      }
+      $('trade-history').innerHTML = html;
+    }
+
+    function clearTradeHistory() {
+      tradeHistory = [];
+      localStorage.removeItem('ghost-trades');
+      renderTradeHistory();
+      toast('Trade history cleared');
+    }
+
+    // ═══════ CHAT MODE (AGENT / CHAT) ═══════
+    function setChatMode(mode) {
+      chatMode = mode;
+      localStorage.setItem('ghost-chat-mode', mode);
+      $('cmt-agent').classList.toggle('active', mode === 'agent');
+      $('cmt-chat').classList.toggle('active', mode === 'chat');
+      $('input').placeholder = mode === 'agent'
+        ? 'Tell Ghost what to do...'
+        : 'Chat with Claude...';
+    }
+
+    // Instant local commands (no API call needed)
+    const LOCAL_COMMANDS = [
+      { patterns: [/^open\s+trade/i, /^trade$/i, /^trading$/i, /^swap$/i], action: () => { setMode('trade'); return '⟡ Opened trade panel.'; } },
+      { patterns: [/^open\s+launch/i, /^launch$/i, /^launcher$/i], action: () => { setMode('launch'); return '🚀 Opened token launcher.'; } },
+      { patterns: [/^open\s+wallet/i, /^wallet$/i], action: () => { setMode('wallet'); return '◎ Opened wallet panel.'; } },
+      { patterns: [/^open\s+tools/i, /^tools$/i, /^plugins$/i], action: () => { setMode('tools'); return '◈ Opened tools panel.'; } },
+      { patterns: [/^open\s+sniper/i, /^sniper$/i], action: () => { setMode('sniper'); return '⚡ Opened sniper bot.'; } },
+      { patterns: [/^open\s+history/i, /^history$/i], action: () => { setMode('history'); return '☰ Opened history.'; } },
+      { patterns: [/^new\s+chat$/i, /^clear\s+chat$/i, /^reset$/i], action: () => { setTimeout(newChat, 100); return '✦ Starting new chat...'; } },
+      { patterns: [/^connect\s+wallet$/i, /^connect$/i], action: () => { connectWallet(); return '👻 Connecting Phantom...'; } },
+      { patterns: [/^disconnect\s+wallet$/i, /^disconnect$/i], action: () => { disconnectWallet(); return '👻 Disconnecting...'; } },
+      { patterns: [/^sniper\s+on$/i, /^enable\s+sniper$/i], action: () => { if (!sniperEnabled) toggleSniper(); return '⚡ Sniper enabled.'; } },
+      { patterns: [/^sniper\s+off$/i, /^disable\s+sniper$/i], action: () => { if (sniperEnabled) toggleSniper(); return '⚡ Sniper disabled.'; } },
+      { patterns: [/^web\s+search\s+on$/i, /^search\s+on$/i], action: () => { if (!webSearchEnabled) toggleWebSearch(); return '🔍 Web search enabled.'; } },
+      { patterns: [/^web\s+search\s+off$/i, /^search\s+off$/i], action: () => { if (webSearchEnabled) toggleWebSearch(); return '🔍 Web search disabled.'; } },
+      { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
+      { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
+      { patterns: [/^help$/i, /^commands$/i], action: () => {
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\nOr just describe what you want — Claude will figure it out.`;
+      }},
+    ];
+
+    // Trade commands that need parameter parsing
+    function tryTradeCommand(text) {
+      // "buy 0.1 [mint]" or "buy 0.1 sol of [mint]"
+      const buyMatch = text.match(/^buy\s+([\d.]+)\s*(?:sol\s+(?:of\s+)?)?([1-9A-HJ-NP-Za-km-z]{32,44})/i);
+      if (buyMatch) {
+        const amount = parseFloat(buyMatch[1]);
+        const mint = buyMatch[2];
+        setMode('trade');
+        $('tr-mint').value = mint;
+        onMintInput(mint);
+        setTimeout(() => { setTradeAmt(amount); }, 500);
+        return `⟡ Setting up buy: ${amount} SOL → ${mint.slice(0,6)}...${mint.slice(-4)}\nOpened trade panel. Hit BUY when ready.`;
+      }
+
+      // "sell [mint]" or "sell all [mint]"
+      const sellMatch = text.match(/^sell\s+(?:all\s+)?([1-9A-HJ-NP-Za-km-z]{32,44})/i);
+      if (sellMatch) {
+        const mint = sellMatch[1];
+        setMode('trade');
+        $('tr-mint').value = mint;
+        onMintInput(mint);
+        return `⟡ Setting up sell: ${mint.slice(0,6)}...${mint.slice(-4)}\nOpened trade panel. Hit SELL when ready.`;
+      }
+
+      // "set slippage 2" or "slippage 5%"
+      const slipMatch = text.match(/(?:set\s+)?slippage\s+([\d.]+)/i);
+      if (slipMatch) {
+        $('tr-slippage').value = parseFloat(slipMatch[1]);
+        return `⚙️ Slippage set to ${slipMatch[1]}%`;
+      }
+
+      // "set priority 0.001"
+      const prioMatch = text.match(/(?:set\s+)?priority\s+([\d.]+)/i);
+      if (prioMatch) {
+        $('tr-priority').value = parseFloat(prioMatch[1]);
+        return `⚙️ Priority fee set to ${prioMatch[1]} SOL`;
+      }
+
+      return null;
+    }
+
+    function tryLocalCommand(text) {
+      // Check instant commands
+      for (const cmd of LOCAL_COMMANDS) {
+        for (const pattern of cmd.patterns) {
+          if (pattern.test(text)) return cmd.action();
+        }
+      }
+      // Check trade commands
+      return tryTradeCommand(text);
+    }
+
+    // Parse Claude's agent response for action tags
+    function parseAndExecuteActions(responseText) {
+      const actionRegex = /\{\{ACTION:([^}]+)\}\}/g;
+      let match;
+      let cleanText = responseText;
+      while ((match = actionRegex.exec(responseText)) !== null) {
+        const actionStr = match[1];
+        const parts = actionStr.split('|');
+        const action = parts[0];
+        cleanText = cleanText.replace(match[0], '');
+        try {
+          switch (action) {
+            case 'open_trade': setMode('trade'); break;
+            case 'open_launch': setMode('launch'); break;
+            case 'open_wallet': setMode('wallet'); break;
+            case 'open_tools': setMode('tools'); break;
+            case 'open_sniper': setMode('sniper'); break;
+            case 'open_history': setMode('history'); break;
+            case 'new_chat': setTimeout(newChat, 200); break;
+            case 'connect_wallet': connectWallet(); break;
+            case 'sniper_on': if (!sniperEnabled) toggleSniper(); break;
+            case 'sniper_off': if (sniperEnabled) toggleSniper(); break;
+            case 'web_search_on': if (!webSearchEnabled) toggleWebSearch(); break;
+            case 'web_search_off': if (webSearchEnabled) toggleWebSearch(); break;
+            case 'setup_buy':
+              if (parts[1]) { setMode('trade'); $('tr-mint').value = parts[1]; onMintInput(parts[1]); }
+              if (parts[2]) setTimeout(() => setTradeAmt(parseFloat(parts[2])), 500);
+              break;
+            case 'setup_sell':
+              if (parts[1]) { setMode('trade'); $('tr-mint').value = parts[1]; onMintInput(parts[1]); }
+              break;
+            case 'set_slippage':
+              if (parts[1]) $('tr-slippage').value = parseFloat(parts[1]);
+              break;
+            case 'dark_mode': if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); break;
+            case 'light_mode': if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); break;
+          }
+        } catch(e) { console.warn('Action failed:', action, e); }
+      }
+      return cleanText.trim();
+    }
+
+    // ═══════ CLAUDE API KEY ═══════
+    function getModelLabel(model) {
+      if (model.includes('sonnet-4')) return 'Sonnet 4';
+      if (model.includes('haiku-4')) return 'Haiku 4.5';
+      if (model.includes('opus-4')) return 'Opus 4.5';
+      return model;
+    }
+
+    function checkApiKey() {
+      if (apiKey && apiKey.startsWith('sk-ant-')) {
+        $('api-s').className = 'sbadge on';
+        $('api-st').textContent = getModelLabel(currentModel).toUpperCase();
+      } else {
+        $('api-s').className = 'sbadge off';
+        $('api-st').textContent = 'NO KEY';
+      }
+    }
+
+    function promptApiKey() {
+      const overlay = document.createElement('div');
+      overlay.className = 'key-overlay';
+      overlay.innerHTML = `
+        <div class="key-modal">
+          <div class="key-modal-icon">🔑</div>
+          <h3>Claude API Key</h3>
+          <p>Enter your Anthropic API key. It's stored in your browser only — never sent anywhere except api.anthropic.com.</p>
+          <input type="password" id="key-input" placeholder="sk-ant-api03-..." value="${apiKey || ''}">
+          <div class="key-btns">
+            <button class="key-cancel" onclick="this.closest('.key-overlay').remove()">Cancel</button>
+            <button class="key-save" onclick="saveApiKey()">Save Key</button>
+          </div>
+        </div>`;
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+      setTimeout(() => document.getElementById('key-input')?.focus(), 50);
+    }
+
+    function saveApiKey() {
+      const val = document.getElementById('key-input')?.value?.trim();
+      if (!val) { toast('Please enter an API key'); return; }
+      if (!val.startsWith('sk-ant-')) { toast('Key should start with sk-ant-...'); return; }
+      apiKey = val;
+      localStorage.setItem('ghost-claude-key', apiKey);
+      document.querySelector('.key-overlay')?.remove();
+      checkApiKey();
+      toast('API key saved ✓');
+    }
+
+    $('model-sel').addEventListener('change', e => {
+      currentModel = e.target.value;
+      checkApiKey();
+    });
+
+    // ═══════ CHAT ═══════
+    async function sendMessage() {
+      const text = $('input').value.trim();
+      if (!text || isGenerating) return;
+
+      if ($('empty-state')) $('empty-state').style.display = 'none';
+      if (!currentSessionId) currentSessionId = generateId();
+
+      // ── AGENT MODE: try local command first ──
+      if (chatMode === 'agent') {
+        const localResult = tryLocalCommand(text);
+        if (localResult) {
+          addMsg('user', text); $('input').value = '';
+          addMsg('system', localResult);
+          chatMessages.push({ role: 'user', content: text });
+          chatMessages.push({ role: 'assistant', content: localResult });
+          saveCurrentSession();
+          $('input').focus();
+          return;
+        }
+      }
+
+      // Need API key for Claude calls
+      if (!apiKey || !apiKey.startsWith('sk-ant-')) {
+        promptApiKey();
+        return;
+      }
+
+      addMsg('user', text); $('input').value = '';
+      const el = addMsg('assistant', '', true);
+      isGenerating = true; $('send-btn').disabled = true;
+
+      // Build system prompt based on mode
+      let sysPrompt;
+      if (chatMode === 'agent') {
+        sysPrompt = `You are Ghost, an AI agent that controls a crypto trading terminal. You can execute actions by including action tags in your response.
+
+AVAILABLE ACTIONS (include these in your response to trigger them):
+{{ACTION:open_trade}} - Open the trade/swap panel
+{{ACTION:open_launch}} - Open the token launcher
+{{ACTION:open_wallet}} - Open the wallet panel
+{{ACTION:open_tools}} - Open the tools panel
+{{ACTION:open_sniper}} - Open the sniper bot settings
+{{ACTION:open_history}} - Open history panel
+{{ACTION:new_chat}} - Start a new chat
+{{ACTION:connect_wallet}} - Connect Phantom wallet
+{{ACTION:sniper_on}} / {{ACTION:sniper_off}} - Toggle sniper
+{{ACTION:web_search_on}} / {{ACTION:web_search_off}} - Toggle web search
+{{ACTION:setup_buy|MINT_ADDRESS|AMOUNT}} - Open trade and prefill a buy
+{{ACTION:setup_sell|MINT_ADDRESS}} - Open trade and prefill a sell
+{{ACTION:set_slippage|PERCENT}} - Set slippage
+{{ACTION:dark_mode}} / {{ACTION:light_mode}} - Switch theme
+
+RULES:
+- When the user asks to do something (trade, open a panel, change settings), include the relevant ACTION tag AND a brief confirmation message.
+- Be concise and crypto-native. Use action tags proactively when relevant.
+- If the user asks to buy/sell a specific token, use setup_buy or setup_sell with the mint address.
+- Always warn about risks for trades.
+- The action tags will be hidden from the user — they only see your text.
+${webSearchEnabled ? '- You have web search — use it for real-time prices and news.' : ''}
+User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
+      } else {
+        sysPrompt = `You are Ghost, a crypto-knowledgeable AI assistant. You're in Chat mode — focus on having helpful, informative conversations. You specialize in Solana, memecoins, DeFi, trading strategies, technical analysis, and crypto culture. Be direct and conversational. Use crypto-native language when appropriate.${webSearchEnabled ? ' You have web search enabled — use it to find real-time prices, news, and market data.' : ''} User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
+      }
+
+      try {
+        const apiMessages = chatMessages.slice(-20).map(m => ({ role: m.role, content: m.content }));
+
+        const reqBody = {
+          model: currentModel,
+          max_tokens: 4096,
+          system: sysPrompt,
+          messages: apiMessages,
+          stream: true,
+        };
+
+        if (webSearchEnabled) {
+          reqBody.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }];
+        }
+
+        const res = await fetch(CLAUDE_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify(reqBody),
+        });
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          if (res.status === 401) throw new Error('Invalid API key — click 🔑 to update');
+          if (res.status === 429) throw new Error('Rate limited — wait a moment and try again');
+          if (res.status === 529) throw new Error('Claude is overloaded — try again shortly');
+          throw new Error(`API error ${res.status}: ${errBody.slice(0, 100)}`);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let full = '';
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') continue;
+              try {
+                const evt = JSON.parse(data);
+
+                if (evt.type === 'content_block_start' && evt.content_block?.type === 'tool_use' && evt.content_block?.name === 'web_search') {
+                  updateMsg(el, '🔍 Searching the web...');
+                }
+                if (evt.type === 'content_block_start' && evt.content_block?.type === 'web_search_tool_result') {
+                  updateMsg(el, '🔍 Processing search results...');
+                }
+                if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta' && evt.delta?.text) {
+                  full += evt.delta.text;
+                  // Strip action tags from display in real-time
+                  const displayText = full.replace(/\{\{ACTION:[^}]+\}\}/g, '').trim();
+                  updateMsg(el, displayText);
+                }
+              } catch(e) {}
+            }
+          }
+        }
+
+        if (!full) {
+          updateMsg(el, '⚠️ Empty response from Claude. Try again.');
+        } else {
+          // In agent mode, parse and execute action tags
+          let cleanResponse = full;
+          if (chatMode === 'agent') {
+            cleanResponse = parseAndExecuteActions(full);
+          }
+          updateMsg(el, cleanResponse);
+          chatMessages.push({ role: 'assistant', content: cleanResponse });
+        }
+      } catch(e) {
+        updateMsg(el, `❌ ${e.message}`);
+      }
+      isGenerating = false; $('send-btn').disabled = false; $('input').focus();
+      saveCurrentSession();
+    }
+
+    function addMsg(role, content, streaming) {
+      const div = document.createElement('div'); div.className = 'message ' + role;
+      if (role === 'user' || role === 'assistant') {
+        const h = document.createElement('div'); h.className = 'mh';
+        h.innerHTML = `<span class="mr">${role === 'user' ? 'YOU' : 'GHOST'}</span>${role === 'assistant' ? `<span class="mt">${getModelLabel(currentModel)}</span>` : ''}`;
+        div.appendChild(h);
+      }
+      const c = document.createElement('div'); c.className = 'mc';
+      if (streaming && !content) { c.innerHTML = '<div class="typing"><span>●</span><span>●</span><span>●</span></div>'; }
+      else { c.innerHTML = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>'); }
+      div.appendChild(c);
+      $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight;
+      if (role === 'user') chatMessages.push({ role, content });
+      return c;
+    }
+
+    function updateMsg(el, content) {
+      el.innerHTML = content
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/`([^`]+)`/g,'<code style="background:var(--bg-elevated);padding:1px 5px;border-radius:4px;font-size:0.9em;">$1</code>')
+        .replace(/^### (.+)$/gm,'<strong style="font-size:1.05em;">$1</strong>')
+        .replace(/^## (.+)$/gm,'<strong style="font-size:1.1em;">$1</strong>')
+        .replace(/\n/g,'<br>')
+        .replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" style="color:var(--accent);">$1</a>');
+      $('messages').scrollTop = $('messages').scrollHeight;
+    }
+
+    function setInput(text) { $('input').value = text; $('input').focus(); }
+    $('input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+    // ═══════ INIT ═══════
+    $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+    $('model-sel').value = currentModel;
+    checkApiKey();
+    renderTradeHistory();
+    updateWsBtn();
+    updateSniperSwitch();
+    setChatMode(chatMode);
+
+    // Auto-prompt for key if not set
+    if (!apiKey) setTimeout(promptApiKey, 500);
+
+    window.addEventListener('load', async () => {
+      // Wait for Phantom to inject (up to 3s on load)
+      const phantom = await waitForPhantom(3000);
+      if (phantom) {
+        phantom.connect({ onlyIfTrusted: true }).then(resp => {
+          walletPubkey = resp.publicKey; walletAddress = resp.publicKey.toString();
+          $('wbtn').className = 'wallet-btn on';
+          $('wbtn-t').textContent = walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4);
+          $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN';
+          $('ph-stat').style.background = 'var(--green-dim)'; $('ph-stat').style.color = 'var(--green)'; $('ph-stat').textContent = 'CONNECTED';
+          $('tr-buy-btn').disabled = false;
+          $('tr-sell-btn').disabled = false;
+          new solanaWeb3.Connection(RPC_URL).getBalance(resp.publicKey)
+            .then(b => { walletBalance = b / 1e9; updateWalletPanel(); })
+            .catch(() => { walletBalance = '—'; updateWalletPanel(); });
+          setTimeout(refreshPositions, 500);
+        }).catch(() => {});
+      }
+    });
+
+    $('input').focus();
+  </script>
+</body>
+</html>
