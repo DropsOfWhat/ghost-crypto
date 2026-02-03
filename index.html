@@ -2227,7 +2227,7 @@
       const balEl = $('sw-bal-' + idx);
       if (balEl) balEl.textContent = 'Balance: loading...';
       try {
-        const connection = new solanaWeb3.Connection(RPC_URL);
+        const connection = await getWorkingConnection();
         const pubkey = new solanaWeb3.PublicKey(w.publicKey);
         const bal = await connection.getBalance(pubkey);
         const sol = (bal / 1e9).toFixed(4);
@@ -2299,7 +2299,7 @@
           setSniperStatus(idx, '📡 Submitting...', 'pending');
 
           // 3. Send to Solana
-          const connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+          const connection = await getWorkingConnection();
           const sig = await connection.sendRawTransaction(tx.serialize(), {
             skipPreflight: true, maxRetries: 3,
           });
@@ -2772,7 +2772,7 @@
 
     async function getTokenDecimals(mint) {
       try {
-        const conn = new solanaWeb3.Connection(RPC_URL);
+        const conn = await getWorkingConnection();
         const info = await conn.getParsedAccountInfo(new solanaWeb3.PublicKey(mint));
         return info?.value?.data?.parsed?.info?.decimals ?? 6;
       } catch(e) { return 6; }
@@ -2935,7 +2935,7 @@
 
     async function getTokenBalance(mint) {
       try {
-        const conn = new solanaWeb3.Connection(RPC_URL);
+        const conn = await getWorkingConnection();
         const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
           walletPubkey,
           { mint: new solanaWeb3.PublicKey(mint) }
@@ -3111,7 +3111,7 @@
         // Fetch top holders via Solana RPC
         let holdersHtml = '';
         try {
-          const conn = new solanaWeb3.Connection(RPC_URL);
+          const conn = await getWorkingConnection();
           const largestAccounts = await conn.getTokenLargestAccounts(new solanaWeb3.PublicKey(mint));
           const supply = await conn.getTokenSupply(new solanaWeb3.PublicKey(mint));
           const totalSupply = supply.value.uiAmount || 1;
@@ -3714,7 +3714,7 @@
         }
 
         // Fallback: RPC getTokenAccountsByOwner
-        const conn = new solanaWeb3.Connection(RPC_URL);
+        const conn = await getWorkingConnection();
         const pubkey = new solanaWeb3.PublicKey(address);
         const sol = await conn.getBalance(pubkey);
         const tokenAccs = await conn.getParsedTokenAccountsByOwner(pubkey, { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') });
@@ -3811,7 +3811,7 @@
 
       // Path B: Multi-RPC fallback
       alphaLog('Using public RPC (slower)...');
-      const conn = new solanaWeb3.Connection(RPC_URL);
+      const conn = await getWorkingConnection();
       const pubkey = new solanaWeb3.PublicKey(address);
       const sigs = await conn.getSignaturesForAddress(pubkey, { limit });
       const swaps = [];
@@ -4107,7 +4107,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     }
 
     async function alphaInitLastSigs() {
-      const conn = new solanaWeb3.Connection(RPC_URL);
+      const conn = await getWorkingConnection();
       for (const w of alphaWallets) {
         try {
           const sigs = await conn.getSignaturesForAddress(new solanaWeb3.PublicKey(w.address), { limit: 1 });
@@ -4125,7 +4125,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         return;
       }
 
-      const conn = new solanaWeb3.Connection(RPC_URL);
+      const conn = await getWorkingConnection();
 
       for (const w of alphaWallets) {
         try {
@@ -4293,7 +4293,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         tx.sign([keypair]);
 
         // Send
-        const conn = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+        const conn = await getWorkingConnection();
         const sig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 });
 
         await conn.confirmTransaction(sig, 'confirmed');
@@ -4338,7 +4338,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
       try {
         // Get token balance
-        const conn = new solanaWeb3.Connection(RPC_URL);
+        const conn = await getWorkingConnection();
         const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
         const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
           programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
