@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ghost — Crypto AI Command Center</title>
+  <script>
+    // Restore theme instantly to prevent flash
+    (function(){var t=localStorage.getItem('ghost-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
+  </script>
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
@@ -1796,7 +1800,7 @@
       return new solanaWeb3.Connection(BACKUP_RPCS[0]);
     }
 
-    let currentModel = 'claude-sonnet-4-20250514';
+    let currentModel = localStorage.getItem('ghost-model') || 'claude-sonnet-4-20250514';
     let apiKey = localStorage.getItem('ghost-claude-key') || '';
     let isGenerating = false;
     let chatMessages = [];
@@ -1810,7 +1814,7 @@
 
     // Chat session management
     let chatSessions = JSON.parse(localStorage.getItem('ghost-chat-sessions') || '[]');
-    let currentSessionId = null;
+    let currentSessionId = localStorage.getItem('ghost-current-session') || null;
 
     // Trade state
     let currentQuote = null;
@@ -1940,12 +1944,14 @@
       // Keep max 50 sessions
       if (chatSessions.length > 50) chatSessions = chatSessions.slice(0, 50);
       localStorage.setItem('ghost-chat-sessions', JSON.stringify(chatSessions));
+      localStorage.setItem('ghost-current-session', currentSessionId);
     }
 
     function newChat() {
       saveCurrentSession();
       chatMessages = [];
       currentSessionId = generateId();
+      localStorage.setItem('ghost-current-session', currentSessionId);
       $('messages').innerHTML = '';
       const es = $('empty-state');
       if (es) es.style.display = 'flex';
@@ -1965,6 +1971,7 @@
       const session = chatSessions.find(s => s.id === id);
       if (!session) return;
       currentSessionId = session.id;
+      localStorage.setItem('ghost-current-session', currentSessionId);
       chatMessages = [...session.messages];
       $('messages').innerHTML = '';
       if ($('empty-state')) $('empty-state').style.display = 'none';
@@ -1983,6 +1990,7 @@
       localStorage.setItem('ghost-chat-sessions', JSON.stringify(chatSessions));
       if (currentSessionId === id) {
         currentSessionId = null;
+        localStorage.removeItem('ghost-current-session');
         chatMessages = [];
         $('messages').innerHTML = '';
         const div = document.createElement('div');
@@ -5074,6 +5082,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
 
     $('model-sel').addEventListener('change', e => {
       currentModel = e.target.value;
+      localStorage.setItem('ghost-model', currentModel);
       checkApiKey();
     });
 
@@ -5575,6 +5584,38 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     updateSniperSwitch();
     setChatMode(chatMode);
 
+    // Restore last chat session
+    if (currentSessionId) {
+      const session = chatSessions.find(s => s.id === currentSessionId);
+      if (session && session.messages && session.messages.length > 0) {
+        chatMessages = [...session.messages];
+        $('messages').innerHTML = '';
+        const es = $('empty-state');
+        if (es) es.style.display = 'none';
+        for (const msg of chatMessages) {
+          if (msg.role === 'user' || msg.role === 'assistant') {
+            // Render without triggering addMsg's push to chatMessages
+            const div = document.createElement('div'); div.className = 'message ' + msg.role;
+            const h = document.createElement('div'); h.className = 'mh';
+            h.innerHTML = `<span class="mr">${msg.role === 'user' ? 'YOU' : 'GHOST'}</span>${msg.role === 'assistant' ? `<span class="mt">${getModelLabel(currentModel)}</span>` : ''}`;
+            div.appendChild(h);
+            const c = document.createElement('div'); c.className = 'mc';
+            c.innerHTML = msg.content
+              .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+              .replace(/`([^`]+)`/g,'<code style="background:var(--bg-elevated);padding:1px 5px;border-radius:4px;font-size:0.9em;">$1</code>')
+              .replace(/^### (.+)$/gm,'<strong style="font-size:1.05em;">$1</strong>')
+              .replace(/^## (.+)$/gm,'<strong style="font-size:1.1em;">$1</strong>')
+              .replace(/\n/g,'<br>')
+              .replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" style="color:var(--accent);">$1</a>');
+            div.appendChild(c);
+            $('messages').appendChild(div);
+          }
+        }
+        $('messages').scrollTop = $('messages').scrollHeight;
+      }
+    }
+
     // Restore Alpha Bot state
     if (alphaStrategy) {
       const el = $('alpha-strategy');
@@ -5590,6 +5631,11 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
     // Auto-prompt for key if not set
     if (!apiKey) setTimeout(promptApiKey, 500);
+
+    // Save state before user leaves
+    window.addEventListener('beforeunload', () => {
+      saveCurrentSession();
+    });
 
     window.addEventListener('load', async () => {
       // Wait for Phantom to inject (up to 3s on load)
