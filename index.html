@@ -303,6 +303,70 @@
       text-align: center; padding: 16px; color: var(--text-muted); font-size: 11px;
     }
 
+    /* ═══════ TOKEN CARD (Rick-style) ═══════ */
+    .tk-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; margin: 4px 0; max-width: 420px;
+    }
+    .tk-head {
+      padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(0,255,204,0.04), transparent);
+    }
+    .tk-icon {
+      width: 36px; height: 36px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-weight: 800;
+      font-size: 14px; color: #fff; flex-shrink: 0;
+    }
+    .tk-title { flex: 1; min-width: 0; }
+    .tk-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tk-ticker { font-size: 11px; color: var(--accent); font-weight: 600; }
+    .tk-price-big { font-size: 18px; font-weight: 800; color: var(--text); }
+    .tk-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+      padding: 0;
+    }
+    .tk-cell {
+      padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      border-right: 1px solid rgba(255,255,255,0.03);
+    }
+    .tk-cell:nth-child(2n) { border-right: none; }
+    .tk-label { font-size: 9px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+    .tk-val { font-size: 13px; font-weight: 600; color: var(--text); }
+    .tk-val.green { color: var(--green); }
+    .tk-val.red { color: var(--red); }
+    .tk-changes {
+      display: flex; gap: 0; padding: 0; border-bottom: 1px solid var(--border);
+    }
+    .tk-chg {
+      flex: 1; text-align: center; padding: 6px 4px;
+      border-right: 1px solid rgba(255,255,255,0.03);
+    }
+    .tk-chg:last-child { border-right: none; }
+    .tk-chg-label { font-size: 8px; color: var(--text-faint); text-transform: uppercase; }
+    .tk-chg-val { font-size: 12px; font-weight: 700; }
+    .tk-chg-val.up { color: var(--green); }
+    .tk-chg-val.down { color: var(--red); }
+    .tk-actions {
+      display: flex; gap: 6px; padding: 10px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .tk-btn {
+      flex: 1; padding: 7px 0; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--card-bg); color: var(--text); cursor: pointer;
+      font-size: 10px; font-weight: 700; font-family: inherit; text-align: center;
+      transition: all 0.15s; letter-spacing: 0.04em;
+    }
+    .tk-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tk-btn.buy { background: rgba(0,255,204,0.08); border-color: rgba(0,255,204,0.3); color: var(--green); }
+    .tk-btn.buy:hover { background: rgba(0,255,204,0.15); }
+    .tk-addr {
+      padding: 0 14px 10px; font-size: 10px; color: var(--text-faint);
+      font-family: 'SF Mono', 'Fira Code', monospace; word-break: break-all;
+      cursor: pointer;
+    }
+    .tk-addr:hover { color: var(--accent); }
+
     .sbadge {
       display: flex; align-items: center; gap: 5px;
       padding: 4px 10px; border: 1px solid; border-radius: 20px;
@@ -1573,6 +1637,28 @@
     const JUP_API = 'https://quote-api.jup.ag/v6';
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
+    let heliusKey = localStorage.getItem('ghost-helius-key') || '5372d46c-bd92-4783-ba13-f449062be6fe';
+
+    // Backup RPCs for avoiding 403 on public RPC
+    const BACKUP_RPCS = [
+      'https://rpc.ankr.com/solana',
+      'https://solana-rpc.publicnode.com',
+      RPC_URL,
+    ];
+
+    async function getWorkingConnection() {
+      const rpcs = heliusKey
+        ? [`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, ...BACKUP_RPCS]
+        : BACKUP_RPCS;
+      for (const rpc of rpcs) {
+        try {
+          const conn = new solanaWeb3.Connection(rpc);
+          await conn.getBalance(new solanaWeb3.PublicKey('11111111111111111111111111111111'));
+          return conn;
+        } catch (e) { continue; }
+      }
+      return new solanaWeb3.Connection(BACKUP_RPCS[0]);
+    }
 
     let currentModel = 'claude-sonnet-4-20250514';
     let apiKey = localStorage.getItem('ghost-claude-key') || '';
@@ -2217,7 +2303,7 @@
         $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN';
         $('ph-stat').style.background = 'var(--green-dim)'; $('ph-stat').style.color = 'var(--green)'; $('ph-stat').textContent = 'CONNECTED';
         try {
-          const connection = new solanaWeb3.Connection(RPC_URL);
+          const connection = await getWorkingConnection();
           walletBalance = (await connection.getBalance(resp.publicKey)) / 1e9;
         } catch(e) { walletBalance = '—'; }
         updateWalletPanel();
@@ -2265,8 +2351,8 @@
       if (!holdingsEl || !walletAddress) return;
 
       try {
-        const conn = new solanaWeb3.Connection(RPC_URL);
         const pubkey = new solanaWeb3.PublicKey(walletAddress);
+        const conn = await getWorkingConnection();
         const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
           programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
         });
@@ -2717,7 +2803,7 @@
       $('positions-list').innerHTML = '<div class="pos-empty">Loading positions...</div>';
 
       try {
-        const conn = new solanaWeb3.Connection(RPC_URL);
+        const conn = await getWorkingConnection();
         const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
           walletPubkey,
           { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
@@ -2988,10 +3074,12 @@
       $('portfolio-content').innerHTML = '<div class="intel-empty"><div class="intel-empty-icon" style="animation:pulse 1s infinite;">◐</div><div class="intel-empty-text">Loading portfolio...</div></div>';
 
       try {
-        const conn = new solanaWeb3.Connection(RPC_URL);
-
-        // Get SOL balance
+        const conn = await getWorkingConnection();
         const solBalance = (await conn.getBalance(walletPubkey)) / 1e9;
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
+          walletPubkey,
+          { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
+        );
 
         // Get SOL price
         let solPrice = 0;
@@ -3004,12 +3092,6 @@
         } catch(e) {}
 
         const solValue = solBalance * solPrice;
-
-        // Get all token accounts
-        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
-          walletPubkey,
-          { programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') }
-        );
 
         const positions = tokenAccounts.value
           .map(ta => {
@@ -3529,18 +3611,12 @@
     }
 
     // ── Helius API Key (optional enhancement) ──
-    let heliusKey = localStorage.getItem('ghost-helius-key') || '5372d46c-bd92-4783-ba13-f449062be6fe';
+    // heliusKey defined at top with globals
     function saveHeliusKey() {
       heliusKey = $('alpha-helius-key').value.trim();
       localStorage.setItem('ghost-helius-key', heliusKey);
       toast(heliusKey ? '🔑 Helius key saved' : 'Helius key cleared');
     }
-
-    const BACKUP_RPCS = [
-      'https://rpc.ankr.com/solana',
-      'https://solana-rpc.publicnode.com',
-      RPC_URL,
-    ];
 
     async function rpcGetTransaction(sig) {
       // Try multiple RPCs — public RPC often blocks getParsedTransaction
@@ -4361,12 +4437,19 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\n/p [ticker] or price [ticker] — instant price check\nscan [mint] — full token intel\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Claude will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
     // Trade commands that need parameter parsing
     function tryTradeCommand(text) {
+      // Auto-detect bare Solana contract address → show token card
+      if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(text.trim()) && text.trim() !== SOL_MINT) {
+        const mint = text.trim();
+        setTimeout(() => quickTokenCard(mint), 50);
+        return `🔍 Scanning ${mint.slice(0, 6)}...${mint.slice(-4)}`;
+      }
+
       // Quick price: "/p SOL" or "price WIF" or "/price SOL"
       const priceMatch = text.match(/^(?:\/p(?:rice)?|price)\s+(.+)/i);
       if (priceMatch) {
@@ -4476,6 +4559,153 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       } catch (e) {
         addMsg('system', `⚠️ Error looking up "${query}": ${e.message}`);
       }
+    }
+
+    // ── Add raw HTML message to chat (for rich cards) ──
+    function addHtmlMsg(role, html) {
+      const div = document.createElement('div'); div.className = 'message ' + role;
+      if (role === 'assistant' || role === 'user') {
+        const h = document.createElement('div'); h.className = 'mh';
+        h.innerHTML = `<span class="mr">${role === 'user' ? 'YOU' : 'GHOST'}</span>${role === 'assistant' ? `<span class="mt">SCAN</span>` : ''}`;
+        div.appendChild(h);
+      }
+      const c = document.createElement('div'); c.className = 'mc';
+      c.innerHTML = html;
+      div.appendChild(c);
+      $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight;
+      return c;
+    }
+
+    // ── Rick-style Token Card ──
+    async function quickTokenCard(mint) {
+      if ($('empty-state')) $('empty-state').style.display = 'none';
+      addHtmlMsg('assistant', '<div class="tk-card" style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">Scanning token...</div>');
+
+      try {
+        const dsRes = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
+        const dsData = await dsRes.json();
+        let pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+
+        if (pairs.length === 0) {
+          // Try pump.fun / new token — might not be on DEX yet
+          const lastMsg = $('messages').lastElementChild;
+          if (lastMsg) lastMsg.querySelector('.mc').innerHTML = `<div class="tk-card" style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">⚠️ No Solana DEX data found for this token.<br>It may be too new or not yet listed.</div>`;
+          return;
+        }
+
+        // Best pair by liquidity
+        const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+        const symbol = pair.baseToken?.symbol || '???';
+        const name = pair.baseToken?.name || symbol;
+        const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+        const fdv = pair.fdv || pair.marketCap || 0;
+        const mcap = pair.marketCap || fdv;
+        const liq = pair.liquidity?.usd || 0;
+        const vol24 = pair.volume?.h24 || 0;
+        const vol6 = pair.volume?.h6 || 0;
+        const vol1 = pair.volume?.h1 || 0;
+        const vol5m = pair.volume?.m5 || 0;
+        const chg5m = pair.priceChange?.m5 || 0;
+        const chg1h = pair.priceChange?.h1 || 0;
+        const chg6h = pair.priceChange?.h6 || 0;
+        const chg24h = pair.priceChange?.h24 || 0;
+        const txns24 = pair.txns?.h24 || {};
+        const buys24 = txns24.buys || 0;
+        const sells24 = txns24.sells || 0;
+        const pairAge = pair.pairCreatedAt ? timeSince(pair.pairCreatedAt) : '?';
+        const dexId = pair.dexId || '?';
+        const pairAddr = pair.pairAddress || '';
+        const imgUrl = pair.info?.imageUrl || '';
+
+        const fU = (n) => {
+          if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+          if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+          if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+          return '$' + n.toFixed(0);
+        };
+        const fP = (p) => {
+          if (p === 0) return '$0';
+          if (p < 0.0000001) return '$' + p.toExponential(2);
+          if (p < 0.000001) return '$' + p.toFixed(10);
+          if (p < 0.01) return '$' + p.toFixed(6);
+          if (p < 1) return '$' + p.toFixed(4);
+          return '$' + p.toFixed(2);
+        };
+        const chgHtml = (v) => {
+          if (v === 0 || v === undefined) return '<span style="color:var(--text-faint)">0%</span>';
+          return v > 0 ? `<span class="tk-chg-val up">+${v.toFixed(1)}%</span>` : `<span class="tk-chg-val down">${v.toFixed(1)}%</span>`;
+        };
+
+        const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c'];
+        const color = colors[Math.abs(symbol.charCodeAt(0)) % colors.length];
+        const initial = symbol.slice(0, 2).toUpperCase();
+
+        // Liquidity score
+        let safetyLabel = '', safetyColor = '';
+        if (liq > 100000) { safetyLabel = '🟢 HIGH LIQ'; safetyColor = 'var(--green)'; }
+        else if (liq > 10000) { safetyLabel = '🟡 MED LIQ'; safetyColor = '#ffd93d'; }
+        else { safetyLabel = '🔴 LOW LIQ'; safetyColor = 'var(--red)'; }
+
+        const cardHtml = `<div class="tk-card">
+          <div class="tk-head">
+            ${imgUrl ? `<img src="${imgUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="tk-icon" style="background:${color};display:none;">${initial}</div>` : `<div class="tk-icon" style="background:${color};">${initial}</div>`}
+            <div class="tk-title">
+              <div class="tk-name">${name}</div>
+              <div class="tk-ticker">$${symbol} · ${dexId.toUpperCase()} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
+            </div>
+            <div class="tk-price-big">${fP(price)}</div>
+          </div>
+
+          <div class="tk-changes">
+            <div class="tk-chg"><div class="tk-chg-label">5m</div>${chgHtml(chg5m)}</div>
+            <div class="tk-chg"><div class="tk-chg-label">1h</div>${chgHtml(chg1h)}</div>
+            <div class="tk-chg"><div class="tk-chg-label">6h</div>${chgHtml(chg6h)}</div>
+            <div class="tk-chg"><div class="tk-chg-label">24h</div>${chgHtml(chg24h)}</div>
+          </div>
+
+          <div class="tk-grid">
+            <div class="tk-cell"><div class="tk-label">FDV</div><div class="tk-val">${fU(fdv)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Market Cap</div><div class="tk-val">${fU(mcap)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Liquidity</div><div class="tk-val">${fU(liq)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Vol 24h</div><div class="tk-val">${fU(vol24)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Vol 1h</div><div class="tk-val">${fU(vol1)}</div></div>
+            <div class="tk-cell"><div class="tk-label">Age</div><div class="tk-val">${pairAge}</div></div>
+            <div class="tk-cell"><div class="tk-label">Buys 24h</div><div class="tk-val green">${buys24}</div></div>
+            <div class="tk-cell"><div class="tk-label">Sells 24h</div><div class="tk-val red">${sells24}</div></div>
+          </div>
+
+          <div class="tk-addr" onclick="navigator.clipboard.writeText('${mint}');toast('📋 Copied!')" title="Click to copy">${mint}</div>
+
+          <div class="tk-actions">
+            <button class="tk-btn buy" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ BUY</button>
+            <button class="tk-btn" onclick="$('intel-mint').value='${mint}';setMode('intel');fetchTokenIntel();">⬡ SCAN</button>
+            <button class="tk-btn" onclick="window.open('https://dexscreener.com/solana/${mint}','_blank')">📊 CHART</button>
+            <button class="tk-btn" onclick="window.open('https://solscan.io/token/${mint}','_blank')">🔍 SOLSCAN</button>
+          </div>
+        </div>`;
+
+        // Replace the loading card
+        const lastMsg = $('messages').lastElementChild;
+        if (lastMsg) lastMsg.querySelector('.mc').innerHTML = cardHtml;
+        chatMessages.push({ role: 'assistant', content: `Token scan: ${name} ($${symbol}) — Price: ${fP(price)}, FDV: ${fU(fdv)}, Liq: ${fU(liq)}, Vol 24h: ${fU(vol24)}` });
+        saveCurrentSession();
+
+      } catch (e) {
+        const lastMsg = $('messages').lastElementChild;
+        if (lastMsg) lastMsg.querySelector('.mc').innerHTML = `<div class="tk-card" style="padding:14px;text-align:center;color:var(--red);font-size:12px;">⚠️ Error scanning token: ${e.message}</div>`;
+      }
+    }
+
+    function timeSince(timestamp) {
+      const ms = Date.now() - timestamp;
+      const m = Math.floor(ms / 60000);
+      if (m < 60) return m + 'm';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + 'h';
+      const d = Math.floor(h / 24);
+      if (d < 30) return d + 'd';
+      const mo = Math.floor(d / 30);
+      return mo + 'mo';
     }
 
     function tryLocalCommand(text) {
@@ -4597,6 +4827,17 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       if ($('empty-state')) $('empty-state').style.display = 'none';
       if (!currentSessionId) currentSessionId = generateId();
 
+      // ── CONTRACT ADDRESS DETECTION (both modes) ──
+      const trimmed = text.trim();
+      if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(trimmed) && trimmed !== SOL_MINT) {
+        addMsg('user', text); $('input').value = '';
+        chatMessages.push({ role: 'user', content: text });
+        saveCurrentSession();
+        quickTokenCard(trimmed);
+        $('input').focus();
+        return;
+      }
+
       // ── AGENT MODE: try local command first ──
       if (chatMode === 'agent') {
         const localResult = tryLocalCommand(text);
@@ -4624,7 +4865,9 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       // Build system prompt based on mode
       let sysPrompt;
       if (chatMode === 'agent') {
-        sysPrompt = `You are Ghost, an AI agent that controls a crypto trading terminal. You can execute actions by including action tags in your response.
+        sysPrompt = `You are Ghost, a crypto-native AI agent running a Solana trading terminal. You live and breathe crypto — Solana, memecoins, DeFi, DEXs, NFTs, smart money, on-chain analysis. You speak like a degen trader who also happens to be extremely knowledgeable.
+
+You can execute actions by including action tags in your response.
 
 AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:open_trade}} - Open the trade/swap panel
@@ -4645,17 +4888,26 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:start_alpha}} - Start the Alpha copy-trading bot
 {{ACTION:stop_alpha}} - Stop the Alpha bot
 {{ACTION:study_wallets}} - Analyze tracked wallets and generate strategy
+{{ACTION:auto_learn}} - Bot analyzes its own performance
 
 RULES:
-- When the user asks to do something (trade, open a panel, change settings), include the relevant ACTION tag AND a brief confirmation message.
-- Be concise and crypto-native. Use action tags proactively when relevant.
+- CRYPTO ONLY. You are a crypto trading assistant. Keep all responses focused on crypto, blockchain, DeFi, trading, and related topics. If someone asks off-topic questions, steer back to crypto.
+- When the user asks to do something (trade, open a panel, change settings), include the relevant ACTION tag AND a brief confirmation.
+- Be concise and crypto-native. Use degen language naturally (ngmi, wagmi, lfg, ape in, rug, ser, anon, gm).
 - If the user asks to buy/sell a specific token, use setup_buy or setup_sell with the mint address.
-- Always warn about risks for trades.
+- Always warn about risks for trades. Remind about DYOR.
 - The action tags will be hidden from the user — they only see your text.
-${webSearchEnabled ? '- You have web search — use it for real-time prices and news.' : ''}
+- When someone pastes a contract address, they'll get an auto-scan. If they ask about a token by name, help them find it.
+${webSearchEnabled ? '- You have web search — use it for real-time prices, news, and alpha.' : ''}
 User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. Alpha Bot: ${alphaBotRunning ? 'RUNNING (' + alphaWallets.length + ' wallets, ' + alphaBotTrades.filter(t=>t.side==='sell').length + ' closed trades, auto-learns every ' + ($('alpha-learn-n')?.value||5) + ')' : 'inactive'}.`;
       } else {
-        sysPrompt = `You are Ghost, a crypto-knowledgeable AI assistant. You're in Chat mode — focus on having helpful, informative conversations. You specialize in Solana, memecoins, DeFi, trading strategies, technical analysis, and crypto culture. Be direct and conversational. Use crypto-native language when appropriate.${webSearchEnabled ? ' You have web search enabled — use it to find real-time prices, news, and market data.' : ''} User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0.`;
+        sysPrompt = `You are Ghost, a crypto-native AI built into a Solana trading terminal. You specialize in: Solana ecosystem, memecoins, DeFi protocols, DEX trading, token analysis, smart money tracking, on-chain data, technical analysis, yield farming, NFTs, and crypto culture.
+
+PERSONALITY: Direct, sharp, degen-fluent. Use crypto slang naturally (ser, anon, ape, ngmi, wagmi, gm, lfg, rug, based). Be opinionated about markets but always remind users to DYOR. You're like a smart trading buddy who lives on-chain.
+
+CRYPTO ONLY: Keep all responses focused on crypto and blockchain topics. If someone asks off-topic, briefly redirect: "ser I'm a crypto bot, let me help you with something on-chain instead."
+
+${webSearchEnabled ? 'You have web search enabled — use it aggressively for real-time prices, news, narratives, and alpha.' : ''} User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0.`;
       }
 
       try {
@@ -4817,9 +5069,11 @@ User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. A
           $('ph-stat').style.background = 'var(--green-dim)'; $('ph-stat').style.color = 'var(--green)'; $('ph-stat').textContent = 'CONNECTED';
           $('tr-buy-btn').disabled = false;
           $('tr-sell-btn').disabled = false;
-          new solanaWeb3.Connection(RPC_URL).getBalance(resp.publicKey)
-            .then(b => { walletBalance = b / 1e9; updateWalletPanel(); })
-            .catch(() => { walletBalance = '—'; updateWalletPanel(); });
+          getWorkingConnection().then(conn =>
+            conn.getBalance(resp.publicKey)
+              .then(b => { walletBalance = b / 1e9; updateWalletPanel(); })
+              .catch(() => { walletBalance = '—'; updateWalletPanel(); })
+          ).catch(() => { walletBalance = '—'; updateWalletPanel(); });
           setTimeout(refreshPositions, 500);
         }).catch(() => {});
       }
