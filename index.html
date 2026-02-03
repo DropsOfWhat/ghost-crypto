@@ -221,16 +221,16 @@
     .model-select option { background: var(--bg-elevated); }
 
     .wallet-btn {
-      display: flex; align-items: center; gap: 6px;
+      display: inline-flex; align-items: center; gap: 6px;
       padding: 7px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
       cursor: pointer; font-family: inherit; border: 1px solid;
       letter-spacing: 0.02em;
     }
     .wallet-btn.off {
-      background: var(--accent-gradient-btn); border-color: transparent; color: #fff;
-      box-shadow: 0 2px 12px rgba(34,209,238,0.2);
+      background: linear-gradient(135deg, #9b8ce8, #ab9ff1, #bdb4f5); border-color: transparent; color: #fff;
+      box-shadow: 0 2px 12px rgba(171,159,241,0.3);
     }
-    .wallet-btn.off:hover { box-shadow: 0 2px 20px rgba(34,209,238,0.3); }
+    .wallet-btn.off:hover { box-shadow: 0 2px 20px rgba(171,159,241,0.45); }
     .wallet-btn.on { background: var(--green-bg); border-color: var(--green-border); color: var(--green); }
     .wallet-btn:hover { opacity: 0.9; }
 
