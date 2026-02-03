@@ -999,6 +999,100 @@
     .pnl-trade-side.buy { background: var(--green-dim); color: var(--green); }
     .pnl-trade-side.sell { background: var(--red-dim); color: var(--red); }
     .pnl-trade-bottom { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 10px; font-family: 'Fira Code', monospace; }
+
+    /* ═══════ ALPHA BOT ═══════ */
+    .alpha-status-bar {
+      margin: 0 14px 10px; padding: 10px 14px;
+      border-radius: 10px; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .alpha-status-bar.idle { background: var(--bg-glass); border: 1px solid var(--border-primary); color: var(--text-muted); }
+    .alpha-status-bar.studying { background: var(--yellow-dim); border: 1px solid var(--yellow-border); color: var(--yellow); }
+    .alpha-status-bar.live { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+    .alpha-status-bar.error { background: var(--red-dim); border: 1px solid var(--red-border); color: var(--red); }
+    .alpha-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: currentColor; }
+    .alpha-status-bar.live .alpha-dot, .alpha-status-bar.studying .alpha-dot { animation: pulse 1.5s infinite; }
+
+    .alpha-section { padding: 0 14px 10px; }
+    .alpha-stitle {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;
+    }
+    .alpha-add-row { display: flex; gap: 6px; margin-bottom: 8px; }
+    .alpha-add-row .fi { flex: 1; font-size: 11px; }
+    .alpha-add-btn {
+      padding: 0 12px; background: var(--accent-gradient-btn); border: none;
+      border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer;
+      font-family: inherit; font-size: 11px;
+    }
+    .alpha-wallet {
+      padding: 8px 10px; margin-bottom: 6px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; display: flex; align-items: center; gap: 10px;
+    }
+    .alpha-wallet:hover { border-color: var(--border-glow); }
+    .alpha-wallet-icon {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0;
+    }
+    .alpha-wallet-info { flex: 1; min-width: 0; }
+    .alpha-wallet-label { font-size: 11px; font-weight: 700; }
+    .alpha-wallet-addr {
+      font-size: 9px; color: var(--text-muted); font-family: 'Fira Code', monospace;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .alpha-wallet-stats { font-size: 9px; color: var(--text-tertiary); margin-top: 1px; }
+    .alpha-wallet-del {
+      background: none; border: none; color: var(--text-faint); cursor: pointer;
+      font-size: 14px; padding: 2px 4px;
+    }
+    .alpha-wallet-del:hover { color: var(--red); }
+
+    .alpha-config {
+      padding: 10px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; margin-bottom: 8px;
+    }
+    .alpha-cfg-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; border-bottom: 1px solid var(--border-secondary);
+    }
+    .alpha-cfg-row:last-child { border-bottom: none; }
+    .alpha-cfg-label { font-size: 10px; font-weight: 600; color: var(--text-secondary); }
+    .alpha-cfg-input {
+      width: 65px; padding: 3px 6px; background: var(--bg-elevated);
+      border: 1px solid var(--border-secondary); border-radius: 6px;
+      color: var(--text-primary); font-family: 'Fira Code', monospace;
+      font-size: 10px; text-align: right;
+    }
+    .alpha-cfg-input:focus { outline: none; border-color: var(--accent); }
+
+    .alpha-btn-row { display: flex; gap: 8px; padding: 0 14px 10px; }
+    .alpha-btn {
+      flex: 1; padding: 10px; border: none; border-radius: 10px;
+      font-weight: 700; cursor: pointer; font-family: inherit; font-size: 12px;
+    }
+    .alpha-btn.study { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; box-shadow: 0 2px 10px rgba(245,158,11,0.2); }
+    .alpha-btn.start { background: linear-gradient(135deg, #059669, #34d399); color: #fff; box-shadow: 0 2px 10px rgba(52,211,153,0.2); }
+    .alpha-btn.stop { background: linear-gradient(135deg, #dc2626, #f87171); color: #fff; box-shadow: 0 2px 10px rgba(248,113,113,0.2); }
+    .alpha-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .alpha-strategy {
+      padding: 12px; background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 10px; font-size: 10px; color: var(--text-secondary);
+      line-height: 1.6; white-space: pre-wrap; max-height: 180px; overflow-y: auto;
+    }
+    .alpha-log {
+      max-height: 180px; overflow-y: auto; font-size: 10px;
+      font-family: 'Fira Code', monospace;
+    }
+    .alpha-log-entry {
+      padding: 5px 8px; margin-bottom: 3px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 6px; display: flex; gap: 6px;
+    }
+    .alpha-log-time { color: var(--text-faint); font-size: 9px; white-space: nowrap; margin-top: 1px; }
+    .alpha-log-msg { color: var(--text-secondary); word-break: break-word; }
   </style>
 </head>
 <body>
@@ -1164,6 +1258,7 @@
             <div class="tcard" onclick="setMode('sniper')"><div class="tcard-h"><span class="tcard-n">⚡ Sniper Bot</span><span class="tcard-s" id="sniper-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Auto-buy your token launches with multiple wallets</div></div>
             <div class="tcard" onclick="setMode('intel')"><div class="tcard-h"><span class="tcard-n">⬡ Token Intel</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Scan any token: holders, liquidity, rug risk score</div></div>
             <div class="tcard" onclick="setMode('portfolio')"><div class="tcard-h"><span class="tcard-n">◐ Portfolio</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Full portfolio dashboard with PnL tracking</div></div>
+            <div class="tcard" onclick="setMode('alpha')"><div class="tcard-h"><span class="tcard-n">🧠 Alpha Bot</span><span class="tcard-s" id="alpha-tool-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">AI copy-trader — study wallets, learn patterns, auto-trade</div></div>
             <div class="tcard disabled" onclick="toast('🔔 Whale Alerts coming soon!')"><div class="tcard-h"><span class="tcard-n">🔔 Whale Alerts</span><span class="tcard-s" style="background:var(--yellow-dim);color:var(--yellow);">COMING SOON</span></div><div class="tcard-d">Track whale wallet movements</div></div>
           </div>
 
@@ -1252,6 +1347,62 @@
             </div>
           </div>
 
+          <!-- ALPHA BOT -->
+          <div id="p-alpha" style="display:none">
+            <div class="ph">🧠 ALPHA BOT</div>
+
+            <div id="alpha-status" class="alpha-status-bar idle">
+              <span class="alpha-dot"></span>
+              <span id="alpha-status-text">Idle — add wallets to track</span>
+            </div>
+
+            <div class="alpha-section">
+              <div class="alpha-stitle">Tracked Wallets (Smart Money)</div>
+              <div class="alpha-add-row">
+                <input type="text" id="alpha-addr" class="fi" placeholder="Wallet address...">
+                <input type="text" id="alpha-label" class="fi" placeholder="Label" style="width:70px;flex:none;">
+                <button class="alpha-add-btn" onclick="addAlphaWallet()">+</button>
+              </div>
+              <div id="alpha-wallets"></div>
+            </div>
+
+            <div class="alpha-section">
+              <div class="alpha-stitle">Bot Wallet</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">Uses sniper wallets for auto-signing. <span style="color:var(--accent);cursor:pointer;" onclick="setMode('sniper')">Manage →</span></div>
+              <select id="alpha-wallet-sel" class="fi" style="font-size:11px;margin-bottom:4px;"></select>
+            </div>
+
+            <div class="alpha-section">
+              <div class="alpha-stitle">Configuration</div>
+              <div class="alpha-config">
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Buy Amount (SOL)</span><input type="number" id="alpha-buy-amt" class="alpha-cfg-input" value="0.01" step="0.005" min="0.001"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Max Daily Trades</span><input type="number" id="alpha-max-daily" class="alpha-cfg-input" value="10" step="1" min="1"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Stop Loss %</span><input type="number" id="alpha-sl" class="alpha-cfg-input" value="30" step="5" min="5"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Take Profit %</span><input type="number" id="alpha-tp" class="alpha-cfg-input" value="100" step="10" min="10"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Min Liquidity $</span><input type="number" id="alpha-min-liq" class="alpha-cfg-input" value="5000" step="1000" min="0"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Slippage %</span><input type="number" id="alpha-slip" class="alpha-cfg-input" value="15" step="1" min="1"></div>
+                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Poll Interval (s)</span><input type="number" id="alpha-poll" class="alpha-cfg-input" value="15" step="5" min="10"></div>
+              </div>
+            </div>
+
+            <div class="alpha-btn-row">
+              <button class="alpha-btn study" id="alpha-study-btn" onclick="alphaStudy()">📚 Study</button>
+              <button class="alpha-btn start" id="alpha-start-btn" onclick="alphaToggle()">▶ Start Bot</button>
+            </div>
+
+            <div class="alpha-section">
+              <div class="alpha-stitle">Strategy Profile</div>
+              <div class="alpha-strategy" id="alpha-strategy">No strategy yet. Add wallets and click "Study" to analyze their trading patterns.</div>
+            </div>
+
+            <div class="alpha-section">
+              <div class="alpha-stitle">Live Activity</div>
+              <div class="alpha-log" id="alpha-log"></div>
+            </div>
+
+            <div class="sniper-warn">⚠️ Alpha Bot uses private keys to auto-sign trades. Only fund the bot wallet with SOL you can afford to lose. No bot guarantees profits. Past wallet performance ≠ future results.</div>
+          </div>
+
         </div>
       </div>
 
@@ -1260,7 +1411,7 @@
           <div class="empty-state" id="empty-state">
             <div class="eicon">◬</div>
             <div class="etitle">Ghost Crypto</div>
-            <div class="edesc">AI-powered crypto command center. Chat with Claude, trade tokens via Jupiter, launch on pump.fun, manage your wallet.</div>
+            <div class="edesc">AI-powered crypto command center. Trade via Jupiter, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.</div>
           </div>
         </div>
       </div>
@@ -1370,10 +1521,12 @@
       $('p-sniper').style.display = mode === 'sniper' ? 'block' : 'none';
       $('p-intel').style.display = mode === 'intel' ? 'block' : 'none';
       $('p-portfolio').style.display = mode === 'portfolio' ? 'block' : 'none';
+      $('p-alpha').style.display = mode === 'alpha' ? 'block' : 'none';
       $('sidebar').classList.toggle('open', mode !== 'chat');
       if (mode === 'history') { renderChatHistory(); renderTxHistory(); }
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
       if (mode === 'portfolio') { refreshPortfolio(); }
+      if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); populateAlphaWalletSel(); }
     }
 
     function selPlatform(p) {
@@ -2861,6 +3014,686 @@
         : 'Chat with Claude...';
     }
 
+    // ═══════ ALPHA BOT — AI COPY TRADER ═══════
+    const JUPITER_V6_PROGRAM = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4';
+    const RAYDIUM_AMM_PROGRAM = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
+    let alphaWallets = JSON.parse(localStorage.getItem('ghost-alpha-wallets') || '[]');
+    let alphaStrategy = localStorage.getItem('ghost-alpha-strategy') || '';
+    let alphaBotRunning = false;
+    let alphaPollTimer = null;
+    let alphaLastSigs = JSON.parse(localStorage.getItem('ghost-alpha-lastsigs') || '{}');
+    let alphaBotLog = JSON.parse(localStorage.getItem('ghost-alpha-log') || '[]');
+    let alphaBotTrades = JSON.parse(localStorage.getItem('ghost-alpha-trades') || '[]');
+    let alphaDailyCount = 0;
+    let alphaPositions = {}; // mint -> { entryPrice, amount, time }
+
+    function saveAlphaState() {
+      localStorage.setItem('ghost-alpha-wallets', JSON.stringify(alphaWallets));
+      localStorage.setItem('ghost-alpha-lastsigs', JSON.stringify(alphaLastSigs));
+      localStorage.setItem('ghost-alpha-log', JSON.stringify(alphaBotLog.slice(-50)));
+      localStorage.setItem('ghost-alpha-trades', JSON.stringify(alphaBotTrades.slice(-100)));
+      localStorage.setItem('ghost-alpha-strategy', alphaStrategy);
+    }
+
+    function alphaLog(msg, type = 'info') {
+      const entry = { time: Date.now(), msg, type };
+      alphaBotLog.unshift(entry);
+      if (alphaBotLog.length > 50) alphaBotLog = alphaBotLog.slice(0, 50);
+      saveAlphaState();
+      renderAlphaLog();
+      // Also log to chat for important events
+      if (type === 'trade' || type === 'error') {
+        addMsg('system', `🧠 Alpha Bot: ${msg}`);
+      }
+    }
+
+    function renderAlphaLog() {
+      const el = $('alpha-log');
+      if (!el) return;
+      if (alphaBotLog.length === 0) {
+        el.innerHTML = '<div class="alpha-log-entry"><span class="alpha-log-time">—</span><span class="alpha-log-msg">Bot idle. Add wallets and start.</span></div>';
+        return;
+      }
+      el.innerHTML = alphaBotLog.slice(0, 25).map(e => {
+        const t = new Date(e.time);
+        const ts = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const color = e.type === 'trade' ? 'var(--green)' : e.type === 'error' ? 'var(--red)' : e.type === 'warn' ? 'var(--yellow)' : 'var(--text-secondary)';
+        return `<div class="alpha-log-entry"><span class="alpha-log-time">${ts}</span><span class="alpha-log-msg" style="color:${color}">${e.msg}</span></div>`;
+      }).join('');
+    }
+
+    function setAlphaStatus(status, text) {
+      const el = $('alpha-status');
+      if (!el) return;
+      el.className = 'alpha-status-bar ' + status;
+      $('alpha-status-text').textContent = text;
+    }
+
+    // ── Tracked Wallet Management ──
+    function addAlphaWallet() {
+      const addr = $('alpha-addr').value.trim();
+      const label = $('alpha-label').value.trim() || 'Wallet ' + (alphaWallets.length + 1);
+      if (!addr || addr.length < 32) { toast('Enter a valid wallet address'); return; }
+      if (alphaWallets.some(w => w.address === addr)) { toast('Already tracking this wallet'); return; }
+      if (alphaWallets.length >= 5) { toast('Max 5 tracked wallets'); return; }
+      alphaWallets.push({ address: addr, label, trades: [], stats: null, addedAt: Date.now() });
+      $('alpha-addr').value = '';
+      $('alpha-label').value = '';
+      saveAlphaState();
+      renderAlphaWallets();
+      alphaLog(`Added wallet: ${label} (${addr.slice(0, 4)}...${addr.slice(-4)})`);
+      toast(`🧠 Tracking ${label}`);
+    }
+
+    function removeAlphaWallet(idx) {
+      const w = alphaWallets[idx];
+      if (!w) return;
+      alphaWallets.splice(idx, 1);
+      delete alphaLastSigs[w.address];
+      saveAlphaState();
+      renderAlphaWallets();
+      toast('Removed ' + w.label);
+    }
+
+    function renderAlphaWallets() {
+      const el = $('alpha-wallets');
+      if (!el) return;
+      if (alphaWallets.length === 0) {
+        el.innerHTML = '<div style="font-size:11px;color:var(--text-muted);padding:6px 0;">No wallets tracked yet</div>';
+        return;
+      }
+      el.innerHTML = alphaWallets.map((w, i) => {
+        const addr = w.address;
+        const statsStr = w.stats ? `${w.stats.totalTrades} trades · ${w.stats.winRate}% win` : 'Not studied yet';
+        const bgColors = ['#22d1ee', '#f59e0b', '#34d399', '#a78bfa', '#f472b6'];
+        return `<div class="alpha-wallet">
+          <div class="alpha-wallet-icon" style="background:${bgColors[i % 5]}22;color:${bgColors[i % 5]}">${w.label.charAt(0).toUpperCase()}</div>
+          <div class="alpha-wallet-info">
+            <div class="alpha-wallet-label">${w.label}</div>
+            <div class="alpha-wallet-addr">${addr.slice(0, 8)}...${addr.slice(-6)}</div>
+            <div class="alpha-wallet-stats">${statsStr}</div>
+          </div>
+          <button class="alpha-wallet-del" onclick="removeAlphaWallet(${i})">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    function populateAlphaWalletSel() {
+      const sel = $('alpha-wallet-sel');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">— Select bot wallet —</option>';
+      sniperWallets.forEach((w, i) => {
+        sel.innerHTML += `<option value="${i}">${w.label} (${w.publicKey.slice(0, 4)}...${w.publicKey.slice(-4)})</option>`;
+      });
+    }
+
+    // ── Fetch Wallet Swap History ──
+    async function fetchWalletSwaps(address, limit = 30) {
+      const conn = new solanaWeb3.Connection(RPC_URL);
+      const pubkey = new solanaWeb3.PublicKey(address);
+      const sigs = await conn.getSignaturesForAddress(pubkey, { limit });
+      const swaps = [];
+
+      for (const sigInfo of sigs.slice(0, 15)) { // Parse max 15 for speed
+        try {
+          const tx = await conn.getParsedTransaction(sigInfo.signature, {
+            maxSupportedTransactionVersion: 0,
+          });
+          if (!tx || !tx.meta) continue;
+
+          // Detect swaps by looking at token balance changes
+          const pre = tx.meta.preTokenBalances || [];
+          const post = tx.meta.postTokenBalances || [];
+
+          // Build balance maps
+          const preMap = {};
+          const postMap = {};
+          for (const b of pre) {
+            if (b.owner === address) preMap[b.mint] = b.uiTokenAmount.uiAmount || 0;
+          }
+          for (const b of post) {
+            if (b.owner === address) postMap[b.mint] = b.uiTokenAmount.uiAmount || 0;
+          }
+
+          // Find tokens that changed
+          const allMints = new Set([...Object.keys(preMap), ...Object.keys(postMap)]);
+          let solDelta = 0;
+          let tokenBuys = [];
+          let tokenSells = [];
+
+          for (const mint of allMints) {
+            if (mint === SOL_MINT) continue;
+            const before = preMap[mint] || 0;
+            const after = postMap[mint] || 0;
+            const delta = after - before;
+            if (delta > 0.000001) tokenBuys.push({ mint, amount: delta, after });
+            if (delta < -0.000001) tokenSells.push({ mint, amount: Math.abs(delta), after });
+          }
+
+          // Check SOL balance change
+          const preSol = (tx.meta.preBalances?.[0] || 0) / 1e9;
+          const postSol = (tx.meta.postBalances?.[0] || 0) / 1e9;
+          solDelta = postSol - preSol;
+
+          // If we got token buys with SOL decrease — it's a BUY swap
+          if (tokenBuys.length > 0 && solDelta < -0.001) {
+            for (const buy of tokenBuys) {
+              swaps.push({
+                sig: sigInfo.signature,
+                side: 'buy',
+                mint: buy.mint,
+                tokenAmount: buy.amount,
+                solAmount: Math.abs(solDelta),
+                time: (sigInfo.blockTime || 0) * 1000,
+              });
+            }
+          }
+
+          // If token sells with SOL increase — it's a SELL swap
+          if (tokenSells.length > 0 && solDelta > 0.001) {
+            for (const sell of tokenSells) {
+              swaps.push({
+                sig: sigInfo.signature,
+                side: 'sell',
+                mint: sell.mint,
+                tokenAmount: sell.amount,
+                solAmount: solDelta,
+                time: (sigInfo.blockTime || 0) * 1000,
+              });
+            }
+          }
+
+        } catch (e) { /* skip unparseable tx */ }
+      }
+
+      return swaps;
+    }
+
+    // ── Study Phase — Analyze All Tracked Wallets ──
+    async function alphaStudy() {
+      if (!apiKey) { toast('Set Claude API key first'); return; }
+      if (alphaWallets.length === 0) { toast('Add wallets to study first'); return; }
+
+      setAlphaStatus('studying', 'Studying wallets...');
+      $('alpha-study-btn').disabled = true;
+      $('alpha-study-btn').textContent = '📚 Studying...';
+      alphaLog('Starting wallet study...');
+
+      try {
+        const walletData = [];
+
+        for (const w of alphaWallets) {
+          alphaLog(`Fetching swaps for ${w.label}...`);
+          const swaps = await fetchWalletSwaps(w.address, 30);
+          w.trades = swaps;
+
+          // Calculate stats
+          const buys = swaps.filter(s => s.side === 'buy');
+          const sells = swaps.filter(s => s.side === 'sell');
+          const totalSolBought = buys.reduce((s, t) => s + t.solAmount, 0);
+          const totalSolSold = sells.reduce((s, t) => s + t.solAmount, 0);
+          const uniqueTokens = new Set(swaps.map(s => s.mint)).size;
+
+          // Check which buys had corresponding sells (closed trades)
+          let wins = 0, losses = 0;
+          for (const buy of buys) {
+            const sell = sells.find(s => s.mint === buy.mint);
+            if (sell) {
+              if (sell.solAmount > buy.solAmount) wins++; else losses++;
+            }
+          }
+
+          w.stats = {
+            totalTrades: swaps.length,
+            buys: buys.length,
+            sells: sells.length,
+            uniqueTokens,
+            totalSolBought: totalSolBought.toFixed(3),
+            totalSolSold: totalSolSold.toFixed(3),
+            pnl: (totalSolSold - totalSolBought).toFixed(3),
+            winRate: (wins + losses) > 0 ? Math.round((wins / (wins + losses)) * 100) : 0,
+            avgBuySize: buys.length > 0 ? (totalSolBought / buys.length).toFixed(3) : '0',
+          };
+
+          walletData.push({
+            label: w.label,
+            address: w.address.slice(0, 8) + '...',
+            stats: w.stats,
+            recentBuys: buys.slice(0, 5).map(b => ({
+              mint: b.mint.slice(0, 8) + '...',
+              solAmount: b.solAmount.toFixed(3),
+              time: new Date(b.time).toISOString(),
+            })),
+          });
+
+          alphaLog(`${w.label}: ${swaps.length} trades, ${w.stats.winRate}% win rate, PnL: ${w.stats.pnl} SOL`);
+        }
+
+        renderAlphaWallets();
+        saveAlphaState();
+
+        // Ask Claude to generate strategy
+        alphaLog('Generating strategy via Claude...');
+        const strategyPrompt = `You are analyzing cryptocurrency trading wallets on Solana to build a copy-trading strategy. Here is the data from tracked wallets:
+
+${JSON.stringify(walletData, null, 2)}
+
+Based on this data, generate a concise trading strategy profile. Include:
+1. SUMMARY: One-line assessment of these wallets
+2. WALLET RANKINGS: Rank wallets by reliability (win rate, PnL, consistency)
+3. ENTRY RULES: When should the bot copy a trade? (consider: wallet confidence, position size, timing patterns)
+4. RISK RULES: Stop-loss suggestion, max position, which wallets to weight higher
+5. AVOID: Any patterns suggesting bad trades to skip
+6. CONFIDENCE SCORE: 0-100 overall confidence in this strategy
+
+Be concise, use numbers. Output as plain text, not markdown.`;
+
+        const res = await fetch(CLAUDE_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            max_tokens: 1500,
+            messages: [{ role: 'user', content: strategyPrompt }],
+          }),
+        });
+
+        if (!res.ok) throw new Error('Claude API error: ' + res.status);
+        const data = await res.json();
+        const strategyText = data.content?.[0]?.text || 'Failed to generate strategy';
+
+        alphaStrategy = strategyText;
+        $('alpha-strategy').textContent = strategyText;
+        saveAlphaState();
+
+        alphaLog('✅ Strategy generated successfully');
+        setAlphaStatus('idle', 'Study complete — ready to trade');
+        toast('🧠 Strategy generated!');
+
+      } catch (e) {
+        alphaLog('Error studying wallets: ' + e.message, 'error');
+        setAlphaStatus('error', 'Study failed: ' + e.message);
+      }
+
+      $('alpha-study-btn').disabled = false;
+      $('alpha-study-btn').textContent = '📚 Study';
+    }
+
+    // ── Live Trading ──
+    function alphaToggle() {
+      if (alphaBotRunning) {
+        stopAlphaBot();
+      } else {
+        startAlphaBot();
+      }
+    }
+
+    function startAlphaBot() {
+      const walletIdx = parseInt($('alpha-wallet-sel').value);
+      if (isNaN(walletIdx) || !sniperWallets[walletIdx]) {
+        toast('Select a bot wallet first'); return;
+      }
+      if (alphaWallets.length === 0) {
+        toast('Add wallets to track first'); return;
+      }
+
+      alphaBotRunning = true;
+      alphaDailyCount = 0;
+      const pollSec = parseInt($('alpha-poll').value) || 15;
+
+      // Record current last signatures for each wallet
+      alphaInitLastSigs();
+
+      setAlphaStatus('live', `Running — polling every ${pollSec}s`);
+      $('alpha-start-btn').textContent = '⏹ Stop Bot';
+      $('alpha-start-btn').className = 'alpha-btn stop';
+      alphaLog('🟢 Bot started — monitoring ' + alphaWallets.length + ' wallets');
+
+      // Start polling
+      alphaPollTimer = setInterval(() => alphaPoll(), pollSec * 1000);
+
+      // Also check positions for stop-loss/take-profit
+      alphaCheckPositions();
+
+      toast('🧠 Alpha Bot is live!');
+    }
+
+    function stopAlphaBot() {
+      alphaBotRunning = false;
+      if (alphaPollTimer) { clearInterval(alphaPollTimer); alphaPollTimer = null; }
+      setAlphaStatus('idle', 'Bot stopped');
+      $('alpha-start-btn').textContent = '▶ Start Bot';
+      $('alpha-start-btn').className = 'alpha-btn start';
+      alphaLog('🔴 Bot stopped');
+      toast('Alpha Bot stopped');
+    }
+
+    async function alphaInitLastSigs() {
+      const conn = new solanaWeb3.Connection(RPC_URL);
+      for (const w of alphaWallets) {
+        try {
+          const sigs = await conn.getSignaturesForAddress(new solanaWeb3.PublicKey(w.address), { limit: 1 });
+          if (sigs.length > 0) alphaLastSigs[w.address] = sigs[0].signature;
+        } catch (e) {}
+      }
+      saveAlphaState();
+    }
+
+    async function alphaPoll() {
+      if (!alphaBotRunning) return;
+      const maxDaily = parseInt($('alpha-max-daily').value) || 10;
+      if (alphaDailyCount >= maxDaily) {
+        alphaLog('Max daily trades reached, skipping poll', 'warn');
+        return;
+      }
+
+      const conn = new solanaWeb3.Connection(RPC_URL);
+
+      for (const w of alphaWallets) {
+        try {
+          const sigs = await conn.getSignaturesForAddress(new solanaWeb3.PublicKey(w.address), { limit: 3 });
+          if (sigs.length === 0) continue;
+
+          const lastKnown = alphaLastSigs[w.address];
+          const newSigs = [];
+
+          for (const s of sigs) {
+            if (s.signature === lastKnown) break;
+            newSigs.push(s);
+          }
+
+          if (newSigs.length === 0) continue;
+
+          // Update last seen
+          alphaLastSigs[w.address] = sigs[0].signature;
+          saveAlphaState();
+
+          // Parse new transactions
+          for (const sigInfo of newSigs.slice(0, 3)) {
+            try {
+              const tx = await conn.getParsedTransaction(sigInfo.signature, { maxSupportedTransactionVersion: 0 });
+              if (!tx || !tx.meta) continue;
+
+              const pre = tx.meta.preTokenBalances || [];
+              const post = tx.meta.postTokenBalances || [];
+              const preMap = {}, postMap = {};
+              for (const b of pre) { if (b.owner === w.address) preMap[b.mint] = b.uiTokenAmount.uiAmount || 0; }
+              for (const b of post) { if (b.owner === w.address) postMap[b.mint] = b.uiTokenAmount.uiAmount || 0; }
+
+              const preSol = (tx.meta.preBalances?.[0] || 0) / 1e9;
+              const postSol = (tx.meta.postBalances?.[0] || 0) / 1e9;
+              const solDelta = postSol - preSol;
+
+              // Detect buys
+              for (const mint of Object.keys(postMap)) {
+                if (mint === SOL_MINT) continue;
+                const before = preMap[mint] || 0;
+                const after = postMap[mint] || 0;
+                if (after - before > 0.000001 && solDelta < -0.001) {
+                  alphaLog(`🔔 ${w.label} bought token ${mint.slice(0, 6)}... (${Math.abs(solDelta).toFixed(3)} SOL)`);
+                  await alphaEvaluateAndBuy(mint, w, Math.abs(solDelta));
+                }
+              }
+
+              // Detect sells
+              for (const mint of Object.keys(preMap)) {
+                if (mint === SOL_MINT) continue;
+                const before = preMap[mint] || 0;
+                const after = postMap[mint] || 0;
+                if (before - after > 0.000001 && solDelta > 0.001) {
+                  alphaLog(`🔔 ${w.label} sold token ${mint.slice(0, 6)}... (+${solDelta.toFixed(3)} SOL)`);
+                  // If we hold this token, consider selling
+                  if (alphaPositions[mint]) {
+                    await alphaExecuteSell(mint);
+                  }
+                }
+              }
+
+            } catch (e) { /* skip */ }
+          }
+        } catch (e) {
+          alphaLog(`Error polling ${w.label}: ${e.message}`, 'error');
+        }
+      }
+    }
+
+    // ── Evaluate & Execute ──
+    async function alphaEvaluateAndBuy(mint, trackedWallet, theirSolAmount) {
+      const maxDaily = parseInt($('alpha-max-daily').value) || 10;
+      if (alphaDailyCount >= maxDaily) {
+        alphaLog('Skipped — daily limit reached', 'warn');
+        return;
+      }
+
+      // Skip if we already hold this token
+      if (alphaPositions[mint]) {
+        alphaLog('Skipped — already holding ' + mint.slice(0, 6) + '...');
+        return;
+      }
+
+      // Check liquidity via DexScreener
+      const minLiq = parseFloat($('alpha-min-liq').value) || 5000;
+      try {
+        const dsRes = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
+        const dsData = await dsRes.json();
+        const pairs = dsData.pairs || [];
+        if (pairs.length > 0) {
+          const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+          const liq = best.liquidity?.usd || 0;
+          if (liq < minLiq) {
+            alphaLog(`Skipped ${mint.slice(0, 6)}... — liquidity $${liq.toFixed(0)} < $${minLiq}`, 'warn');
+            return;
+          }
+          const symbol = best.baseToken?.symbol || mint.slice(0, 6);
+          alphaLog(`✅ ${symbol} passed checks (liq: $${liq.toFixed(0)}). Executing buy...`);
+          await alphaExecuteBuy(mint, symbol);
+        } else {
+          alphaLog(`Skipped ${mint.slice(0, 6)}... — no DEX data found`, 'warn');
+        }
+      } catch (e) {
+        alphaLog(`Could not check ${mint.slice(0, 6)}... — ${e.message}`, 'warn');
+      }
+    }
+
+    async function alphaExecuteBuy(mint, symbol) {
+      const walletIdx = parseInt($('alpha-wallet-sel').value);
+      const botWallet = sniperWallets[walletIdx];
+      if (!botWallet) { alphaLog('No bot wallet selected', 'error'); return; }
+
+      const buyAmt = parseFloat($('alpha-buy-amt').value) || 0.01;
+      const slippage = parseFloat($('alpha-slip').value) || 15;
+
+      try {
+        // Get Jupiter quote
+        const lamports = Math.round(buyAmt * 1e9);
+        const quoteUrl = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${Math.round(slippage * 100)}`;
+        const quoteRes = await fetch(quoteUrl);
+        if (!quoteRes.ok) throw new Error('Jupiter quote failed');
+        const quote = await quoteRes.json();
+
+        // Build swap tx
+        const swapRes = await fetch(`${JUP_API}/swap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quoteResponse: quote,
+            userPublicKey: botWallet.publicKey,
+            wrapAndUnwrapSol: true,
+            dynamicComputeUnitLimit: true,
+            prioritizationFeeLamports: 100000,
+          }),
+        });
+        if (!swapRes.ok) throw new Error('Jupiter swap build failed');
+        const swapData = await swapRes.json();
+
+        // Sign with bot wallet
+        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+        const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        const secretKey = bs58Decode(botWallet.secretKey);
+        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+        tx.sign([keypair]);
+
+        // Send
+        const conn = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+        const sig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 });
+
+        await conn.confirmTransaction(sig, 'confirmed');
+
+        // Track position
+        const outAmt = parseInt(quote.outAmount) / Math.pow(10, 6); // approximate
+        alphaPositions[mint] = {
+          symbol, entrySOL: buyAmt, amount: outAmt,
+          entryTime: Date.now(), sig,
+        };
+
+        alphaDailyCount++;
+
+        const trade = {
+          side: 'buy', symbol, mint, sol: buyAmt,
+          sig, time: Date.now(), wallet: botWallet.label,
+        };
+        alphaBotTrades.unshift(trade);
+        tradeHistory.unshift({
+          side: 'buy', symbol, mint,
+          amountIn: buyAmt + ' SOL', amountOut: formatNum(outAmt) + ' ' + symbol,
+          sig, time: Date.now(),
+        });
+        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        saveAlphaState();
+
+        alphaLog(`🟢 BOUGHT ${symbol} — ${buyAmt} SOL — tx: ${sig.slice(0, 8)}...`, 'trade');
+
+      } catch (e) {
+        alphaLog(`❌ Buy failed for ${symbol}: ${e.message}`, 'error');
+      }
+    }
+
+    async function alphaExecuteSell(mint) {
+      const walletIdx = parseInt($('alpha-wallet-sel').value);
+      const botWallet = sniperWallets[walletIdx];
+      if (!botWallet) return;
+
+      const pos = alphaPositions[mint];
+      const symbol = pos?.symbol || mint.slice(0, 6);
+      const slippage = parseFloat($('alpha-slip').value) || 15;
+
+      try {
+        // Get token balance
+        const conn = new solanaWeb3.Connection(RPC_URL);
+        const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+        const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
+          programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+        });
+
+        const tokenAccount = tokenAccounts.value.find(ta =>
+          ta.account.data.parsed.info.mint === mint
+        );
+        if (!tokenAccount) { alphaLog('No balance to sell for ' + symbol, 'warn'); return; }
+
+        const balance = tokenAccount.account.data.parsed.info.tokenAmount;
+        const lamports = parseInt(balance.amount);
+        if (lamports <= 0) return;
+
+        // Jupiter sell quote
+        const quoteUrl = `${JUP_API}/quote?inputMint=${mint}&outputMint=${SOL_MINT}&amount=${lamports}&slippageBps=${Math.round(slippage * 100)}`;
+        const quoteRes = await fetch(quoteUrl);
+        if (!quoteRes.ok) throw new Error('Jupiter quote failed');
+        const quote = await quoteRes.json();
+
+        const swapRes = await fetch(`${JUP_API}/swap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quoteResponse: quote,
+            userPublicKey: botWallet.publicKey,
+            wrapAndUnwrapSol: true,
+            dynamicComputeUnitLimit: true,
+            prioritizationFeeLamports: 100000,
+          }),
+        });
+        if (!swapRes.ok) throw new Error('Jupiter swap build failed');
+        const swapData = await swapRes.json();
+
+        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+        const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        const secretKey = bs58Decode(botWallet.secretKey);
+        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+        tx.sign([keypair]);
+
+        const sig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: true, maxRetries: 3 });
+        await conn.confirmTransaction(sig, 'confirmed');
+
+        const solReceived = parseInt(quote.outAmount) / 1e9;
+        const pnl = pos ? (solReceived - pos.entrySOL) : 0;
+        const pnlPct = pos ? ((pnl / pos.entrySOL) * 100).toFixed(1) : '?';
+
+        delete alphaPositions[mint];
+
+        const trade = {
+          side: 'sell', symbol, mint, sol: solReceived,
+          pnl: pnl.toFixed(4), sig, time: Date.now(),
+        };
+        alphaBotTrades.unshift(trade);
+        tradeHistory.unshift({
+          side: 'sell', symbol, mint,
+          amountIn: formatNum(balance.uiAmount) + ' ' + symbol,
+          amountOut: solReceived.toFixed(4) + ' SOL',
+          sig, time: Date.now(),
+        });
+        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        saveAlphaState();
+
+        const pnlStr = pnl >= 0 ? `+${pnl.toFixed(4)} SOL (+${pnlPct}%)` : `${pnl.toFixed(4)} SOL (${pnlPct}%)`;
+        alphaLog(`🔴 SOLD ${symbol} — ${solReceived.toFixed(4)} SOL — PnL: ${pnlStr} — tx: ${sig.slice(0, 8)}...`, 'trade');
+
+      } catch (e) {
+        alphaLog(`❌ Sell failed for ${symbol}: ${e.message}`, 'error');
+      }
+    }
+
+    // ── Position Monitoring (Stop-Loss / Take-Profit) ──
+    async function alphaCheckPositions() {
+      if (!alphaBotRunning) return;
+      const sl = parseFloat($('alpha-sl').value) || 30;
+      const tp = parseFloat($('alpha-tp').value) || 100;
+
+      const mints = Object.keys(alphaPositions);
+      if (mints.length === 0) { setTimeout(() => alphaCheckPositions(), 30000); return; }
+
+      try {
+        const priceRes = await fetch(`${JUP_PRICE}?ids=${mints.join(',')}`);
+        if (priceRes.ok) {
+          const priceData = await priceRes.json();
+          const prices = priceData.data || {};
+
+          for (const mint of mints) {
+            const pos = alphaPositions[mint];
+            if (!pos || !prices[mint]) continue;
+
+            const currentPrice = parseFloat(prices[mint].price);
+            const entryPrice = pos.entrySOL / (pos.amount || 1);
+            const changePct = ((currentPrice - entryPrice) / entryPrice) * 100;
+
+            if (changePct <= -sl) {
+              alphaLog(`🛑 Stop-loss triggered for ${pos.symbol} (${changePct.toFixed(1)}%)`, 'warn');
+              await alphaExecuteSell(mint);
+            } else if (changePct >= tp) {
+              alphaLog(`🎯 Take-profit triggered for ${pos.symbol} (+${changePct.toFixed(1)}%)`, 'trade');
+              await alphaExecuteSell(mint);
+            }
+          }
+        }
+      } catch (e) { /* silent */ }
+
+      // Schedule next check
+      if (alphaBotRunning) setTimeout(() => alphaCheckPositions(), 30000);
+    }
+
     // Instant local commands (no API call needed)
     const LOCAL_COMMANDS = [
       { patterns: [/^open\s+trade/i, /^trade$/i, /^trading$/i, /^swap$/i], action: () => { setMode('trade'); return '⟡ Opened trade panel.'; } },
@@ -2872,6 +3705,10 @@
       { patterns: [/^open\s+intel/i, /^intel$/i], action: () => { setMode('intel'); return '⬡ Opened token intel.'; } },
       { patterns: [/^open\s+portfolio/i, /^portfolio$/i, /^folio$/i], action: () => { setMode('portfolio'); return '◐ Opened portfolio.'; } },
       { patterns: [/^open\s+pnl/i, /^pnl$/i], action: () => { setMode('history'); setTimeout(() => setHistTab('pnl'), 50); return '📊 Opened PnL analytics.'; } },
+      { patterns: [/^open\s+alpha/i, /^alpha$/i, /^alpha\s*bot$/i, /^bot$/i, /^copy\s*trade$/i], action: () => { setMode('alpha'); return '🧠 Opened Alpha Bot.'; } },
+      { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
+      { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
+      { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
       { patterns: [/^new\s+chat$/i, /^clear\s+chat$/i, /^reset$/i], action: () => { setTimeout(newChat, 100); return '✦ Starting new chat...'; } },
       { patterns: [/^connect\s+wallet$/i, /^connect$/i], action: () => { connectWallet(); return '👻 Connecting Phantom...'; } },
       { patterns: [/^disconnect\s+wallet$/i, /^disconnect$/i], action: () => { disconnectWallet(); return '👻 Disconnecting...'; } },
@@ -2882,7 +3719,7 @@
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\n/p [ticker] or price [ticker] — instant price check\nscan [mint] — full token intel\n\nOr just describe what you want — Claude will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n\n🔍 **Quick Lookup:**\n/p [ticker] or price [ticker] — instant price check\nscan [mint] — full token intel\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Claude will figure it out.`;
       }},
     ];
 
@@ -3046,6 +3883,10 @@
               break;
             case 'dark_mode': if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); break;
             case 'light_mode': if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); break;
+            case 'open_alpha': setMode('alpha'); break;
+            case 'start_alpha': setMode('alpha'); setTimeout(startAlphaBot, 200); break;
+            case 'stop_alpha': stopAlphaBot(); break;
+            case 'study_wallets': setMode('alpha'); setTimeout(alphaStudy, 200); break;
           }
         } catch(e) { console.warn('Action failed:', action, e); }
       }
@@ -3157,6 +3998,10 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:setup_sell|MINT_ADDRESS}} - Open trade and prefill a sell
 {{ACTION:set_slippage|PERCENT}} - Set slippage
 {{ACTION:dark_mode}} / {{ACTION:light_mode}} - Switch theme
+{{ACTION:open_alpha}} - Open Alpha Bot panel
+{{ACTION:start_alpha}} - Start the Alpha copy-trading bot
+{{ACTION:stop_alpha}} - Stop the Alpha bot
+{{ACTION:study_wallets}} - Analyze tracked wallets and generate strategy
 
 RULES:
 - When the user asks to do something (trade, open a panel, change settings), include the relevant ACTION tag AND a brief confirmation message.
@@ -3165,9 +4010,9 @@ RULES:
 - Always warn about risks for trades.
 - The action tags will be hidden from the user — they only see your text.
 ${webSearchEnabled ? '- You have web search — use it for real-time prices and news.' : ''}
-User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
+User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. Alpha Bot: ${alphaBotRunning ? 'RUNNING (' + alphaWallets.length + ' wallets tracked)' : 'inactive'}.`;
       } else {
-        sysPrompt = `You are Ghost, a crypto-knowledgeable AI assistant. You're in Chat mode — focus on having helpful, informative conversations. You specialize in Solana, memecoins, DeFi, trading strategies, technical analysis, and crypto culture. Be direct and conversational. Use crypto-native language when appropriate.${webSearchEnabled ? ' You have web search enabled — use it to find real-time prices, news, and market data.' : ''} User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
+        sysPrompt = `You are Ghost, a crypto-knowledgeable AI assistant. You're in Chat mode — focus on having helpful, informative conversations. You specialize in Solana, memecoins, DeFi, trading strategies, technical analysis, and crypto culture. Be direct and conversational. Use crypto-native language when appropriate.${webSearchEnabled ? ' You have web search enabled — use it to find real-time prices, news, and market data.' : ''} User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0.`;
       }
 
       try {
@@ -3290,6 +4135,7 @@ User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
     function setInput(text) { $('input').value = text; $('input').focus(); }
     $('input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
     $('intel-mint').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); fetchTokenIntel(); } });
+    $('alpha-addr').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addAlphaWallet(); } });
 
     // ═══════ INIT ═══════
     $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
@@ -3299,6 +4145,12 @@ User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v0.8`;
     updateWsBtn();
     updateSniperSwitch();
     setChatMode(chatMode);
+
+    // Restore Alpha Bot state
+    if (alphaStrategy) {
+      const el = $('alpha-strategy');
+      if (el) el.textContent = alphaStrategy;
+    }
 
     // Auto-prompt for key if not set
     if (!apiKey) setTimeout(promptApiKey, 500);
