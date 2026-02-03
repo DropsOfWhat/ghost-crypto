@@ -881,6 +881,126 @@
       .perps-pos-grid { grid-template-columns: repeat(3, 1fr); }
     }
 
+    /* ═══════ BUNDLE CHECKER ═══════ */
+    .bundle-search { padding: 14px; }
+    .bundle-search-row { display: flex; gap: 6px; }
+    .bundle-search-btn {
+      padding: 10px 16px; background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.15));
+      border: 1px solid rgba(239,68,68,0.3); border-radius: 10px;
+      color: #f87171; font-size: 11px; font-weight: 800; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.06em;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .bundle-search-btn:hover { background: rgba(239,68,68,0.25); box-shadow: 0 0 12px rgba(239,68,68,0.15); }
+    .bundle-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .bundle-empty {
+      text-align: center; padding: 40px 20px;
+    }
+    .bundle-empty-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.4; }
+    .bundle-empty-text { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+    .bundle-log {
+      padding: 10px 14px; font-size: 10px; color: var(--text-muted);
+      font-family: 'Fira Code', monospace; line-height: 1.7;
+      max-height: 120px; overflow-y: auto; background: var(--bg-primary);
+      border-bottom: 1px solid var(--border-primary);
+    }
+    .bundle-log-line { display: flex; gap: 6px; align-items: flex-start; }
+    .bundle-log-dot {
+      width: 5px; height: 5px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+    }
+    .bundle-card {
+      margin: 12px 14px; padding: 16px; background: var(--bg-glass);
+      border: 1px solid var(--border-primary); border-radius: 12px;
+    }
+    .bundle-card-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+    }
+    .bundle-token-name { font-size: 14px; font-weight: 800; color: var(--text-primary); }
+    .bundle-token-ticker { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .bundle-score-wrap { text-align: center; }
+    .bundle-score {
+      width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 18px; font-weight: 900;
+      font-family: 'Fira Code', monospace; margin: 0 auto 4px;
+    }
+    .bundle-score.safe { background: var(--green-dim); color: var(--green); border: 2px solid var(--green-border); }
+    .bundle-score.warn { background: var(--yellow-dim); color: var(--yellow); border: 2px solid var(--yellow-border); }
+    .bundle-score.danger { background: var(--red-dim); color: var(--red); border: 2px solid var(--red-border); }
+    .bundle-score-label {
+      font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+    }
+    .bundle-score-label.safe { color: var(--green); }
+    .bundle-score-label.warn { color: var(--yellow); }
+    .bundle-score-label.danger { color: var(--red); }
+
+    .bundle-section {
+      margin: 12px 14px; padding: 12px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary); border-radius: 10px;
+    }
+    .bundle-stitle {
+      font-size: 9px; font-weight: 800; color: var(--text-muted);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .bundle-flag {
+      display: flex; align-items: flex-start; gap: 8px; padding: 7px 0;
+      border-bottom: 1px solid var(--border-secondary); font-size: 11px;
+    }
+    .bundle-flag:last-child { border-bottom: none; }
+    .bundle-flag-icon { font-size: 14px; flex-shrink: 0; margin-top: -1px; }
+    .bundle-flag-text { color: var(--text-secondary); line-height: 1.4; }
+    .bundle-flag-text strong { color: var(--text-primary); }
+
+    .bundle-stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .bundle-stat {
+      padding: 8px 10px; background: var(--bg-elevated); border-radius: 8px;
+      border: 1px solid var(--border-secondary);
+    }
+    .bundle-stat-label {
+      font-size: 8px; font-weight: 700; color: var(--text-ghost);
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .bundle-stat-val {
+      font-size: 13px; font-weight: 800; font-family: 'Fira Code', monospace; color: var(--text-primary);
+    }
+
+    .bundle-wallet-row {
+      display: flex; align-items: center; gap: 6px; padding: 5px 0;
+      border-bottom: 1px solid var(--border-secondary); font-size: 10px;
+    }
+    .bundle-wallet-row:last-child { border-bottom: none; }
+    .bundle-wallet-addr {
+      font-family: 'Fira Code', monospace; color: var(--text-secondary);
+      cursor: pointer; flex: 1;
+    }
+    .bundle-wallet-addr:hover { color: var(--accent); }
+    .bundle-wallet-pct {
+      font-weight: 800; font-family: 'Fira Code', monospace; min-width: 45px; text-align: right;
+    }
+    .bundle-wallet-tag {
+      font-size: 7px; font-weight: 800; padding: 1px 4px; border-radius: 3px;
+      letter-spacing: 0.06em;
+    }
+    .bundle-wallet-tag.new { background: var(--red-dim); color: var(--red); }
+    .bundle-wallet-tag.old { background: var(--green-dim); color: var(--green); }
+    .bundle-wallet-tag.bundled { background: rgba(251,191,36,0.1); color: #fbbf24; }
+
+    .bundle-verdict {
+      margin: 12px 14px; padding: 14px 16px; border-radius: 10px;
+      font-size: 12px; line-height: 1.6; font-weight: 600;
+    }
+    .bundle-verdict.safe {
+      background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green);
+    }
+    .bundle-verdict.warn {
+      background: var(--yellow-dim); border: 1px solid var(--yellow-border); color: var(--yellow);
+    }
+    .bundle-verdict.danger {
+      background: var(--red-dim); border: 1px solid var(--red-border); color: var(--red);
+    }
+
     /* ═══════ TRADE PANEL ═══════ */
     .trade-section { padding: 14px; }
     .trade-amt-row {
@@ -1894,6 +2014,7 @@
             <div class="tcard" onclick="setMode('alpha')"><div class="tcard-h"><span class="tcard-n">🧠 Alpha Bot</span><span class="tcard-s" id="alpha-tool-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">AI copy-trader — study wallets, learn patterns, auto-trade</div></div>
             <div class="tcard" onclick="setMode('trending')"><div class="tcard-h"><span class="tcard-n">🔥 Trending</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Hottest tokens on Solana — live feed from DexScreener</div></div>
             <div class="tcard" onclick="setMode('watchlist')"><div class="tcard-h"><span class="tcard-n">⭐ Watchlist</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Track tokens you're eyeing — live prices & 24h change</div></div>
+            <div class="tcard" onclick="setMode('bundle')"><div class="tcard-h"><span class="tcard-n">🔍 Bundle Checker</span><span class="tcard-s" style="background:rgba(239,68,68,0.12);color:#f87171;">ACTIVE</span></div><div class="tcard-d">Detect bundled launches — find if dev used multiple wallets to fake volume</div></div>
             <div class="tcard disabled" onclick="toast('🔔 Whale Alerts coming soon!')"><div class="tcard-h"><span class="tcard-n">🔔 Whale Alerts</span><span class="tcard-s" style="background:var(--yellow-dim);color:var(--yellow);">COMING SOON</span></div><div class="tcard-d">Track whale wallet movements</div></div>
           </div>
 
@@ -2115,6 +2236,24 @@
               <button class="tk-btn" id="chart-scan-btn" onclick="">⬡ SCAN</button>
               <button class="tk-btn" id="chart-solscan-btn" onclick="">🔍 SOLSCAN</button>
               <button class="tk-btn" id="chart-watch-btn" onclick="">⭐ WATCH</button>
+            </div>
+          </div>
+
+          <!-- BUNDLE CHECKER -->
+          <div id="p-bundle" style="display:none">
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🔍 BUNDLE CHECKER <span style="font-size:9px;font-weight:600;color:#f87171;margin-left:6px;">SCAM DETECTOR</span></div>
+            <div class="bundle-search">
+              <div class="bundle-search-row">
+                <input type="text" id="bundle-mint" class="fi" placeholder="Paste token mint address...">
+                <button class="bundle-search-btn" id="bundle-go" onclick="runBundleCheck()">🔍 SCAN</button>
+              </div>
+            </div>
+            <div id="bundle-log" class="bundle-log" style="display:none;"></div>
+            <div id="bundle-results">
+              <div class="bundle-empty">
+                <div class="bundle-empty-icon">🔍</div>
+                <div class="bundle-empty-text">Paste a token mint address to check if the<br>launch was bundled (dev used multiple wallets<br>to fake volume and holders).</div>
+              </div>
             </div>
           </div>
 
@@ -2429,6 +2568,7 @@
       $('p-trending').style.display = mode === 'trending' ? 'block' : 'none';
       $('p-watchlist').style.display = mode === 'watchlist' ? 'block' : 'none';
       $('p-chart').style.display = mode === 'chart' ? 'block' : 'none';
+      $('p-bundle').style.display = mode === 'bundle' ? 'block' : 'none';
 
       // Perps takes over the full screen
       const isPerps = mode === 'perps';
@@ -5203,6 +5343,8 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^open\s+trending/i, /^trending$/i, /^hot$/i, /^trend$/i], action: () => { setMode('trending'); return '🔥 Opened trending feed.'; } },
       { patterns: [/^open\s+watchlist/i, /^watchlist$/i, /^watch$/i], action: () => { setMode('watchlist'); return '⭐ Opened watchlist.'; } },
       { patterns: [/^open\s+perps/i, /^perps$/i, /^leverage$/i, /^lev$/i, /^futures$/i], action: () => { setMode('perps'); return '⚡ Opened leverage terminal.'; } },
+      { patterns: [/^open\s+bundle/i, /^bundle$/i, /^bundle\s+check$/i, /^bundlecheck$/i, /^check\s+bundle$/i], action: () => { setMode('bundle'); return '🔍 Opened bundle checker.'; } },
+      { patterns: [/^bundle\s+([1-9A-HJ-NP-Za-km-z]{32,44})$/i], action: (m) => { setMode('bundle'); setTimeout(() => { $('bundle-mint').value = m[1]; runBundleCheck(); }, 100); return '🔍 Scanning for bundle...'; } },
       { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
@@ -5217,7 +5359,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / trending / watchlist / perps\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 100x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\n\n🔥 **Discovery:**\ntrending — hottest tokens on Solana\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / trending / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 100x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\ntrending — hottest tokens on Solana\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -5641,6 +5783,11 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
             case 'open_trending': setMode('trending'); break;
             case 'open_watchlist': setMode('watchlist'); break;
             case 'open_perps': setMode('perps'); break;
+            case 'open_bundle': setMode('bundle'); break;
+            case 'check_bundle':
+              setMode('bundle');
+              if (parts[1]) { setTimeout(() => { $('bundle-mint').value = parts[1]; runBundleCheck(); }, 200); }
+              break;
             case 'open_chart':
               if (parts[1]) openChart(parts[1], parts[2] || '');
               break;
@@ -5778,6 +5925,8 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:open_watchlist}} - Open token watchlist
 {{ACTION:open_chart|MINT}} - Open embedded chart for a token
 {{ACTION:open_perps}} - Open leverage trading terminal (Jupiter Perps)
+{{ACTION:open_bundle}} - Open bundle checker
+{{ACTION:check_bundle:MINT}} - Check if a token launch was bundled (scam detection)
 
 RULES:
 - CRYPTO ONLY. You are a crypto trading assistant. Keep all responses focused on crypto, blockchain, DeFi, trading, and related topics. If someone asks off-topic questions, steer back to crypto.
@@ -6193,6 +6342,469 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       $('chart-watch-btn').onclick = () => addToWatchlist(mint);
       setMode('chart');
     }
+
+    // ═══════ BUNDLE CHECKER ═══════
+    let bundleScanning = false;
+
+    function bundleLog(msg, type = 'info') {
+      const log = $('bundle-log');
+      if (!log) return;
+      log.style.display = 'block';
+      const colors = { info: 'var(--text-muted)', warn: '#fbbf24', error: 'var(--red)', ok: 'var(--green)' };
+      const dotColors = { info: 'var(--text-ghost)', warn: '#fbbf24', error: 'var(--red)', ok: 'var(--green)' };
+      log.innerHTML += `<div class="bundle-log-line"><span class="bundle-log-dot" style="background:${dotColors[type]}"></span><span style="color:${colors[type]}">${msg}</span></div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function runBundleCheck() {
+      const mint = $('bundle-mint').value.trim();
+      if (!mint || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint)) {
+        toast('Enter a valid Solana mint address'); return;
+      }
+      if (bundleScanning) return;
+      bundleScanning = true;
+      $('bundle-go').disabled = true;
+      $('bundle-go').textContent = '⏳ SCANNING...';
+      $('bundle-log').style.display = 'block';
+      $('bundle-log').innerHTML = '';
+      $('bundle-results').innerHTML = '<div class="bundle-empty"><div class="bundle-empty-icon" style="animation:pulse 1s infinite;">🔍</div><div class="bundle-empty-text">Analyzing token launch...</div></div>';
+
+      const result = {
+        mint,
+        name: '', symbol: '', age: '', liquidity: 0, marketCap: 0, dexId: '',
+        totalSupply: 0,
+        holders: [],
+        top5Pct: 0, top10Pct: 0,
+        creationSlot: 0,
+        sameSlotTxs: 0,
+        earlyBuyers: [],
+        freshWallets: 0,
+        commonFunders: [],
+        score: 0,
+        flags: [],
+      };
+
+      try {
+        // ── Step 1: Token Info from DexScreener ──
+        bundleLog('Fetching token info from DexScreener...', 'info');
+        try {
+          const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+          const dsData = await dsRes.json();
+          const pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+          if (pairs.length > 0) {
+            const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+            result.name = pair.baseToken?.name || '';
+            result.symbol = pair.baseToken?.symbol || '';
+            result.liquidity = pair.liquidity?.usd || 0;
+            result.marketCap = pair.marketCap || pair.fdv || 0;
+            result.dexId = pair.dexId || '';
+            if (pair.pairCreatedAt) {
+              const ageMs = Date.now() - pair.pairCreatedAt;
+              if (ageMs < 3600000) result.age = Math.floor(ageMs / 60000) + 'm';
+              else if (ageMs < 86400000) result.age = Math.floor(ageMs / 3600000) + 'h';
+              else result.age = Math.floor(ageMs / 86400000) + 'd';
+            }
+            bundleLog(`Token: ${result.name} ($${result.symbol})`, 'ok');
+          } else {
+            bundleLog('No DexScreener data — may be very new or delisted', 'warn');
+          }
+        } catch (e) { bundleLog('DexScreener lookup failed: ' + e.message, 'warn'); }
+        await delay(200);
+
+        // ── Step 2: Holder Concentration ──
+        bundleLog('Analyzing holder concentration...', 'info');
+        try {
+          const conn = await getWorkingConnection();
+          const mintPubkey = new solanaWeb3.PublicKey(mint);
+          const [largestAccounts, supplyRes] = await Promise.all([
+            conn.getTokenLargestAccounts(mintPubkey),
+            conn.getTokenSupply(mintPubkey),
+          ]);
+          result.totalSupply = supplyRes.value.uiAmount || 1;
+
+          for (let i = 0; i < Math.min(largestAccounts.value.length, 20); i++) {
+            const acc = largestAccounts.value[i];
+            const pct = (acc.uiAmount / result.totalSupply) * 100;
+            result.holders.push({
+              address: acc.address.toString(),
+              amount: acc.uiAmount,
+              pct: pct,
+            });
+          }
+
+          result.top5Pct = result.holders.slice(0, 5).reduce((s, h) => s + h.pct, 0);
+          result.top10Pct = result.holders.slice(0, 10).reduce((s, h) => s + h.pct, 0);
+          bundleLog(`Top 5 holders: ${result.top5Pct.toFixed(1)}% | Top 10: ${result.top10Pct.toFixed(1)}%`, result.top5Pct > 50 ? 'warn' : 'ok');
+
+          if (result.top5Pct > 60) result.flags.push({ icon: '🚩', text: `Top 5 wallets hold <strong>${result.top5Pct.toFixed(1)}%</strong> of supply — extreme concentration` });
+          else if (result.top5Pct > 40) result.flags.push({ icon: '⚠️', text: `Top 5 wallets hold <strong>${result.top5Pct.toFixed(1)}%</strong> — high concentration` });
+        } catch (e) {
+          bundleLog('Holder analysis failed: ' + e.message, 'error');
+        }
+        await delay(300);
+
+        // ── Step 3: Get Earliest Transactions (Bundle Detection) ──
+        bundleLog('Scanning for early transactions...', 'info');
+        let allSigs = [];
+        try {
+          const conn = await getWorkingConnection();
+          const mintPubkey = new solanaWeb3.PublicKey(mint);
+
+          // Paginate backwards to find oldest transactions
+          let before = undefined;
+          let pages = 0;
+          while (pages < 10) { // max 10 pages = 1000 sigs
+            const opts = { limit: 100 };
+            if (before) opts.before = before;
+            const sigs = await conn.getSignaturesForAddress(mintPubkey, opts);
+            if (sigs.length === 0) break;
+            allSigs = allSigs.concat(sigs);
+            before = sigs[sigs.length - 1].signature;
+            pages++;
+            if (sigs.length < 100) break; // reached the end
+            await delay(200);
+          }
+
+          bundleLog(`Found ${allSigs.length} total transactions`, 'info');
+
+          // Sort by slot (oldest first)
+          allSigs.sort((a, b) => (a.slot || 0) - (b.slot || 0));
+
+          if (allSigs.length > 0) {
+            result.creationSlot = allSigs[0].slot;
+            const firstSlot = allSigs[0].slot;
+
+            // Count transactions in the first few slots
+            const sameSlot = allSigs.filter(s => s.slot === firstSlot);
+            const nearSlots = allSigs.filter(s => s.slot <= firstSlot + 2);
+            result.sameSlotTxs = sameSlot.length;
+
+            bundleLog(`Creation slot: ${firstSlot}`, 'info');
+            bundleLog(`Same-slot transactions: ${sameSlot.length}`, sameSlot.length > 3 ? 'warn' : 'ok');
+            bundleLog(`First 3 slots: ${nearSlots.length} transactions`, nearSlots.length > 8 ? 'warn' : 'ok');
+
+            if (sameSlot.length >= 5) {
+              result.flags.push({ icon: '🚩', text: `<strong>${sameSlot.length} transactions</strong> in creation slot — strong bundle indicator (Jito bundle)` });
+            } else if (sameSlot.length >= 3) {
+              result.flags.push({ icon: '⚠️', text: `<strong>${sameSlot.length} transactions</strong> in creation slot — possible bundle` });
+            }
+
+            if (nearSlots.length >= 10) {
+              result.flags.push({ icon: '⚠️', text: `<strong>${nearSlots.length} txs</strong> in first 3 slots — coordinated buying activity` });
+            }
+          }
+        } catch (e) {
+          bundleLog('Transaction scan failed: ' + e.message, 'error');
+        }
+        await delay(300);
+
+        // ── Step 4: Parse Early Buyers ──
+        bundleLog('Identifying early buyer wallets...', 'info');
+        const earlyTxSigs = allSigs.slice(0, 12); // first 12 transactions
+        const buyerWallets = new Set();
+
+        for (let i = 0; i < Math.min(earlyTxSigs.length, 12); i++) {
+          try {
+            const tx = await rpcGetTransaction(earlyTxSigs[i].signature);
+            if (!tx || !tx.meta || tx.meta.err) continue;
+
+            // Find wallets that received tokens
+            const postBalances = tx.meta.postTokenBalances || [];
+            const preBalances = tx.meta.preTokenBalances || [];
+
+            for (const post of postBalances) {
+              if (post.mint === mint && post.owner) {
+                const pre = preBalances.find(p => p.owner === post.owner && p.mint === mint);
+                const preAmt = pre?.uiTokenAmount?.uiAmount || 0;
+                const postAmt = post.uiTokenAmount?.uiAmount || 0;
+                if (postAmt > preAmt) {
+                  buyerWallets.add(post.owner);
+                }
+              }
+            }
+            await delay(250);
+          } catch (e) { /* skip */ }
+        }
+
+        result.earlyBuyers = [...buyerWallets];
+        bundleLog(`Found ${result.earlyBuyers.length} unique early buyers`, result.earlyBuyers.length > 5 ? 'warn' : 'ok');
+        await delay(200);
+
+        // ── Step 5: Check Wallet Ages (Fresh Wallet Detection) ──
+        if (result.earlyBuyers.length > 0) {
+          bundleLog('Checking wallet ages...', 'info');
+          let freshCount = 0;
+          const walletDetails = [];
+
+          for (let i = 0; i < Math.min(result.earlyBuyers.length, 8); i++) {
+            try {
+              const conn = await getWorkingConnection();
+              const walletPk = new solanaWeb3.PublicKey(result.earlyBuyers[i]);
+              const sigs = await conn.getSignaturesForAddress(walletPk, { limit: 10 });
+
+              const isFresh = sigs.length <= 5;
+              if (isFresh) freshCount++;
+
+              walletDetails.push({
+                address: result.earlyBuyers[i],
+                txCount: sigs.length,
+                isFresh,
+              });
+
+              await delay(250);
+            } catch (e) { /* skip */ }
+          }
+
+          result.freshWallets = freshCount;
+          const freshPct = walletDetails.length > 0 ? (freshCount / walletDetails.length * 100) : 0;
+          bundleLog(`Fresh wallets (≤5 txs): ${freshCount}/${walletDetails.length} (${freshPct.toFixed(0)}%)`, freshPct > 50 ? 'warn' : 'ok');
+
+          if (freshPct >= 60) {
+            result.flags.push({ icon: '🚩', text: `<strong>${freshPct.toFixed(0)}%</strong> of early buyers are fresh wallets (≤5 transactions) — likely sybil wallets` });
+          } else if (freshPct >= 30) {
+            result.flags.push({ icon: '⚠️', text: `<strong>${freshPct.toFixed(0)}%</strong> of early buyers are relatively new wallets` });
+          }
+        }
+        await delay(200);
+
+        // ── Step 6: Check Common Funding Sources ──
+        if (result.earlyBuyers.length >= 2) {
+          bundleLog('Tracing funding sources...', 'info');
+          const funders = {};
+
+          for (let i = 0; i < Math.min(result.earlyBuyers.length, 6); i++) {
+            try {
+              const conn = await getWorkingConnection();
+              const walletPk = new solanaWeb3.PublicKey(result.earlyBuyers[i]);
+              const sigs = await conn.getSignaturesForAddress(walletPk, { limit: 5 });
+
+              // Check last few transactions for SOL transfers in
+              for (const sig of sigs.slice(0, 3)) {
+                const tx = await rpcGetTransaction(sig.signature);
+                if (!tx || !tx.meta || tx.meta.err) continue;
+
+                // Look at SOL balance changes to find who funded this wallet
+                const accountKeys = tx.transaction?.message?.accountKeys || [];
+                const preSOL = tx.meta.preBalances || [];
+                const postSOL = tx.meta.postBalances || [];
+
+                for (let k = 0; k < accountKeys.length; k++) {
+                  const key = typeof accountKeys[k] === 'string' ? accountKeys[k] : accountKeys[k]?.pubkey?.toString() || '';
+                  if (key === result.earlyBuyers[i]) continue;
+                  // If this account sent SOL (balance decreased) and our wallet received
+                  const sentSOL = (preSOL[k] || 0) - (postSOL[k] || 0);
+                  if (sentSOL > 0.01 * 1e9) { // sent > 0.01 SOL
+                    if (!funders[key]) funders[key] = [];
+                    if (!funders[key].includes(result.earlyBuyers[i])) {
+                      funders[key].push(result.earlyBuyers[i]);
+                    }
+                  }
+                }
+                await delay(200);
+              }
+            } catch (e) { /* skip */ }
+          }
+
+          // Find common funders (funded 2+ early buyers)
+          for (const [funder, funded] of Object.entries(funders)) {
+            if (funded.length >= 2) {
+              result.commonFunders.push({ funder, funded: funded.length });
+            }
+          }
+
+          if (result.commonFunders.length > 0) {
+            const topFunder = result.commonFunders.sort((a, b) => b.funded - a.funded)[0];
+            bundleLog(`⚠ Common funder detected! ${topFunder.funder.slice(0, 6)}... funded ${topFunder.funded} early buyers`, 'warn');
+            result.flags.push({ icon: '🚩', text: `<strong>Common funder detected:</strong> wallet ${topFunder.funder.slice(0, 6)}...${topFunder.funder.slice(-4)} funded <strong>${topFunder.funded} early buyers</strong> — strong bundle evidence` });
+          } else {
+            bundleLog('No common funding sources found', 'ok');
+          }
+        }
+
+        // ── Step 7: Calculate Risk Score ──
+        bundleLog('Calculating bundle risk score...', 'info');
+
+        // Same-slot transactions (0-35)
+        if (result.sameSlotTxs >= 8) result.score += 35;
+        else if (result.sameSlotTxs >= 5) result.score += 28;
+        else if (result.sameSlotTxs >= 3) result.score += 18;
+        else if (result.sameSlotTxs >= 2) result.score += 8;
+
+        // Holder concentration (0-20)
+        if (result.top5Pct >= 70) result.score += 20;
+        else if (result.top5Pct >= 50) result.score += 15;
+        else if (result.top5Pct >= 35) result.score += 8;
+
+        // Fresh wallets (0-20)
+        const freshRatio = result.earlyBuyers.length > 0 ? result.freshWallets / Math.min(result.earlyBuyers.length, 8) : 0;
+        if (freshRatio >= 0.7) result.score += 20;
+        else if (freshRatio >= 0.5) result.score += 14;
+        else if (freshRatio >= 0.3) result.score += 6;
+
+        // Common funders (0-25)
+        if (result.commonFunders.length > 0) {
+          const maxFunded = Math.max(...result.commonFunders.map(f => f.funded));
+          if (maxFunded >= 4) result.score += 25;
+          else if (maxFunded >= 3) result.score += 20;
+          else if (maxFunded >= 2) result.score += 12;
+        }
+
+        result.score = Math.min(result.score, 100);
+
+        const scoreClass = result.score <= 25 ? 'safe' : result.score <= 55 ? 'warn' : 'danger';
+        const scoreLabel = result.score <= 25 ? 'LIKELY CLEAN' : result.score <= 55 ? 'SUSPICIOUS' : 'LIKELY BUNDLED';
+
+        bundleLog(`Bundle risk score: ${result.score}/100 — ${scoreLabel}`, result.score > 55 ? 'error' : result.score > 25 ? 'warn' : 'ok');
+
+        // Add positive flags if clean
+        if (result.sameSlotTxs <= 1) result.flags.push({ icon: '✅', text: 'Only 1 transaction in creation slot — no bundle detected' });
+        if (freshRatio < 0.2 && result.earlyBuyers.length > 2) result.flags.push({ icon: '✅', text: 'Early buyers are established wallets with transaction history' });
+        if (result.commonFunders.length === 0 && result.earlyBuyers.length >= 2) result.flags.push({ icon: '✅', text: 'No common funding sources found among early buyers' });
+        if (result.top5Pct < 30) result.flags.push({ icon: '✅', text: `Healthy holder distribution — top 5 hold only ${result.top5Pct.toFixed(1)}%` });
+
+        // ── Render Results ──
+        renderBundleResults(result, scoreClass, scoreLabel);
+
+      } catch (e) {
+        bundleLog('Fatal error: ' + e.message, 'error');
+        $('bundle-results').innerHTML = `<div class="bundle-empty"><div class="bundle-empty-icon">❌</div><div class="bundle-empty-text">Scan failed: ${e.message}<br>Check the mint address and try again.</div></div>`;
+      }
+
+      bundleScanning = false;
+      $('bundle-go').disabled = false;
+      $('bundle-go').textContent = '🔍 SCAN';
+    }
+
+    function renderBundleResults(r, scoreClass, scoreLabel) {
+      const fmtUsd = (n) => {
+        if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+        if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+        if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+        return '$' + n.toFixed(0);
+      };
+
+      let flagsHtml = r.flags.map(f => `
+        <div class="bundle-flag">
+          <span class="bundle-flag-icon">${f.icon}</span>
+          <span class="bundle-flag-text">${f.text}</span>
+        </div>
+      `).join('');
+
+      // Build top holders HTML
+      let holdersHtml = '';
+      for (let i = 0; i < Math.min(r.holders.length, 10); i++) {
+        const h = r.holders[i];
+        const pctColor = h.pct > 10 ? 'var(--red)' : h.pct > 5 ? 'var(--yellow)' : 'var(--text-secondary)';
+        holdersHtml += `
+          <div class="bundle-wallet-row">
+            <span style="font-size:9px;color:var(--text-ghost);width:16px;">#${i + 1}</span>
+            <span class="bundle-wallet-addr" onclick="navigator.clipboard.writeText('${h.address}');toast('📋 Copied!')" title="${h.address}">${h.address.slice(0, 6)}...${h.address.slice(-4)}</span>
+            <span class="bundle-wallet-pct" style="color:${pctColor}">${h.pct.toFixed(1)}%</span>
+          </div>`;
+      }
+
+      // Build early buyers HTML
+      let buyersHtml = '';
+      if (r.earlyBuyers.length > 0) {
+        for (let i = 0; i < Math.min(r.earlyBuyers.length, 8); i++) {
+          const addr = r.earlyBuyers[i];
+          const isHolder = r.holders.some(h => h.address.includes(addr.slice(0, 20)));
+          buyersHtml += `
+            <div class="bundle-wallet-row">
+              <span style="font-size:9px;color:var(--text-ghost);width:16px;">${i + 1}</span>
+              <span class="bundle-wallet-addr" onclick="navigator.clipboard.writeText('${addr}');toast('📋 Copied!')" title="${addr}">${addr.slice(0, 6)}...${addr.slice(-4)}</span>
+              ${isHolder ? '<span class="bundle-wallet-tag bundled">HOLDER</span>' : ''}
+            </div>`;
+        }
+      }
+
+      // Common funders HTML
+      let fundersHtml = '';
+      if (r.commonFunders.length > 0) {
+        for (const cf of r.commonFunders) {
+          fundersHtml += `
+            <div class="bundle-wallet-row">
+              <span class="bundle-wallet-addr" onclick="navigator.clipboard.writeText('${cf.funder}');toast('📋 Copied!')" title="${cf.funder}">
+                ${cf.funder.slice(0, 6)}...${cf.funder.slice(-4)}
+              </span>
+              <span class="bundle-wallet-tag bundled">FUNDED ${cf.funded} BUYERS</span>
+            </div>`;
+        }
+      }
+
+      // Verdict message
+      let verdictMsg = '';
+      if (r.score <= 25) verdictMsg = '✅ This token launch appears clean. No strong indicators of bundling or coordinated fake buying detected.';
+      else if (r.score <= 55) verdictMsg = '⚠️ Some suspicious signals detected. The launch may have involved coordinated buying or wallet creation. Proceed with caution and do additional research.';
+      else verdictMsg = '🚩 Strong indicators of a bundled launch. The dev likely used multiple wallets to fake volume and holder count. High risk of manipulation — trade with extreme caution.';
+
+      $('bundle-results').innerHTML = `
+        <!-- Score Card -->
+        <div class="bundle-card">
+          <div class="bundle-card-header">
+            <div>
+              <div class="bundle-token-name">${r.name || 'Unknown Token'}</div>
+              <div class="bundle-token-ticker">${r.symbol ? '$' + r.symbol : ''} ${r.dexId ? '· ' + r.dexId.toUpperCase() : ''} ${r.age ? '· ' + r.age + ' old' : ''}</div>
+            </div>
+            <div class="bundle-score-wrap">
+              <div class="bundle-score ${scoreClass}">${r.score}</div>
+              <div class="bundle-score-label ${scoreClass}">${scoreLabel}</div>
+            </div>
+          </div>
+          <div class="bundle-stat-grid">
+            <div class="bundle-stat"><div class="bundle-stat-label">Market Cap</div><div class="bundle-stat-val">${r.marketCap ? fmtUsd(r.marketCap) : '—'}</div></div>
+            <div class="bundle-stat"><div class="bundle-stat-label">Liquidity</div><div class="bundle-stat-val">${r.liquidity ? fmtUsd(r.liquidity) : '—'}</div></div>
+            <div class="bundle-stat"><div class="bundle-stat-label">Same-Slot TXs</div><div class="bundle-stat-val" style="color:${r.sameSlotTxs >= 5 ? 'var(--red)' : r.sameSlotTxs >= 3 ? 'var(--yellow)' : 'var(--green)'}">${r.sameSlotTxs}</div></div>
+            <div class="bundle-stat"><div class="bundle-stat-label">Early Buyers</div><div class="bundle-stat-val">${r.earlyBuyers.length}</div></div>
+          </div>
+        </div>
+
+        <!-- Verdict -->
+        <div class="bundle-verdict ${scoreClass}">
+          ${verdictMsg}
+        </div>
+
+        <!-- Flags -->
+        ${r.flags.length ? `
+        <div class="bundle-section">
+          <div class="bundle-stitle">🔍 Analysis Findings</div>
+          ${flagsHtml}
+        </div>` : ''}
+
+        <!-- Common Funders -->
+        ${r.commonFunders.length ? `
+        <div class="bundle-section">
+          <div class="bundle-stitle">🔗 Common Funding Sources</div>
+          ${fundersHtml}
+        </div>` : ''}
+
+        <!-- Top Holders -->
+        ${holdersHtml ? `
+        <div class="bundle-section">
+          <div class="bundle-stitle">👥 Top Holders (${r.top5Pct.toFixed(1)}% in top 5)</div>
+          ${holdersHtml}
+        </div>` : ''}
+
+        <!-- Early Buyers -->
+        ${buyersHtml ? `
+        <div class="bundle-section">
+          <div class="bundle-stitle">⚡ Early Buyer Wallets (${r.freshWallets} fresh)</div>
+          ${buyersHtml}
+        </div>` : ''}
+
+        <!-- Actions -->
+        <div style="padding:8px 14px 14px;display:flex;gap:6px;">
+          <button class="tk-btn buy" onclick="$('intel-mint').value='${r.mint}';setMode('intel');fetchTokenIntel();">⬡ Full Intel</button>
+          <button class="tk-btn" onclick="window.open('https://solscan.io/token/${r.mint}','_blank')">🔍 Solscan</button>
+          <button class="tk-btn" onclick="navigator.clipboard.writeText('${r.mint}');toast('📋 Copied!')">📋 Copy CA</button>
+        </div>
+      `;
+    }
+
+    // Bundle checker keyboard listener
+    $('bundle-mint').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); runBundleCheck(); }
+    });
 
     // ═══════ PERPS TERMINAL ═══════
     let perpsMarket = 'SOL';
