@@ -5060,7 +5060,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     // Verify transaction actually succeeded (confirmTransaction only checks inclusion, not success)
     async function verifyTransaction(sig) {
       await delay(2000); // Give RPC time to index
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 5; i++) {
         try {
           const tx = await rpcGetTransaction(sig);
           if (tx) {
@@ -5071,11 +5071,10 @@ Be concise, use numbers. Output as plain text, not markdown.`;
             return { success: true, tx };
           }
         } catch (e) { /* retry */ }
-        await delay(2000);
+        await delay(2500);
       }
-      // If we can't find the tx after retries, assume success (optimistic)
-      // — RPC indexing can be slow, and the tx was already confirmed on-chain
-      return { success: true, tx: null, unverified: true };
+      // Can't find tx — do NOT assume success
+      return { success: false, error: 'unverified', unverified: true };
     }
 
     async function alphaExecuteBuy(mint, symbol, copiedFrom = 'unknown', isGraduated = true) {
@@ -5186,8 +5185,31 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
         // CRITICAL: Check if the tx actually succeeded on-chain
         const result = await verifyTransaction(sig);
-        if (!result.success) {
-          alphaLog(`❌ ${symbol} tx FAILED on-chain via ${method}: ${result.error} — tx: ${sig.slice(0, 8)}...`, 'error');
+
+        let confirmed = result.success;
+        let balanceConfirmed = false;
+
+        // If tx verification failed or unverified, fallback: check if tokens arrived in wallet
+        if (!confirmed) {
+          try {
+            await delay(2000);
+            const conn2 = await getWorkingConnection();
+            const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+            const tokenAccounts = await conn2.getParsedTokenAccountsByOwner(pubkey, {
+              programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+            });
+            const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
+            const bal = ta ? (ta.account.data.parsed.info.tokenAmount.uiAmount || 0) : 0;
+            if (bal > 0) {
+              confirmed = true;
+              balanceConfirmed = true;
+              alphaLog(`✅ ${symbol} confirmed via balance check (${bal.toLocaleString()} tokens)`, 'info');
+            }
+          } catch (e) { /* balance check failed too */ }
+        }
+
+        if (!confirmed) {
+          alphaLog(`❌ ${symbol} tx FAILED — ${result.error || 'no tokens received'} — tx: ${sig.slice(0, 8)}...`, 'error');
           return; // Do NOT track a failed position
         }
 
@@ -5197,18 +5219,20 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         };
 
         // Fetch actual token balance after buy
-        try {
-          await delay(3000); // Wait for chain to settle
-          const conn = await getWorkingConnection();
-          const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
-          const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
-            programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
-          });
-          const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
-          if (ta) {
-            alphaPositions[mint].amount = ta.account.data.parsed.info.tokenAmount.uiAmount || 0;
-          }
-        } catch (e) { /* will get updated on next position check */ }
+        if (!balanceConfirmed) {
+          try {
+            await delay(3000);
+            const conn = await getWorkingConnection();
+            const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+            const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
+              programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+            });
+            const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
+            if (ta) {
+              alphaPositions[mint].amount = ta.account.data.parsed.info.tokenAmount.uiAmount || 0;
+            }
+          } catch (e) { /* will get updated on next position check */ }
+        }
 
         alphaDailyCount++;
         alphaLastBuyTime = Date.now();       // Global cooldown
@@ -5227,7 +5251,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
         saveAlphaState();
 
-        alphaLog(`🟢 BOUGHT ${symbol} — ${buyAmt} SOL via ${method}${result.unverified ? ' (pending)' : ''} — tx: ${sig.slice(0, 8)}...`, 'trade');
+        alphaLog(`🟢 BOUGHT ${symbol} — ${buyAmt} SOL via ${method}${balanceConfirmed ? ' (balance ✓)' : ''} — tx: ${sig.slice(0, 8)}...`, 'trade');
 
       } catch (confirmErr) {
         alphaLog(`⚠ ${symbol} sent but unconfirmed: ${sig?.slice(0, 8)}... — ${confirmErr.message}`, 'warn');
@@ -5342,8 +5366,28 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
         // CRITICAL: Verify tx actually succeeded on-chain
         const result = await verifyTransaction(sig);
-        if (!result.success) {
-          alphaLog(`❌ Sell for ${symbol} tx FAILED on-chain: ${result.error} — tx: ${sig.slice(0, 8)}...`, 'error');
+        let sellConfirmed = result.success;
+
+        // Fallback: check if tokens are gone from wallet
+        if (!sellConfirmed && result.unverified) {
+          try {
+            await delay(2000);
+            const conn2 = await getWorkingConnection();
+            const pubkey2 = new solanaWeb3.PublicKey(botWallet.publicKey);
+            const ta2 = await conn2.getParsedTokenAccountsByOwner(pubkey2, {
+              programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+            });
+            const found = ta2.value.find(t => t.account.data.parsed.info.mint === mint);
+            const remaining = found ? (found.account.data.parsed.info.tokenAmount.uiAmount || 0) : 0;
+            if (remaining === 0 || remaining < (balance.uiAmount * 0.01)) {
+              sellConfirmed = true;
+              alphaLog(`✅ ${symbol} sell confirmed via balance check (tokens gone)`, 'info');
+            }
+          } catch (e) { /* balance check failed */ }
+        }
+
+        if (!sellConfirmed) {
+          alphaLog(`❌ Sell for ${symbol} tx FAILED: ${result.error} — tx: ${sig.slice(0, 8)}...`, 'error');
           return; // Position remains open
         }
 
