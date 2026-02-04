@@ -4961,12 +4961,6 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           const dexId = (best.dexId || '').toLowerCase();
           const isGraduated = dexId.includes('raydium') || dexId.includes('orca') || dexId.includes('meteora');
 
-          // Skip tokens with insufficient liquidity
-          if (liq < 100) {
-            alphaLog(`⏭ Skipped ${symbol} — liq: $${liq.toFixed(0)} (need $100+)`, 'warn');
-            return;
-          }
-
           alphaLog(`✅ ${symbol} — liq: $${liq.toFixed(0)} on ${dexId}. Executing buy...`);
           await alphaExecuteBuy(mint, symbol, trackedWallet.label, isGraduated);
         } else {
