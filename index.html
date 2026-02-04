@@ -5112,6 +5112,20 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           entryTime: Date.now(), sig, copiedFrom,
         };
 
+        // Fetch actual token balance after buy
+        try {
+          await delay(3000); // Wait for chain to settle
+          const conn = await getWorkingConnection();
+          const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+          const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
+            programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+          });
+          const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
+          if (ta) {
+            alphaPositions[mint].amount = ta.account.data.parsed.info.tokenAmount.uiAmount || 0;
+          }
+        } catch (e) { /* will get updated on next position check */ }
+
         alphaDailyCount++;
 
         const trade = {
@@ -5309,34 +5323,78 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     async function alphaCheckPositions() {
       if (!alphaBotRunning) return;
       const { sl, tp } = getStrategyExitRules();
+      const botWallet = getAlphaBotWallet();
 
       const mints = Object.keys(alphaPositions);
       if (mints.length === 0) { setTimeout(() => alphaCheckPositions(), 30000); return; }
 
-      try {
-        const priceRes = await fetch(`${JUP_PRICE}?ids=${mints.join(',')}`);
-        if (priceRes.ok) {
-          const priceData = await priceRes.json();
-          const prices = priceData.data || {};
+      for (const mint of mints) {
+        const pos = alphaPositions[mint];
+        if (!pos) continue;
 
-          for (const mint of mints) {
-            const pos = alphaPositions[mint];
-            if (!pos || !prices[mint]) continue;
-
-            const currentPrice = parseFloat(prices[mint].price);
-            const entryPrice = pos.entrySOL / (pos.amount || 1);
-            const changePct = ((currentPrice - entryPrice) / entryPrice) * 100;
-
-            if (changePct <= -sl) {
-              alphaLog(`🛑 Stop-loss triggered for ${pos.symbol} (${changePct.toFixed(1)}%)`, 'warn');
-              await alphaExecuteSell(mint);
-            } else if (changePct >= tp) {
-              alphaLog(`🎯 Take-profit triggered for ${pos.symbol} (+${changePct.toFixed(1)}%)`, 'trade');
-              await alphaExecuteSell(mint);
+        try {
+          // Step 1: If we don't know the token amount yet, fetch from chain
+          if (!pos.amount || pos.amount <= 0) {
+            if (botWallet) {
+              const conn = await getWorkingConnection();
+              const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+              const tokenAccounts = await conn.getParsedTokenAccountsByOwner(pubkey, {
+                programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+              });
+              const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
+              if (ta) {
+                pos.amount = ta.account.data.parsed.info.tokenAmount.uiAmount || 0;
+                saveAlphaState();
+              }
             }
+            if (!pos.amount || pos.amount <= 0) continue; // Still no balance
           }
-        }
-      } catch (e) { /* silent */ }
+
+          // Step 2: Get current value in SOL via DexScreener priceNative
+          let currentValueSOL = 0;
+          try {
+            const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/tokens/${mint}`, {}, 8000);
+            const dsData = await dsRes.json();
+            const pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+            if (pairs.length > 0) {
+              const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+              const priceNative = parseFloat(best.priceNative) || 0; // Price per token in SOL
+              currentValueSOL = priceNative * pos.amount;
+            }
+          } catch (e) { /* DexScreener failed */ }
+
+          // Step 3: Fallback — use Jupiter sell quote to get SOL value
+          if (currentValueSOL <= 0) {
+            try {
+              const tokenDecimals = await getTokenDecimals(mint);
+              const tokenLamports = Math.round(pos.amount * Math.pow(10, tokenDecimals));
+              const quoteRes = await fetchWithTimeout(
+                `${JUP_API}/quote?inputMint=${mint}&outputMint=${SOL_MINT}&amount=${tokenLamports}&slippageBps=1500`, {}, 8000
+              );
+              if (quoteRes.ok) {
+                const quote = await quoteRes.json();
+                currentValueSOL = parseInt(quote.outAmount || '0') / 1e9;
+              }
+            } catch (e) { /* Jupiter also failed */ }
+          }
+
+          if (currentValueSOL <= 0) continue; // Can't determine value
+
+          // Step 4: Calculate PnL and check exit rules
+          const pnlSOL = currentValueSOL - pos.entrySOL;
+          const pnlPct = (pnlSOL / pos.entrySOL) * 100;
+
+          if (pnlPct <= -sl) {
+            alphaLog(`🛑 Stop-loss for ${pos.symbol}: ${pnlPct.toFixed(1)}% (${pnlSOL.toFixed(4)} SOL)`, 'warn');
+            await alphaExecuteSell(mint);
+          } else if (pnlPct >= tp) {
+            alphaLog(`🎯 Take-profit for ${pos.symbol}: +${pnlPct.toFixed(1)}% (+${pnlSOL.toFixed(4)} SOL)`, 'trade');
+            await alphaExecuteSell(mint);
+          }
+
+          await delay(500); // Rate limit between position checks
+        } catch (e) { /* skip this position */ }
+      }
 
       // Schedule next check
       if (alphaBotRunning) setTimeout(() => alphaCheckPositions(), 30000);
