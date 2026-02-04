@@ -2406,7 +2406,7 @@
     const PUMP_API = 'https://pump.fun/api';
     const PUMPPORTAL_API = 'https://pumpportal.fun/api';
     const RPC_URL = 'https://api.mainnet-beta.solana.com';
-    const JUP_API = 'https://api.jup.ag/swap/v1';
+    const JUP_API = 'https://quote-api.jup.ag/v6';
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
     let heliusKey = localStorage.getItem('ghost-helius-key') || '5372d46c-bd92-4783-ba13-f449062be6fe';
@@ -4958,39 +4958,47 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
           const liq = best.liquidity?.usd || 0;
           const symbol = best.baseToken?.symbol || mint.slice(0, 6);
+          const dexId = (best.dexId || '').toLowerCase();
+          const isGraduated = dexId.includes('raydium') || dexId.includes('orca') || dexId.includes('meteora');
 
-          // Skip tokens with insufficient liquidity — Jupiter can't route these
+          // Skip tokens with insufficient liquidity
           if (liq < 100) {
             alphaLog(`⏭ Skipped ${symbol} — liq: $${liq.toFixed(0)} (need $100+)`, 'warn');
             return;
           }
 
-          alphaLog(`✅ ${symbol} — liq: $${liq.toFixed(0)}. Executing buy...`);
-          await alphaExecuteBuy(mint, symbol, trackedWallet.label);
+          alphaLog(`✅ ${symbol} — liq: $${liq.toFixed(0)} on ${dexId}. Executing buy...`);
+          await alphaExecuteBuy(mint, symbol, trackedWallet.label, isGraduated);
         } else {
-          // No DEX data yet — might be brand new pump.fun token
-          // Try Jupiter quote first to see if it's even routable
-          alphaLog(`⚡ ${mint.slice(0, 6)}... — no DEX data, checking routability...`);
-          const buyAmt = parseFloat($('alpha-buy-amt').value) || 0.01;
-          const lamports = Math.round(buyAmt * 1e9);
-          try {
-            const testQuote = await fetchWithTimeout(`${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=1500`, {}, 8000);
-            if (testQuote.ok) {
-              alphaLog(`✅ Route found — executing buy...`);
-              await alphaExecuteBuy(mint, mint.slice(0, 6), trackedWallet.label);
-            } else {
-              alphaLog(`⏭ Skipped ${mint.slice(0, 6)}... — no swap route available`, 'warn');
-            }
-          } catch (e) {
-            alphaLog(`⏭ Skipped ${mint.slice(0, 6)}... — not routable: ${e.message}`, 'warn');
-          }
+          // No DEX data — likely pump.fun bonding curve token
+          alphaLog(`⚡ ${mint.slice(0, 6)}... — no DEX data, likely pump.fun...`);
+          await alphaExecuteBuy(mint, mint.slice(0, 6), trackedWallet.label, false);
         }
       } catch (e) {
         alphaLog(`Could not check ${mint.slice(0, 6)}... — ${e.message}`, 'warn');
       }
     }
 
-    async function alphaExecuteBuy(mint, symbol, copiedFrom = 'unknown') {
+    // Verify transaction actually succeeded (confirmTransaction only checks inclusion, not success)
+    async function verifyTransaction(sig) {
+      await delay(1500); // Give RPC time to process
+      for (let i = 0; i < 3; i++) {
+        try {
+          const tx = await rpcGetTransaction(sig);
+          if (tx) {
+            if (tx.meta?.err) {
+              const errStr = typeof tx.meta.err === 'object' ? JSON.stringify(tx.meta.err) : String(tx.meta.err);
+              return { success: false, error: errStr };
+            }
+            return { success: true, tx };
+          }
+        } catch (e) { /* retry */ }
+        await delay(1000);
+      }
+      return { success: false, error: 'Could not verify — tx not found' };
+    }
+
+    async function alphaExecuteBuy(mint, symbol, copiedFrom = 'unknown', isGraduated = true) {
       const botWallet = getAlphaBotWallet();
       if (!botWallet) { alphaLog('No bot wallet — add one in Settings', 'error'); return; }
 
@@ -4999,65 +5007,63 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       const lamports = Math.round(buyAmt * 1e9);
       const slipBps = Math.round(slippage * 100);
 
-      // Try Jupiter first, then PumpPortal as fallback
       let sig = null;
       let method = '';
 
-      // ── Attempt 1: Jupiter Swap ──
-      try {
-        alphaLog(`🔄 Getting Jupiter quote for ${symbol}...`, 'info');
+      // Route order depends on token type:
+      // Graduated (Raydium/Orca) → Jupiter only
+      // Ungraduated (pump.fun) → PumpPortal first → Jupiter fallback
 
-        const quoteUrl = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${slipBps}`;
-        const quoteRes = await fetchWithTimeout(quoteUrl, {}, 10000);
-
-        if (!quoteRes.ok) {
-          const errBody = await quoteRes.text().catch(() => '');
-          throw new Error(`Quote ${quoteRes.status}: ${errBody.slice(0, 60)}`);
-        }
-        const quote = await quoteRes.json();
-        if (!quote.outAmount || quote.outAmount === '0') throw new Error('No route found');
-
-        alphaLog(`📝 Building swap tx...`, 'info');
-        const swapRes = await fetchWithTimeout(`${JUP_API}/swap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            quoteResponse: quote,
-            userPublicKey: botWallet.publicKey,
-            wrapAndUnwrapSol: true,
-            dynamicComputeUnitLimit: true,
-            prioritizationFeeLamports: 100000,
-          }),
-        }, 15000);
-
-        if (!swapRes.ok) throw new Error(`Swap build ${swapRes.status}`);
-        const swapData = await swapRes.json();
-        if (!swapData.swapTransaction) throw new Error('No swap tx returned');
-
-        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
-        const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
-        const secretKey = bs58Decode(botWallet.secretKey);
-        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
-        tx.sign([keypair]);
-
-        const rawTx = tx.serialize();
-        if (mevEnabled) {
-          try { sig = await sendViaJito(rawTx); }
-          catch (e) {
-            const conn = await getWorkingConnection();
-            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
-          }
-        } else {
-          const conn = await getWorkingConnection();
-          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
-        }
-        method = 'Jupiter';
-
-      } catch (jupErr) {
-        alphaLog(`⚠ Jupiter failed: ${jupErr.message}. Trying PumpPortal...`, 'warn');
-
-        // ── Attempt 2: PumpPortal (for pump.fun tokens) ──
+      if (isGraduated) {
+        // ── Graduated token: Jupiter only ──
         try {
+          alphaLog(`🔄 Getting Jupiter quote for ${symbol}...`, 'info');
+          const quoteUrl = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${slipBps}`;
+          const quoteRes = await fetchWithTimeout(quoteUrl, {}, 10000);
+          if (!quoteRes.ok) throw new Error(`Quote ${quoteRes.status}`);
+          const quote = await quoteRes.json();
+          if (!quote.outAmount || quote.outAmount === '0') throw new Error('No route found');
+
+          alphaLog(`📝 Building swap tx...`, 'info');
+          const swapRes = await fetchWithTimeout(`${JUP_API}/swap`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              quoteResponse: quote,
+              userPublicKey: botWallet.publicKey,
+              wrapAndUnwrapSol: true,
+              dynamicComputeUnitLimit: true,
+              prioritizationFeeLamports: 100000,
+            }),
+          }, 15000);
+          if (!swapRes.ok) throw new Error(`Swap build ${swapRes.status}`);
+          const swapData = await swapRes.json();
+          if (!swapData.swapTransaction) throw new Error('No swap tx returned');
+
+          const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+          const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+          const secretKey = bs58Decode(botWallet.secretKey);
+          const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+          tx.sign([keypair]);
+
+          const rawTx = tx.serialize();
+          if (mevEnabled) {
+            try { sig = await sendViaJito(rawTx); }
+            catch (e) { const conn = await getWorkingConnection(); sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 }); }
+          } else {
+            const conn = await getWorkingConnection(); sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+          }
+          method = 'Jupiter';
+
+        } catch (e) {
+          alphaLog(`❌ Buy failed for ${symbol}: ${e.message}`, 'error');
+          return;
+        }
+
+      } else {
+        // ── Pump.fun token: PumpPortal first, Jupiter fallback ──
+        try {
+          alphaLog(`🔄 Buying ${symbol} via PumpPortal (pump.fun)...`, 'info');
           const pumpRes = await fetchWithTimeout(`${PUMPPORTAL_API}/trade-local`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -5077,7 +5083,6 @@ Be concise, use numbers. Output as plain text, not markdown.`;
             throw new Error(`PumpPortal ${pumpRes.status}: ${errText.slice(0, 60)}`);
           }
 
-          // PumpPortal returns raw transaction bytes
           const txData = await pumpRes.arrayBuffer();
           const tx = solanaWeb3.VersionedTransaction.deserialize(new Uint8Array(txData));
           const secretKey = bs58Decode(botWallet.secretKey);
@@ -5090,16 +5095,58 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           method = 'PumpPortal';
 
         } catch (pumpErr) {
-          alphaLog(`❌ Buy failed for ${symbol}: Jupiter — ${jupErr.message} | PumpPortal — ${pumpErr.message}`, 'error');
-          return;
+          alphaLog(`⚠ PumpPortal failed: ${pumpErr.message}. Trying Jupiter...`, 'warn');
+          try {
+            const quoteUrl = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${slipBps}`;
+            const quoteRes = await fetchWithTimeout(quoteUrl, {}, 10000);
+            if (!quoteRes.ok) throw new Error(`Quote ${quoteRes.status}`);
+            const quote = await quoteRes.json();
+
+            const swapRes = await fetchWithTimeout(`${JUP_API}/swap`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                quoteResponse: quote,
+                userPublicKey: botWallet.publicKey,
+                wrapAndUnwrapSol: true,
+                dynamicComputeUnitLimit: true,
+                prioritizationFeeLamports: 100000,
+              }),
+            }, 15000);
+            if (!swapRes.ok) throw new Error(`Swap build ${swapRes.status}`);
+            const swapData = await swapRes.json();
+            if (!swapData.swapTransaction) throw new Error('No swap tx');
+
+            const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+            const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+            const secretKey = bs58Decode(botWallet.secretKey);
+            const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+            tx.sign([keypair]);
+
+            const rawTx = tx.serialize();
+            const conn = await getWorkingConnection();
+            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+            method = 'Jupiter';
+
+          } catch (jupErr) {
+            alphaLog(`❌ Buy failed for ${symbol}: PumpPortal — ${pumpErr.message} | Jupiter — ${jupErr.message}`, 'error');
+            return;
+          }
         }
       }
 
-      // ── Confirm & Track ──
+      // ── Confirm & Verify ──
       try {
         alphaLog(`📡 Confirming ${symbol} via ${method}...`, 'info');
         const confirmConn = await getWorkingConnection();
-        await confirmConn.confirmTransaction(sig, 'confirmed');
+        try { await confirmConn.confirmTransaction(sig, 'confirmed'); } catch (e) { /* continue to verify */ }
+
+        // CRITICAL: Check if the tx actually succeeded on-chain
+        const result = await verifyTransaction(sig);
+        if (!result.success) {
+          alphaLog(`❌ ${symbol} tx FAILED on-chain via ${method}: ${result.error} — tx: ${sig.slice(0, 8)}...`, 'error');
+          return; // Do NOT track a failed position
+        }
 
         alphaPositions[mint] = {
           symbol, entrySOL: buyAmt, amount: 0,
@@ -5232,7 +5279,14 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           }
         }
 
-        await conn.confirmTransaction(sig, 'confirmed');
+        try { await conn.confirmTransaction(sig, 'confirmed'); } catch (e) { /* continue to verify */ }
+
+        // CRITICAL: Verify tx actually succeeded on-chain
+        const result = await verifyTransaction(sig);
+        if (!result.success) {
+          alphaLog(`❌ Sell for ${symbol} tx FAILED on-chain: ${result.error} — tx: ${sig.slice(0, 8)}...`, 'error');
+          return; // Position remains open
+        }
 
         const pnl = pos ? (solReceived - pos.entrySOL) : 0;
         const pnlPct = pos ? ((pnl / pos.entrySOL) * 100).toFixed(1) : '?';
