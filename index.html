@@ -4169,6 +4169,11 @@
     let alphaPositions = {}; // mint -> { symbol, entrySOL, amount, entryTime, sig, copiedFrom }
     let alphaClosedCount = parseInt(localStorage.getItem('ghost-alpha-closed-count') || '0');
 
+    // ── Smart Trading Systems ──
+    let alphaLastBuyTime = 0;          // Global cooldown tracker
+    let alphaRecentBuys = {};          // mint -> timestamp (duplicate protection)
+    let alphaPendingSignals = {};      // mint -> { wallets: [labels], firstSeen: timestamp } (wallet confirmation)
+
     function saveAlphaState() {
       // Strip trades array from wallet objects to save space — only keep stats
       const walletsForSave = alphaWallets.map(w => ({
@@ -4782,6 +4787,9 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
       alphaBotRunning = true;
       alphaDailyCount = 0;
+      alphaLastBuyTime = 0;
+      alphaRecentBuys = {};
+      alphaPendingSignals = {};
       const pollSec = 15;
 
       // Record current last signatures for each wallet
@@ -4791,6 +4799,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       $('alpha-start-btn').textContent = '⏹ Stop Bot';
       $('alpha-start-btn').className = 'alpha-btn stop';
       alphaLog('🟢 Bot started — monitoring ' + alphaWallets.length + ' wallets');
+      alphaLog('🛡 Active: 30s cooldown · duplicate filter · wallet weighting · 15/30min time exits');
 
       // Start polling
       alphaPollTimer = setInterval(() => alphaPoll(), pollSec * 1000);
@@ -4832,6 +4841,12 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
       const conn = await getWorkingConnection();
 
+      // Clean stale recent buys (older than 5 min)
+      const now = Date.now();
+      for (const m of Object.keys(alphaRecentBuys)) {
+        if (now - alphaRecentBuys[m] > 5 * 60 * 1000) delete alphaRecentBuys[m];
+      }
+
       for (const w of alphaWallets) {
         try {
           // Step 1: Get recent signatures (works on public RPC)
@@ -4868,7 +4883,10 @@ Be concise, use numbers. Output as plain text, not markdown.`;
                     await alphaEvaluateAndBuy(s.mint, w, s.solAmount);
                   } else if (s.side === 'sell') {
                     alphaLog(`🔔 ${w.label} sold ${s.mint.slice(0, 6)}... (+${s.solAmount.toFixed(3)} SOL)`);
-                    if (alphaPositions[s.mint]) await alphaExecuteSell(s.mint);
+                    if (alphaPositions[s.mint]) {
+                      alphaLog(`🚨 COPY-SELL triggered — ${w.label} is exiting ${alphaPositions[s.mint].symbol}!`, 'warn');
+                      await alphaExecuteSell(s.mint);
+                    }
                   }
                 }
                 continue; // Done with this wallet via Helius
@@ -4909,7 +4927,10 @@ Be concise, use numbers. Output as plain text, not markdown.`;
                 const after = postMap[mint] || 0;
                 if (before - after > 0.000001 && solDelta > 0.001) {
                   alphaLog(`🔔 ${w.label} sold ${mint.slice(0, 6)}... (+${solDelta.toFixed(3)} SOL)`);
-                  if (alphaPositions[mint]) await alphaExecuteSell(mint);
+                  if (alphaPositions[mint]) {
+                    alphaLog(`🚨 COPY-SELL triggered — ${w.label} is exiting ${alphaPositions[mint].symbol}!`, 'warn');
+                    await alphaExecuteSell(mint);
+                  }
                 }
               }
             } catch (e) { /* skip */ }
@@ -4943,10 +4964,53 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         return;
       }
 
-      // Skip if we already hold this token
+      // ── 1. DUPLICATE PROTECTION: Skip if we already hold or recently bought ──
       if (alphaPositions[mint]) {
-        alphaLog('Skipped — already holding ' + mint.slice(0, 6) + '...');
+        alphaLog(`Skipped — already holding ${mint.slice(0, 6)}...`);
         return;
+      }
+      if (alphaRecentBuys[mint] && Date.now() - alphaRecentBuys[mint] < 5 * 60 * 1000) {
+        alphaLog(`Skipped ${mint.slice(0, 6)}... — bought recently (cooldown)`);
+        return;
+      }
+
+      // ── 2. GLOBAL COOLDOWN: Min 30s between buys ──
+      const cooldownMs = 30 * 1000;
+      if (Date.now() - alphaLastBuyTime < cooldownMs) {
+        const remaining = Math.ceil((cooldownMs - (Date.now() - alphaLastBuyTime)) / 1000);
+        alphaLog(`Skipped ${mint.slice(0, 6)}... — cooldown (${remaining}s left)`);
+        return;
+      }
+
+      // ── 3. WALLET WEIGHTING: Low-performers need confirmation ──
+      const walletStats = trackedWallet.stats;
+      const winRate = walletStats?.winRate || 0;
+      const walletPnl = parseFloat(walletStats?.pnl || '0');
+
+      if (winRate < 40 || walletPnl < -10) {
+        // Low-confidence wallet — require a second wallet to also signal this token
+        if (!alphaPendingSignals[mint]) {
+          alphaPendingSignals[mint] = { wallets: [trackedWallet.label], firstSeen: Date.now() };
+          alphaLog(`⏳ ${trackedWallet.label} (${winRate}% win) bought ${mint.slice(0, 6)}... — waiting for confirmation...`);
+          return;
+        } else if (!alphaPendingSignals[mint].wallets.includes(trackedWallet.label)) {
+          alphaPendingSignals[mint].wallets.push(trackedWallet.label);
+          alphaLog(`✅ Confirmed by ${trackedWallet.label} — ${alphaPendingSignals[mint].wallets.length} wallets`);
+          // Fall through to buy
+        } else {
+          return; // Same wallet, already pending
+        }
+      }
+
+      // Clean up pending signal
+      delete alphaPendingSignals[mint];
+
+      // Clean up stale pending signals (older than 3 min)
+      const now = Date.now();
+      for (const m of Object.keys(alphaPendingSignals)) {
+        if (now - alphaPendingSignals[m].firstSeen > 3 * 60 * 1000) {
+          delete alphaPendingSignals[m];
+        }
       }
 
       // Check token on DexScreener
@@ -4961,11 +5025,11 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           const dexId = (best.dexId || '').toLowerCase();
           const isGraduated = dexId.includes('raydium') || dexId.includes('orca') || dexId.includes('meteora') || dexId.includes('pumpswap') || dexId.includes('phoenix') || dexId.includes('lifinity') || liq > 5000;
 
-          alphaLog(`✅ ${symbol} — liq: $${liq.toFixed(0)} on ${dexId}. Executing buy...`);
+          const confidence = winRate >= 70 ? '🟢' : winRate >= 40 ? '🟡' : '🔵';
+          alphaLog(`${confidence} ${symbol} — liq: $${liq.toFixed(0)} on ${dexId} (via ${trackedWallet.label}). Buying...`);
           await alphaExecuteBuy(mint, symbol, trackedWallet.label, isGraduated);
         } else {
-          // No DEX data — likely pump.fun bonding curve token
-          alphaLog(`⚡ ${mint.slice(0, 6)}... — no DEX data, likely pump.fun...`);
+          alphaLog(`⚡ ${mint.slice(0, 6)}... — no DEX data, pump.fun buy (via ${trackedWallet.label})...`);
           await alphaExecuteBuy(mint, mint.slice(0, 6), trackedWallet.label, false);
         }
       } catch (e) {
@@ -5127,6 +5191,8 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         } catch (e) { /* will get updated on next position check */ }
 
         alphaDailyCount++;
+        alphaLastBuyTime = Date.now();       // Global cooldown
+        alphaRecentBuys[mint] = Date.now();  // Duplicate protection
 
         const trade = {
           side: 'buy', symbol, mint, sol: buyAmt,
@@ -5390,6 +5456,20 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           } else if (pnlPct >= tp) {
             alphaLog(`🎯 Take-profit for ${pos.symbol}: +${pnlPct.toFixed(1)}% (+${pnlSOL.toFixed(4)} SOL)`, 'trade');
             await alphaExecuteSell(mint);
+          } else {
+            // ── 4. TIME-BASED EXIT: Dump stale positions ──
+            const ageMin = (Date.now() - pos.entryTime) / 60000;
+
+            // After 15min: exit if losing or flat
+            if (ageMin >= 15 && pnlPct < 10) {
+              alphaLog(`⏰ Time exit for ${pos.symbol}: ${ageMin.toFixed(0)}min old, ${pnlPct.toFixed(1)}% — cutting loss`, 'warn');
+              await alphaExecuteSell(mint);
+            }
+            // After 30min: exit anything under +50%
+            else if (ageMin >= 30 && pnlPct < 50) {
+              alphaLog(`⏰ Time exit for ${pos.symbol}: ${ageMin.toFixed(0)}min old, +${pnlPct.toFixed(1)}% — taking what we have`, 'warn');
+              await alphaExecuteSell(mint);
+            }
           }
 
           await delay(500); // Rate limit between position checks
