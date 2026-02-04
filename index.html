@@ -1001,156 +1001,6 @@
       background: var(--red-dim); border: 1px solid var(--red-border); color: var(--red);
     }
 
-    /* ═══════ WHALE ALERTS ═══════ */
-    .whale-status-bar {
-      margin: 0 14px 10px; padding: 8px 12px; border-radius: 8px;
-      display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
-    }
-    .whale-status-bar.idle { background: var(--bg-glass); border: 1px solid var(--border-primary); color: var(--text-muted); }
-    .whale-status-bar.live { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
-    .whale-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .whale-status-bar.live .whale-dot { animation: pulse 1.5s infinite; }
-
-    .whale-section { padding: 0 14px 10px; }
-    .whale-stitle {
-      font-size: 9px; font-weight: 800; letter-spacing: 0.1em; color: var(--text-muted);
-      text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
-    }
-    .whale-add-row { display: flex; gap: 6px; margin-bottom: 8px; }
-    .whale-add-row .fi { flex: 1; font-size: 11px; }
-    .whale-add-btn {
-      padding: 6px 12px; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1));
-      border: 1px solid rgba(251,191,36,0.3); border-radius: 8px;
-      color: #fbbf24; font-size: 12px; font-weight: 800; cursor: pointer;
-      font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
-    }
-    .whale-add-btn:hover { box-shadow: 0 0 10px rgba(251,191,36,0.15); }
-
-    .whale-wallet-card {
-      padding: 8px 10px; margin-bottom: 4px; background: var(--bg-glass);
-      border: 1px solid var(--border-primary); border-radius: 8px;
-      display: flex; align-items: center; gap: 8px; transition: all 0.15s;
-    }
-    .whale-wallet-card:hover { border-color: var(--border-glow); }
-    .whale-wallet-icon {
-      width: 28px; height: 28px; border-radius: 50%; display: flex;
-      align-items: center; justify-content: center; font-size: 13px;
-      background: rgba(251,191,36,0.1); flex-shrink: 0;
-    }
-    .whale-wallet-info { flex: 1; min-width: 0; }
-    .whale-wallet-label { font-size: 11px; font-weight: 700; color: var(--text-primary); }
-    .whale-wallet-addr {
-      font-size: 9px; font-family: 'Fira Code', monospace; color: var(--text-faint);
-      cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .whale-wallet-addr:hover { color: var(--accent); }
-    .whale-wallet-actions { display: flex; gap: 4px; flex-shrink: 0; }
-    .whale-wallet-rm {
-      width: 22px; height: 22px; border-radius: 50%; display: flex;
-      align-items: center; justify-content: center; background: none;
-      border: 1px solid transparent; color: var(--text-ghost); cursor: pointer;
-      font-size: 11px; transition: all 0.15s;
-    }
-    .whale-wallet-rm:hover { border-color: var(--red-border); color: var(--red); background: var(--red-dim); }
-
-    .whale-toggle-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; border-bottom: 1px solid var(--border-primary);
-    }
-    .whale-toggle-label { font-size: 11px; font-weight: 700; color: var(--text-primary); }
-    .whale-toggle-sub { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
-    .whale-switch {
-      width: 38px; height: 20px; border-radius: 10px; padding: 2px;
-      background: var(--bg-elevated); border: 1px solid var(--border-primary);
-      cursor: pointer; transition: all 0.2s; position: relative;
-    }
-    .whale-switch::after {
-      content: ''; width: 14px; height: 14px; border-radius: 50%;
-      background: var(--text-muted); position: absolute; top: 2px; left: 2px;
-      transition: all 0.2s;
-    }
-    .whale-switch.on { background: var(--green-dim); border-color: var(--green-border); }
-    .whale-switch.on::after { background: var(--green); left: 20px; }
-
-    .whale-feed {
-      max-height: 500px; overflow-y: auto; padding: 0 14px;
-    }
-    .whale-tx {
-      padding: 10px 12px; margin-bottom: 6px; background: var(--bg-glass);
-      border: 1px solid var(--border-primary); border-radius: 10px;
-      font-size: 11px; transition: all 0.2s; animation: fadeInUp 0.3s ease;
-    }
-    .whale-tx:hover { border-color: var(--border-glow); }
-    .whale-tx.new-tx { border-left: 3px solid #fbbf24; }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .whale-tx-top {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;
-    }
-    .whale-tx-wallet { font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 5px; }
-    .whale-tx-label {
-      font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
-      background: rgba(251,191,36,0.1); color: #fbbf24; letter-spacing: 0.04em;
-    }
-    .whale-tx-time { font-size: 9px; color: var(--text-ghost); font-family: 'Fira Code', monospace; }
-    .whale-tx-body { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .whale-tx-type {
-      font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
-      letter-spacing: 0.06em;
-    }
-    .whale-tx-type.swap { background: rgba(139,92,246,0.12); color: #a78bfa; }
-    .whale-tx-type.transfer-out { background: var(--red-dim); color: var(--red); }
-    .whale-tx-type.transfer-in { background: var(--green-dim); color: var(--green); }
-    .whale-tx-type.unknown { background: var(--bg-elevated); color: var(--text-muted); }
-    .whale-tx-detail {
-      font-size: 11px; color: var(--text-secondary); font-family: 'Fira Code', monospace;
-    }
-    .whale-tx-sig {
-      font-size: 9px; color: var(--text-ghost); font-family: 'Fira Code', monospace;
-      cursor: pointer; margin-top: 3px;
-    }
-    .whale-tx-sig:hover { color: var(--accent); }
-    .whale-empty {
-      text-align: center; padding: 30px 20px;
-    }
-    .whale-empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
-    .whale-empty-text { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
-    .whale-clear-btn {
-      margin: 8px 14px; padding: 7px; width: calc(100% - 28px); background: var(--bg-glass);
-      border: 1px solid var(--border-primary); border-radius: 8px;
-      font-size: 10px; font-weight: 600; color: var(--text-muted); cursor: pointer;
-      font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
-    }
-    .whale-clear-btn:hover { border-color: var(--border-glow); color: var(--text-secondary); }
-
-    .whale-bulk-toggle {
-      font-size: 10px; font-weight: 700; color: var(--text-muted); cursor: pointer;
-      padding: 4px 0 6px; user-select: none; transition: color 0.15s;
-    }
-    .whale-bulk-toggle:hover { color: var(--text-secondary); }
-    .whale-bulk-body {
-      max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease;
-      opacity: 0;
-    }
-    .whale-bulk-body.open { max-height: 260px; opacity: 1; }
-    .whale-bulk-textarea {
-      width: 100%; min-height: 100px; max-height: 140px; resize: vertical;
-      font-size: 10px; font-family: 'Fira Code', monospace; line-height: 1.6;
-      padding: 8px 10px; margin-bottom: 6px; box-sizing: border-box;
-      background: var(--bg-primary); border: 1px solid var(--border-primary);
-      border-radius: 8px; color: var(--text-primary);
-    }
-    .whale-bulk-textarea:focus { border-color: var(--border-glow); outline: none; }
-    .whale-bulk-textarea::placeholder { color: var(--text-ghost); }
-    .whale-bulk-actions {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    }
-    .whale-bulk-hint {
-      font-size: 9px; color: var(--text-ghost); font-family: 'Fira Code', monospace;
-    }
-
     /* ═══════ TRADE PANEL ═══════ */
     .trade-section { padding: 14px; }
     .trade-amt-row {
@@ -1930,35 +1780,6 @@
     }
     .mev-toggle.on::after { left: 18px; }
 
-    /* ═══════ TRENDING FEED ═══════ */
-    .trend-card {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;
-      transition: background 0.15s;
-    }
-    .trend-card:hover { background: rgba(0,255,204,0.03); }
-    .trend-rank { font-size: 12px; font-weight: 800; color: var(--text-faint); width: 20px; text-align: center; flex-shrink: 0; }
-    .trend-icon {
-      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
-    }
-    .trend-info { flex: 1; min-width: 0; }
-    .trend-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .trend-ticker { font-size: 10px; color: var(--text-muted); }
-    .trend-right { text-align: right; flex-shrink: 0; }
-    .trend-price { font-size: 12px; font-weight: 600; color: var(--text); }
-    .trend-chg { font-size: 11px; font-weight: 700; }
-    .trend-chg.up { color: var(--green); }
-    .trend-chg.down { color: var(--red); }
-    .trend-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
-    .trend-tab {
-      flex: 1; padding: 8px 0; text-align: center; font-size: 10px; font-weight: 700;
-      letter-spacing: 0.06em; border: none; background: none; color: var(--text-muted);
-      cursor: pointer; border-bottom: 2px solid transparent;
-    }
-    .trend-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .trend-meta { display: flex; gap: 12px; font-size: 9px; color: var(--text-faint); margin-top: 2px; }
-
     /* ═══════ WATCHLIST ═══════ */
     .watch-card {
       display: flex; align-items: center; gap: 10px; padding: 10px 14px;
@@ -2162,10 +1983,8 @@
             <div class="tcard" onclick="setMode('intel')"><div class="tcard-h"><span class="tcard-n">⬡ Token Intel</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Scan any token: holders, liquidity, rug risk score</div></div>
             <div class="tcard" onclick="setMode('portfolio')"><div class="tcard-h"><span class="tcard-n">◐ Portfolio</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Full portfolio dashboard with PnL tracking</div></div>
             <div class="tcard" onclick="setMode('alpha')"><div class="tcard-h"><span class="tcard-n">🧠 Alpha Bot</span><span class="tcard-s" id="alpha-tool-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">AI copy-trader — study wallets, learn patterns, auto-trade</div></div>
-            <div class="tcard" onclick="setMode('trending')"><div class="tcard-h"><span class="tcard-n">🔥 Trending</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Hottest tokens on Solana — live feed from DexScreener</div></div>
             <div class="tcard" onclick="setMode('watchlist')"><div class="tcard-h"><span class="tcard-n">⭐ Watchlist</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Track tokens you're eyeing — live prices & 24h change</div></div>
             <div class="tcard" onclick="setMode('bundle')"><div class="tcard-h"><span class="tcard-n">🔍 Bundle Checker</span><span class="tcard-s" style="background:rgba(239,68,68,0.12);color:#f87171;">ACTIVE</span></div><div class="tcard-d">Detect bundled launches — find if dev used multiple wallets to fake volume</div></div>
-            <div class="tcard" onclick="setMode('whale')"><div class="tcard-h"><span class="tcard-n">🔔 Whale Alerts</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">ACTIVE</span></div><div class="tcard-d">Track whale wallets — see every transaction live</div></div>
           </div>
 
           <!-- WALLET -->
@@ -2341,22 +2160,6 @@
             <div class="sniper-warn">⚠️ Alpha Bot uses private keys to auto-sign. Only fund what you can afford to lose. Past performance ≠ future results.</div>
           </div>
 
-          <!-- TRENDING FEED -->
-          <div id="p-trending" style="display:none">
-            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🔥 TRENDING</div>
-            <div class="trend-tabs">
-              <button class="trend-tab active" id="tt-trending" onclick="setTrendTab('trending')">🔥 TRENDING</button>
-              <button class="trend-tab" id="tt-gainers" onclick="setTrendTab('gainers')">🚀 GAINERS</button>
-              <button class="trend-tab" id="tt-new" onclick="setTrendTab('new')">🆕 NEW PAIRS</button>
-            </div>
-            <div style="display:flex;justify-content:flex-end;padding:6px 14px 0;">
-              <button onclick="fetchTrending()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:11px;font-family:inherit;">↻ Refresh</button>
-            </div>
-            <div id="trending-list">
-              <div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">Loading trending tokens...</div>
-            </div>
-          </div>
-
           <!-- WATCHLIST -->
           <div id="p-watchlist" style="display:none">
             <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⭐ WATCHLIST</div>
@@ -2407,54 +2210,6 @@
             </div>
           </div>
 
-          <!-- WHALE ALERTS -->
-          <div id="p-whale" style="display:none">
-            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🔔 WHALE ALERTS <span style="font-size:9px;font-weight:600;color:#fbbf24;margin-left:6px;">LIVE TRACKING</span></div>
-
-            <div class="whale-status-bar idle" id="whale-status">
-              <span class="whale-dot"></span>
-              <span id="whale-status-text">Add wallets to start tracking</span>
-            </div>
-
-            <div class="whale-toggle-row">
-              <div>
-                <div class="whale-toggle-label">Auto-Monitor</div>
-                <div class="whale-toggle-sub">Poll tracked wallets every 15s for new txs</div>
-              </div>
-              <button class="whale-switch" id="whale-switch" onclick="toggleWhaleMonitor()"></button>
-            </div>
-
-            <div class="whale-section" style="padding-top:10px;">
-              <div class="whale-stitle">🐋 Tracked Wallets</div>
-              <div class="whale-add-row">
-                <input type="text" id="whale-addr" class="fi" placeholder="Wallet address...">
-                <input type="text" id="whale-label" class="fi" placeholder="Label" style="width:70px;flex:none;">
-                <button class="whale-add-btn" onclick="addWhaleWallet()">+</button>
-              </div>
-              <div class="whale-bulk-toggle" onclick="toggleWhaleBulk()">
-                <span id="whale-bulk-arrow">▸</span> Bulk Import
-              </div>
-              <div id="whale-bulk-body" class="whale-bulk-body">
-                <textarea id="whale-bulk-input" class="fi whale-bulk-textarea" placeholder="Paste wallets — one per line&#10;&#10;Format:&#10;ADDRESS LABEL&#10;ADDRESS,LABEL&#10;ADDRESS (auto-labeled)&#10;&#10;Example:&#10;7xKXtg2Cw87... Smart Money 1&#10;5pFn8Rxj9K2... DEX Whale"></textarea>
-                <div class="whale-bulk-actions">
-                  <span class="whale-bulk-hint" id="whale-bulk-hint">0 wallets detected</span>
-                  <button class="whale-add-btn" onclick="bulkAddWhaleWallets()" style="padding:6px 14px;">📥 Import All</button>
-                </div>
-              </div>
-              <div id="whale-wallets"></div>
-            </div>
-
-            <div class="whale-section">
-              <div class="whale-stitle">⚡ Live Transaction Feed <span id="whale-feed-count" style="font-weight:600;color:var(--text-ghost);">(0)</span></div>
-            </div>
-            <div class="whale-feed" id="whale-feed">
-              <div class="whale-empty">
-                <div class="whale-empty-icon">🔔</div>
-                <div class="whale-empty-text">No transactions yet.<br>Add whale wallets and enable monitoring<br>to see their live activity.</div>
-              </div>
-            </div>
-            <button class="whale-clear-btn" onclick="clearWhaleFeed()">Clear Feed</button>
-          </div>
 
 
         </div>
@@ -2764,11 +2519,9 @@
       $('p-intel').style.display = mode === 'intel' ? 'block' : 'none';
       $('p-portfolio').style.display = mode === 'portfolio' ? 'block' : 'none';
       $('p-alpha').style.display = mode === 'alpha' ? 'block' : 'none';
-      $('p-trending').style.display = mode === 'trending' ? 'block' : 'none';
       $('p-watchlist').style.display = mode === 'watchlist' ? 'block' : 'none';
       $('p-chart').style.display = mode === 'chart' ? 'block' : 'none';
       $('p-bundle').style.display = mode === 'bundle' ? 'block' : 'none';
-      $('p-whale').style.display = mode === 'whale' ? 'block' : 'none';
 
       // Perps takes over the full screen
       const isPerps = mode === 'perps';
@@ -2782,10 +2535,8 @@
       if (mode === 'sniper') { renderSniperWallets(); refreshSniperBalances(); }
       if (mode === 'portfolio') { refreshPortfolio(); }
       if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); renderAlphaBotWallet(); refreshAlphaBotBalance(); }
-      if (mode === 'trending') { fetchTrending(); }
       if (mode === 'watchlist') { renderWatchlist(); refreshWatchlistPrices(); }
       if (mode === 'perps') { initPerpsPanel(); }
-      if (mode === 'whale') { renderWhaleWallets(); }
     }
 
     function goBack() {
@@ -5541,12 +5292,10 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^open\s+portfolio/i, /^portfolio$/i, /^folio$/i], action: () => { setMode('portfolio'); return '◐ Opened portfolio.'; } },
       { patterns: [/^open\s+pnl/i, /^pnl$/i], action: () => { setMode('history'); setTimeout(() => setHistTab('pnl'), 50); return '📊 Opened PnL analytics.'; } },
       { patterns: [/^open\s+alpha/i, /^alpha$/i, /^alpha\s*bot$/i, /^bot$/i, /^copy\s*trade$/i], action: () => { setMode('alpha'); return '🧠 Opened Alpha Bot.'; } },
-      { patterns: [/^open\s+trending/i, /^trending$/i, /^hot$/i, /^trend$/i], action: () => { setMode('trending'); return '🔥 Opened trending feed.'; } },
       { patterns: [/^open\s+watchlist/i, /^watchlist$/i, /^watch$/i], action: () => { setMode('watchlist'); return '⭐ Opened watchlist.'; } },
       { patterns: [/^open\s+perps/i, /^perps$/i, /^leverage$/i, /^lev$/i, /^futures$/i], action: () => { setMode('perps'); return '⚡ Opened leverage terminal.'; } },
       { patterns: [/^open\s+bundle/i, /^bundle$/i, /^bundle\s+check$/i, /^bundlecheck$/i, /^check\s+bundle$/i], action: () => { setMode('bundle'); return '🔍 Opened bundle checker.'; } },
       { patterns: [/^bundle\s+([1-9A-HJ-NP-Za-km-z]{32,44})$/i], action: (m) => { setMode('bundle'); setTimeout(() => { $('bundle-mint').value = m[1]; runBundleCheck(); }, 100); return '🔍 Scanning for bundle...'; } },
-      { patterns: [/^open\s+whale/i, /^whale$/i, /^whale\s*alerts?$/i, /^whales$/i], action: () => { setMode('whale'); return '🔔 Opened whale alerts.'; } },
       { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
@@ -5561,7 +5310,7 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / trending / watchlist / perps / bundle / whale\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 100x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\ntrending — hottest tokens on Solana\nwatchlist — your saved tokens\nwhale — whale wallet transaction alerts\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 100x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -5982,11 +5731,9 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
             case 'stop_alpha': stopAlphaBot(); break;
             case 'study_wallets': setMode('alpha'); setTimeout(alphaStudy, 200); break;
             case 'auto_learn': setMode('alpha'); setTimeout(alphaAutoLearn, 200); break;
-            case 'open_trending': setMode('trending'); break;
             case 'open_watchlist': setMode('watchlist'); break;
             case 'open_perps': setMode('perps'); break;
             case 'open_bundle': setMode('bundle'); break;
-            case 'open_whale': setMode('whale'); break;
             case 'check_bundle':
               setMode('bundle');
               if (parts[1]) { setTimeout(() => { $('bundle-mint').value = parts[1]; runBundleCheck(); }, 200); }
@@ -6124,13 +5871,11 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:stop_alpha}} - Stop the Alpha bot
 {{ACTION:study_wallets}} - Analyze tracked wallets and generate strategy
 {{ACTION:auto_learn}} - Bot analyzes its own performance
-{{ACTION:open_trending}} - Open trending tokens feed
 {{ACTION:open_watchlist}} - Open token watchlist
 {{ACTION:open_chart|MINT}} - Open embedded chart for a token
 {{ACTION:open_perps}} - Open leverage trading terminal (Jupiter Perps)
 {{ACTION:open_bundle}} - Open bundle checker
 {{ACTION:check_bundle:MINT}} - Check if a token launch was bundled (scam detection)
-{{ACTION:open_whale}} - Open whale alerts (track wallets, live transaction feed)
 
 RULES:
 - CRYPTO ONLY. You are a crypto trading assistant. Keep all responses focused on crypto, blockchain, DeFi, trading, and related topics. If someone asks off-topic questions, steer back to crypto.
@@ -6309,105 +6054,6 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       const data = await res.json();
       if (data.error) throw new Error('Jito: ' + (data.error.message || JSON.stringify(data.error)));
       return data.result;
-    }
-
-    // ═══════ TRENDING FEED ═══════
-    let trendTab = 'trending';
-    let trendCache = {};
-
-    function setTrendTab(tab) {
-      trendTab = tab;
-      document.querySelectorAll('.trend-tab').forEach(t => t.classList.toggle('active', t.id === 'tt-' + tab));
-      fetchTrending();
-    }
-
-    async function fetchTrending() {
-      const el = $('trending-list');
-      el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">Loading...</div>';
-
-      try {
-        let url, pairs = [];
-
-        if (trendTab === 'trending') {
-          // Use DexScreener boosted tokens
-          const res = await fetch('https://api.dexscreener.com/token-boosts/top/v1');
-          const data = await res.json();
-          // Filter Solana only and deduplicate
-          const seen = new Set();
-          const solTokens = (data || []).filter(t => t.chainId === 'solana' && !seen.has(t.tokenAddress) && seen.add(t.tokenAddress));
-          // Get details for each
-          const mints = solTokens.slice(0, 15).map(t => t.tokenAddress);
-          if (mints.length > 0) {
-            const detRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mints.join(',')}`);
-            const detData = await detRes.json();
-            pairs = (detData.pairs || []).filter(p => p.chainId === 'solana');
-            // Deduplicate by baseToken address, keep highest liq
-            const best = {};
-            for (const p of pairs) {
-              const addr = p.baseToken?.address;
-              if (!addr) continue;
-              if (!best[addr] || (p.liquidity?.usd || 0) > (best[addr].liquidity?.usd || 0)) best[addr] = p;
-            }
-            pairs = mints.map(m => best[m]).filter(Boolean);
-          }
-        } else if (trendTab === 'gainers') {
-          const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=SOL');
-          const data = await res.json();
-          pairs = (data.pairs || [])
-            .filter(p => p.chainId === 'solana' && (p.liquidity?.usd || 0) > 5000 && p.volume?.h24 > 1000)
-            .sort((a, b) => (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0))
-            .slice(0, 20);
-        } else if (trendTab === 'new') {
-          const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=SOL');
-          const data = await res.json();
-          pairs = (data.pairs || [])
-            .filter(p => p.chainId === 'solana' && (p.liquidity?.usd || 0) > 2000)
-            .sort((a, b) => (b.pairCreatedAt || 0) - (a.pairCreatedAt || 0))
-            .slice(0, 20);
-        }
-
-        if (pairs.length === 0) {
-          el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:12px;">No results found. Try refreshing.</div>';
-          return;
-        }
-
-        const fU = (n) => n >= 1e9 ? '$'+(n/1e9).toFixed(1)+'B' : n >= 1e6 ? '$'+(n/1e6).toFixed(1)+'M' : n >= 1e3 ? '$'+(n/1e3).toFixed(1)+'K' : '$'+n.toFixed(0);
-        const fP = (p) => p===0?'$0':p<0.0000001?'$'+p.toExponential(2):p<0.000001?'$'+p.toFixed(10):p<0.01?'$'+p.toFixed(6):p<1?'$'+p.toFixed(4):'$'+p.toFixed(2);
-        const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c','#c084fc','#f472b6'];
-
-        let html = '';
-        pairs.forEach((p, i) => {
-          const sym = p.baseToken?.symbol || '???';
-          const name = p.baseToken?.name || sym;
-          const mint = p.baseToken?.address || '';
-          const price = p.priceUsd ? parseFloat(p.priceUsd) : 0;
-          const chg = p.priceChange?.h24 || 0;
-          const vol = p.volume?.h24 || 0;
-          const liq = p.liquidity?.usd || 0;
-          const age = p.pairCreatedAt ? timeSince(p.pairCreatedAt) : '?';
-          const color = colors[Math.abs(sym.charCodeAt(0)) % colors.length];
-          const initial = sym.slice(0,2).toUpperCase();
-          const imgUrl = p.info?.imageUrl || '';
-
-          html += `<div class="trend-card" onclick="quickTokenCard('${mint}');setMode('chat')">
-            <div class="trend-rank">${i + 1}</div>
-            ${imgUrl ? `<img src="${imgUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.outerHTML='<div class=\\'trend-icon\\' style=\\'background:${color}\\'>${initial}</div>'">` : `<div class="trend-icon" style="background:${color}">${initial}</div>`}
-            <div class="trend-info">
-              <div class="trend-name">${name}</div>
-              <div class="trend-ticker">$${sym}</div>
-              <div class="trend-meta"><span>Vol: ${fU(vol)}</span><span>Liq: ${fU(liq)}</span><span>${age}</span></div>
-            </div>
-            <div class="trend-right">
-              <div class="trend-price">${fP(price)}</div>
-              <div class="trend-chg ${chg >= 0 ? 'up' : 'down'}">${chg >= 0 ? '+' : ''}${chg.toFixed(1)}%</div>
-            </div>
-          </div>`;
-        });
-
-        el.innerHTML = html;
-      } catch (e) {
-        el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red);font-size:12px;">Error: ${e.message}</div>`;
-      }
     }
 
     // ═══════ WATCHLIST ═══════
@@ -7009,471 +6655,6 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     $('bundle-mint').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); runBundleCheck(); }
     });
-
-    // ═══════ WHALE ALERTS ═══════
-    let whaleWallets = JSON.parse(localStorage.getItem('ghost-whale-wallets') || '[]');
-    let whaleMonitorRunning = false;
-    let whaleMonitorTimer = null;
-    let whaleTxFeed = JSON.parse(localStorage.getItem('ghost-whale-feed') || '[]').slice(0, 200);
-    let whaleLastSigs = JSON.parse(localStorage.getItem('ghost-whale-lastsigs') || '{}');
-    const WHALE_POLL_INTERVAL = 15000; // 15 seconds
-
-    function addWhaleWallet() {
-      const addr = $('whale-addr').value.trim();
-      const label = $('whale-label').value.trim() || `Whale ${whaleWallets.length + 1}`;
-      if (!addr || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr)) {
-        toast('Enter a valid Solana wallet address'); return;
-      }
-      if (whaleWallets.some(w => w.address === addr)) {
-        toast('Wallet already tracked'); return;
-      }
-      whaleWallets.push({ address: addr, label });
-      localStorage.setItem('ghost-whale-wallets', JSON.stringify(whaleWallets));
-      $('whale-addr').value = '';
-      $('whale-label').value = '';
-      renderWhaleWallets();
-      toast(`🐋 Now tracking ${label}`);
-      // Do an initial fetch for this wallet
-      fetchWhaleTransactions(addr, label, true);
-    }
-
-    function removeWhaleWallet(idx) {
-      const w = whaleWallets[idx];
-      if (!w) return;
-      whaleWallets.splice(idx, 1);
-      localStorage.setItem('ghost-whale-wallets', JSON.stringify(whaleWallets));
-      delete whaleLastSigs[w.address];
-      localStorage.setItem('ghost-whale-lastsigs', JSON.stringify(whaleLastSigs));
-      renderWhaleWallets();
-      toast(`Removed ${w.label}`);
-    }
-
-    function renderWhaleWallets() {
-      const container = $('whale-wallets');
-      if (!container) return;
-      if (whaleWallets.length === 0) {
-        container.innerHTML = '<div style="font-size:10px;color:var(--text-ghost);padding:6px 0;">No wallets tracked yet</div>';
-        return;
-      }
-      container.innerHTML = whaleWallets.map((w, i) => `
-        <div class="whale-wallet-card">
-          <div class="whale-wallet-icon">🐋</div>
-          <div class="whale-wallet-info">
-            <div class="whale-wallet-label">${w.label}</div>
-            <div class="whale-wallet-addr" onclick="navigator.clipboard.writeText('${w.address}');toast('📋 Copied!')" title="${w.address}">${w.address.slice(0, 6)}...${w.address.slice(-4)}</div>
-          </div>
-          <div class="whale-wallet-actions">
-            <button class="whale-wallet-rm" onclick="event.stopPropagation();whaleRefreshOne(${i})" title="Refresh">↻</button>
-            <button class="whale-wallet-rm" onclick="event.stopPropagation();removeWhaleWallet(${i})" title="Remove">✕</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function toggleWhaleMonitor() {
-      whaleMonitorRunning = !whaleMonitorRunning;
-      const sw = $('whale-switch');
-      const status = $('whale-status');
-      const statusText = $('whale-status-text');
-
-      if (whaleMonitorRunning) {
-        sw.classList.add('on');
-        status.className = 'whale-status-bar live';
-        statusText.textContent = `Monitoring ${whaleWallets.length} wallet${whaleWallets.length !== 1 ? 's' : ''} — polling every 15s`;
-        whaleMonitorPoll();
-        whaleMonitorTimer = setInterval(whaleMonitorPoll, WHALE_POLL_INTERVAL);
-        toast('🔔 Whale monitoring started');
-      } else {
-        sw.classList.remove('on');
-        status.className = 'whale-status-bar idle';
-        statusText.textContent = whaleWallets.length > 0 ? `${whaleWallets.length} wallet${whaleWallets.length !== 1 ? 's' : ''} tracked — monitoring paused` : 'Add wallets to start tracking';
-        if (whaleMonitorTimer) { clearInterval(whaleMonitorTimer); whaleMonitorTimer = null; }
-        toast('🔔 Whale monitoring stopped');
-      }
-    }
-
-    async function whaleMonitorPoll() {
-      if (!whaleMonitorRunning || whaleWallets.length === 0) return;
-      for (const w of whaleWallets) {
-        try {
-          await fetchWhaleTransactions(w.address, w.label, false);
-        } catch (e) { console.warn('Whale poll error for', w.label, e); }
-        await delay(500); // stagger requests
-      }
-    }
-
-    async function whaleRefreshOne(idx) {
-      const w = whaleWallets[idx];
-      if (!w) return;
-      toast(`↻ Refreshing ${w.label}...`);
-      // Clear last sig to get recent history
-      delete whaleLastSigs[w.address];
-      localStorage.setItem('ghost-whale-lastsigs', JSON.stringify(whaleLastSigs));
-      await fetchWhaleTransactions(w.address, w.label, true);
-    }
-
-    async function fetchWhaleTransactions(address, label, isInitial) {
-      const limit = isInitial ? 10 : 5;
-      let txns = [];
-
-      // ── Path A: Helius Enhanced API ──
-      if (heliusKey) {
-        try {
-          const url = `https://api.helius.xyz/v0/addresses/${address}/transactions?api-key=${heliusKey}&limit=${limit}`;
-          const res = await fetch(url);
-          if (res.ok) {
-            const raw = await res.json();
-            txns = parseHeliusWhale(raw, address, label);
-          }
-        } catch (e) { /* fallback to RPC */ }
-      }
-
-      // ── Path B: RPC Fallback ──
-      if (txns.length === 0) {
-        try {
-          const conn = await getWorkingConnection();
-          const pubkey = new solanaWeb3.PublicKey(address);
-          const sigs = await conn.getSignaturesForAddress(pubkey, { limit });
-
-          for (const sigInfo of sigs.slice(0, limit)) {
-            await delay(200);
-            try {
-              const tx = await rpcGetTransaction(sigInfo.signature);
-              if (!tx || !tx.meta || tx.meta.err) continue;
-              const parsed = parseRpcWhaleTx(tx, sigInfo, address, label);
-              if (parsed) txns.push(parsed);
-            } catch (e) { /* skip */ }
-          }
-        } catch (e) { console.warn('Whale RPC fallback failed:', e); }
-      }
-
-      if (txns.length === 0) return;
-
-      // Filter out already-seen transactions
-      const lastSig = whaleLastSigs[address];
-      let newTxns = txns;
-      if (lastSig && !isInitial) {
-        const idx = txns.findIndex(t => t.sig === lastSig);
-        if (idx > 0) newTxns = txns.slice(0, idx);
-        else if (idx === 0) newTxns = [];
-        // if not found, all are new
-      }
-
-      // Store latest signature
-      if (txns.length > 0) {
-        whaleLastSigs[address] = txns[0].sig;
-        localStorage.setItem('ghost-whale-lastsigs', JSON.stringify(whaleLastSigs));
-      }
-
-      // Add to feed (newest first)
-      let addedCount = 0;
-      for (const tx of newTxns) {
-        if (!whaleTxFeed.some(f => f.sig === tx.sig)) {
-          whaleTxFeed.unshift(tx);
-          addedCount++;
-        }
-      }
-
-      // Trim feed to 200
-      if (whaleTxFeed.length > 200) whaleTxFeed = whaleTxFeed.slice(0, 200);
-      localStorage.setItem('ghost-whale-feed', JSON.stringify(whaleTxFeed));
-
-      if (addedCount > 0) {
-        renderWhaleFeed();
-        if (!isInitial) {
-          toast(`🐋 ${addedCount} new tx${addedCount > 1 ? 's' : ''} from ${label}`);
-        }
-      } else if (isInitial) {
-        renderWhaleFeed();
-      }
-    }
-
-    function parseHeliusWhale(txns, address, label) {
-      const results = [];
-      for (const tx of txns) {
-        const sig = tx.signature;
-        const time = (tx.timestamp || 0) * 1000;
-        const type = tx.type || 'UNKNOWN';
-        const src = tx.source || '';
-        const desc = tx.description || '';
-
-        let txType = 'unknown';
-        let detail = '';
-        let tokens = [];
-
-        const tokenXfers = tx.tokenTransfers || [];
-        const nativeXfers = tx.nativeTransfers || [];
-
-        const solOut = nativeXfers.filter(n => n.fromUserAccount === address).reduce((s, n) => s + (n.amount || 0), 0) / 1e9;
-        const solIn = nativeXfers.filter(n => n.toUserAccount === address).reduce((s, n) => s + (n.amount || 0), 0) / 1e9;
-        const tokensIn = tokenXfers.filter(t => t.toUserAccount === address && t.mint !== SOL_MINT);
-        const tokensOut = tokenXfers.filter(t => t.fromUserAccount === address && t.mint !== SOL_MINT);
-
-        // Detect SWAP
-        if (tx.events?.swap || type === 'SWAP' || (solOut > 0.001 && tokensIn.length > 0)) {
-          txType = 'swap';
-          if (solOut > 0.001 && tokensIn.length > 0) {
-            const tkn = tokensIn[0];
-            const amt = tkn.tokenAmount || 0;
-            const fmtAmt = amt >= 1e6 ? (amt / 1e6).toFixed(1) + 'M' : amt >= 1e3 ? (amt / 1e3).toFixed(1) + 'K' : amt.toFixed(2);
-            detail = `Bought ${fmtAmt} ${tkn.mint?.slice(0, 6) || '???'}... for ${solOut.toFixed(3)} SOL`;
-            tokens = [tkn.mint];
-          } else if (solIn > 0.001 && tokensOut.length > 0) {
-            const tkn = tokensOut[0];
-            const amt = tkn.tokenAmount || 0;
-            const fmtAmt = amt >= 1e6 ? (amt / 1e6).toFixed(1) + 'M' : amt >= 1e3 ? (amt / 1e3).toFixed(1) + 'K' : amt.toFixed(2);
-            detail = `Sold ${fmtAmt} ${tkn.mint?.slice(0, 6) || '???'}... for ${solIn.toFixed(3)} SOL`;
-            tokens = [tkn.mint];
-          } else {
-            detail = desc || `Swap via ${src}`;
-          }
-        }
-        // Detect TRANSFER
-        else if (type === 'TRANSFER' || nativeXfers.length > 0 || tokenXfers.length > 0) {
-          if (solOut > 0.01 && tokensOut.length === 0 && tokensIn.length === 0) {
-            txType = 'transfer-out';
-            const to = nativeXfers.find(n => n.fromUserAccount === address)?.toUserAccount || '?';
-            detail = `Sent ${solOut.toFixed(3)} SOL → ${to.slice(0, 6)}...${to.slice(-4)}`;
-          } else if (solIn > 0.01 && tokensOut.length === 0 && tokensIn.length === 0) {
-            txType = 'transfer-in';
-            const from = nativeXfers.find(n => n.toUserAccount === address)?.fromUserAccount || '?';
-            detail = `Received ${solIn.toFixed(3)} SOL ← ${from.slice(0, 6)}...${from.slice(-4)}`;
-          } else if (tokensOut.length > 0) {
-            txType = 'transfer-out';
-            const tkn = tokensOut[0];
-            const amt = tkn.tokenAmount || 0;
-            const fmtAmt = amt >= 1e6 ? (amt / 1e6).toFixed(1) + 'M' : amt >= 1e3 ? (amt / 1e3).toFixed(1) + 'K' : amt.toFixed(2);
-            detail = `Sent ${fmtAmt} ${tkn.mint?.slice(0, 6) || '???'}... → ${(tkn.toUserAccount || '?').slice(0, 6)}...`;
-            tokens = [tkn.mint];
-          } else if (tokensIn.length > 0) {
-            txType = 'transfer-in';
-            const tkn = tokensIn[0];
-            const amt = tkn.tokenAmount || 0;
-            const fmtAmt = amt >= 1e6 ? (amt / 1e6).toFixed(1) + 'M' : amt >= 1e3 ? (amt / 1e3).toFixed(1) + 'K' : amt.toFixed(2);
-            detail = `Received ${fmtAmt} ${tkn.mint?.slice(0, 6) || '???'}... ← ${(tkn.fromUserAccount || '?').slice(0, 6)}...`;
-            tokens = [tkn.mint];
-          } else {
-            txType = 'unknown';
-            detail = desc || `Transfer (${type})`;
-          }
-        }
-        // Fallback
-        else {
-          detail = desc || `${type} via ${src}`;
-        }
-
-        results.push({ sig, time, txType, detail, label, address, tokens, source: src });
-      }
-      return results;
-    }
-
-    function parseRpcWhaleTx(tx, sigInfo, address, label) {
-      const sig = sigInfo.signature;
-      const time = (sigInfo.blockTime || 0) * 1000;
-      const pre = tx.meta.preTokenBalances || [];
-      const post = tx.meta.postTokenBalances || [];
-      const preSOL = tx.meta.preBalances || [];
-      const postSOL = tx.meta.postBalances || [];
-      const accountKeys = tx.transaction?.message?.accountKeys || [];
-
-      // Find this wallet's index
-      let walletIdx = -1;
-      for (let i = 0; i < accountKeys.length; i++) {
-        const key = typeof accountKeys[i] === 'string' ? accountKeys[i] : accountKeys[i]?.pubkey?.toString() || '';
-        if (key === address) { walletIdx = i; break; }
-      }
-
-      const solChange = walletIdx >= 0 ? ((postSOL[walletIdx] || 0) - (preSOL[walletIdx] || 0)) / 1e9 : 0;
-
-      // Token changes for this wallet
-      const tokenChanges = [];
-      const postMap = {};
-      const preMap = {};
-      for (const b of post) { if (b.owner === address) postMap[b.mint] = b.uiTokenAmount?.uiAmount || 0; }
-      for (const b of pre) { if (b.owner === address) preMap[b.mint] = b.uiTokenAmount?.uiAmount || 0; }
-
-      for (const mint of new Set([...Object.keys(postMap), ...Object.keys(preMap)])) {
-        const diff = (postMap[mint] || 0) - (preMap[mint] || 0);
-        if (Math.abs(diff) > 0.000001) {
-          tokenChanges.push({ mint, diff });
-        }
-      }
-
-      let txType = 'unknown';
-      let detail = '';
-      let tokens = [];
-
-      if (tokenChanges.length > 0 && Math.abs(solChange) > 0.001) {
-        // Swap: SOL changed and tokens changed
-        txType = 'swap';
-        const tc = tokenChanges[0];
-        tokens = [tc.mint];
-        const fmtAmt = Math.abs(tc.diff) >= 1e6 ? (Math.abs(tc.diff) / 1e6).toFixed(1) + 'M' : Math.abs(tc.diff) >= 1e3 ? (Math.abs(tc.diff) / 1e3).toFixed(1) + 'K' : Math.abs(tc.diff).toFixed(2);
-        if (tc.diff > 0) {
-          detail = `Bought ${fmtAmt} ${tc.mint.slice(0, 6)}... for ${Math.abs(solChange).toFixed(3)} SOL`;
-        } else {
-          detail = `Sold ${fmtAmt} ${tc.mint.slice(0, 6)}... for ${Math.abs(solChange).toFixed(3)} SOL`;
-        }
-      } else if (tokenChanges.length > 0) {
-        // Token transfer
-        const tc = tokenChanges[0];
-        tokens = [tc.mint];
-        const fmtAmt = Math.abs(tc.diff) >= 1e6 ? (Math.abs(tc.diff) / 1e6).toFixed(1) + 'M' : Math.abs(tc.diff) >= 1e3 ? (Math.abs(tc.diff) / 1e3).toFixed(1) + 'K' : Math.abs(tc.diff).toFixed(2);
-        if (tc.diff > 0) {
-          txType = 'transfer-in';
-          detail = `Received ${fmtAmt} ${tc.mint.slice(0, 6)}...`;
-        } else {
-          txType = 'transfer-out';
-          detail = `Sent ${fmtAmt} ${tc.mint.slice(0, 6)}...`;
-        }
-      } else if (Math.abs(solChange) > 0.001) {
-        // SOL transfer
-        if (solChange > 0) {
-          txType = 'transfer-in';
-          detail = `Received ${solChange.toFixed(3)} SOL`;
-        } else {
-          txType = 'transfer-out';
-          detail = `Sent ${Math.abs(solChange).toFixed(3)} SOL`;
-        }
-      } else {
-        detail = `Interaction (slot ${sigInfo.slot})`;
-      }
-
-      return { sig, time, txType, detail, label, address, tokens, source: 'rpc' };
-    }
-
-    function renderWhaleFeed() {
-      const feed = $('whale-feed');
-      const countEl = $('whale-feed-count');
-      if (!feed) return;
-
-      if (countEl) countEl.textContent = `(${whaleTxFeed.length})`;
-
-      if (whaleTxFeed.length === 0) {
-        feed.innerHTML = `<div class="whale-empty"><div class="whale-empty-icon">🔔</div><div class="whale-empty-text">No transactions yet.<br>Add whale wallets and enable monitoring<br>to see their live activity.</div></div>`;
-        return;
-      }
-
-      feed.innerHTML = whaleTxFeed.slice(0, 100).map((tx, i) => {
-        const age = formatWhaleAge(tx.time);
-        const typeClass = tx.txType || 'unknown';
-        const typeLabel = tx.txType === 'swap' ? 'SWAP' : tx.txType === 'transfer-out' ? 'SENT' : tx.txType === 'transfer-in' ? 'RECV' : 'TX';
-        const isNew = i < 3 && Date.now() - tx.time < 60000;
-
-        // Token action buttons
-        let actionBtns = '';
-        if (tx.tokens && tx.tokens.length > 0 && tx.tokens[0]) {
-          const m = tx.tokens[0];
-          actionBtns = `<div style="display:flex;gap:4px;margin-top:4px;">
-            <button class="tk-btn" onclick="$('intel-mint').value='${m}';setMode('intel');fetchTokenIntel();" style="font-size:8px;padding:2px 6px;">⬡ SCAN</button>
-            <button class="tk-btn buy" onclick="$('trade-to').value='${m}';setMode('trade');" style="font-size:8px;padding:2px 6px;">⟡ BUY</button>
-            <button class="tk-btn" onclick="navigator.clipboard.writeText('${m}');toast('📋 Copied CA!')" style="font-size:8px;padding:2px 6px;">📋 CA</button>
-          </div>`;
-        }
-
-        return `<div class="whale-tx ${isNew ? 'new-tx' : ''}">
-          <div class="whale-tx-top">
-            <div class="whale-tx-wallet">
-              <span class="whale-tx-label">${tx.label}</span>
-            </div>
-            <div class="whale-tx-time">${age}</div>
-          </div>
-          <div class="whale-tx-body">
-            <span class="whale-tx-type ${typeClass}">${typeLabel}</span>
-            <span class="whale-tx-detail">${tx.detail}</span>
-          </div>
-          ${actionBtns}
-          <div class="whale-tx-sig" onclick="window.open('https://solscan.io/tx/${tx.sig}','_blank')" title="View on Solscan">${tx.sig.slice(0, 16)}... ↗</div>
-        </div>`;
-      }).join('');
-    }
-
-    function formatWhaleAge(timestamp) {
-      if (!timestamp) return '—';
-      const s = Math.floor((Date.now() - timestamp) / 1000);
-      if (s < 60) return s + 's ago';
-      if (s < 3600) return Math.floor(s / 60) + 'm ago';
-      if (s < 86400) return Math.floor(s / 3600) + 'h ago';
-      return Math.floor(s / 86400) + 'd ago';
-    }
-
-    function clearWhaleFeed() {
-      whaleTxFeed = [];
-      localStorage.setItem('ghost-whale-feed', '[]');
-      renderWhaleFeed();
-      toast('Feed cleared');
-    }
-
-    function toggleWhaleBulk() {
-      const body = $('whale-bulk-body');
-      const arrow = $('whale-bulk-arrow');
-      const isOpen = body.classList.toggle('open');
-      arrow.textContent = isOpen ? '▾' : '▸';
-    }
-
-    function parseBulkWhaleInput() {
-      const raw = ($('whale-bulk-input')?.value || '').trim();
-      if (!raw) return [];
-      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-      const wallets = [];
-      const addrRegex = /[1-9A-HJ-NP-Za-km-z]{32,44}/;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const match = line.match(addrRegex);
-        if (!match) continue;
-        const addr = match[0];
-        // Extract label: everything after the address, or before if address is at end
-        let label = '';
-        const parts = line.replace(addr, '|||').split('|||').map(s => s.replace(/^[\s,;|]+|[\s,;|]+$/g, ''));
-        label = parts.filter(Boolean).join(' ').trim();
-        if (!label) label = `Whale ${whaleWallets.length + wallets.length + 1}`;
-        if (!wallets.some(w => w.address === addr) && !whaleWallets.some(w => w.address === addr)) {
-          wallets.push({ address: addr, label });
-        }
-      }
-      return wallets;
-    }
-
-    function updateBulkHint() {
-      const wallets = parseBulkWhaleInput();
-      const hint = $('whale-bulk-hint');
-      if (hint) {
-        hint.textContent = wallets.length === 0 ? '0 wallets detected' : `${wallets.length} new wallet${wallets.length !== 1 ? 's' : ''} detected`;
-        hint.style.color = wallets.length > 0 ? 'var(--green)' : 'var(--text-ghost)';
-      }
-    }
-
-    function bulkAddWhaleWallets() {
-      const wallets = parseBulkWhaleInput();
-      if (wallets.length === 0) { toast('No valid wallets found — paste addresses one per line'); return; }
-      for (const w of wallets) {
-        whaleWallets.push(w);
-      }
-      localStorage.setItem('ghost-whale-wallets', JSON.stringify(whaleWallets));
-      $('whale-bulk-input').value = '';
-      updateBulkHint();
-      renderWhaleWallets();
-      toast(`🐋 Added ${wallets.length} wallet${wallets.length !== 1 ? 's' : ''}`);
-      // Fetch initial transactions for all new wallets
-      (async () => {
-        for (const w of wallets) {
-          try { await fetchWhaleTransactions(w.address, w.label, true); } catch (e) {}
-          await delay(400);
-        }
-      })();
-    }
-
-    // Keyboard listener
-    $('whale-addr').addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); addWhaleWallet(); }
-    });
-
-    // Render on load if feed has data
-    if (whaleTxFeed.length > 0) renderWhaleFeed();
-
-    // Bulk textarea live detection hint
-    $('whale-bulk-input').addEventListener('input', updateBulkHint);
 
     // ═══════ PERPS TERMINAL ═══════
     let perpsMarket = 'SOL';
