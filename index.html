@@ -1125,6 +1125,32 @@
     }
     .whale-clear-btn:hover { border-color: var(--border-glow); color: var(--text-secondary); }
 
+    .whale-bulk-toggle {
+      font-size: 10px; font-weight: 700; color: var(--text-muted); cursor: pointer;
+      padding: 4px 0 6px; user-select: none; transition: color 0.15s;
+    }
+    .whale-bulk-toggle:hover { color: var(--text-secondary); }
+    .whale-bulk-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    .whale-bulk-body.open { max-height: 260px; opacity: 1; }
+    .whale-bulk-textarea {
+      width: 100%; min-height: 100px; max-height: 140px; resize: vertical;
+      font-size: 10px; font-family: 'Fira Code', monospace; line-height: 1.6;
+      padding: 8px 10px; margin-bottom: 6px; box-sizing: border-box;
+      background: var(--bg-primary); border: 1px solid var(--border-primary);
+      border-radius: 8px; color: var(--text-primary);
+    }
+    .whale-bulk-textarea:focus { border-color: var(--border-glow); outline: none; }
+    .whale-bulk-textarea::placeholder { color: var(--text-ghost); }
+    .whale-bulk-actions {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .whale-bulk-hint {
+      font-size: 9px; color: var(--text-ghost); font-family: 'Fira Code', monospace;
+    }
+
     /* ═══════ TRADE PANEL ═══════ */
     .trade-section { padding: 14px; }
     .trade-amt-row {
@@ -2404,6 +2430,16 @@
                 <input type="text" id="whale-addr" class="fi" placeholder="Wallet address...">
                 <input type="text" id="whale-label" class="fi" placeholder="Label" style="width:70px;flex:none;">
                 <button class="whale-add-btn" onclick="addWhaleWallet()">+</button>
+              </div>
+              <div class="whale-bulk-toggle" onclick="toggleWhaleBulk()">
+                <span id="whale-bulk-arrow">▸</span> Bulk Import
+              </div>
+              <div id="whale-bulk-body" class="whale-bulk-body">
+                <textarea id="whale-bulk-input" class="fi whale-bulk-textarea" placeholder="Paste wallets — one per line&#10;&#10;Format:&#10;ADDRESS LABEL&#10;ADDRESS,LABEL&#10;ADDRESS (auto-labeled)&#10;&#10;Example:&#10;7xKXtg2Cw87... Smart Money 1&#10;5pFn8Rxj9K2... DEX Whale"></textarea>
+                <div class="whale-bulk-actions">
+                  <span class="whale-bulk-hint" id="whale-bulk-hint">0 wallets detected</span>
+                  <button class="whale-add-btn" onclick="bulkAddWhaleWallets()" style="padding:6px 14px;">📥 Import All</button>
+                </div>
               </div>
               <div id="whale-wallets"></div>
             </div>
@@ -7368,6 +7404,66 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       toast('Feed cleared');
     }
 
+    function toggleWhaleBulk() {
+      const body = $('whale-bulk-body');
+      const arrow = $('whale-bulk-arrow');
+      const isOpen = body.classList.toggle('open');
+      arrow.textContent = isOpen ? '▾' : '▸';
+    }
+
+    function parseBulkWhaleInput() {
+      const raw = ($('whale-bulk-input')?.value || '').trim();
+      if (!raw) return [];
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      const wallets = [];
+      const addrRegex = /[1-9A-HJ-NP-Za-km-z]{32,44}/;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = line.match(addrRegex);
+        if (!match) continue;
+        const addr = match[0];
+        // Extract label: everything after the address, or before if address is at end
+        let label = '';
+        const parts = line.replace(addr, '|||').split('|||').map(s => s.replace(/^[\s,;|]+|[\s,;|]+$/g, ''));
+        label = parts.filter(Boolean).join(' ').trim();
+        if (!label) label = `Whale ${whaleWallets.length + wallets.length + 1}`;
+        if (!wallets.some(w => w.address === addr) && !whaleWallets.some(w => w.address === addr)) {
+          wallets.push({ address: addr, label });
+        }
+      }
+      return wallets;
+    }
+
+    function updateBulkHint() {
+      const wallets = parseBulkWhaleInput();
+      const hint = $('whale-bulk-hint');
+      if (hint) {
+        hint.textContent = wallets.length === 0 ? '0 wallets detected' : `${wallets.length} new wallet${wallets.length !== 1 ? 's' : ''} detected`;
+        hint.style.color = wallets.length > 0 ? 'var(--green)' : 'var(--text-ghost)';
+      }
+    }
+
+    function bulkAddWhaleWallets() {
+      const wallets = parseBulkWhaleInput();
+      if (wallets.length === 0) { toast('No valid wallets found — paste addresses one per line'); return; }
+      for (const w of wallets) {
+        whaleWallets.push(w);
+      }
+      localStorage.setItem('ghost-whale-wallets', JSON.stringify(whaleWallets));
+      $('whale-bulk-input').value = '';
+      updateBulkHint();
+      renderWhaleWallets();
+      toast(`🐋 Added ${wallets.length} wallet${wallets.length !== 1 ? 's' : ''}`);
+      // Fetch initial transactions for all new wallets
+      (async () => {
+        for (const w of wallets) {
+          try { await fetchWhaleTransactions(w.address, w.label, true); } catch (e) {}
+          await delay(400);
+        }
+      })();
+    }
+
     // Keyboard listener
     $('whale-addr').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); addWhaleWallet(); }
@@ -7375,6 +7471,9 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
     // Render on load if feed has data
     if (whaleTxFeed.length > 0) renderWhaleFeed();
+
+    // Bulk textarea live detection hint
+    $('whale-bulk-input').addEventListener('input', updateBulkHint);
 
     // ═══════ PERPS TERMINAL ═══════
     let perpsMarket = 'SOL';
