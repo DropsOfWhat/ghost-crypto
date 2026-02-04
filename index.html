@@ -2097,6 +2097,10 @@
               <button class="alpha-btn start" id="alpha-start-btn" onclick="alphaToggle()">▶ Start Bot</button>
             </div>
 
+            <div class="alpha-btn-row" style="margin-top:-4px;">
+              <button class="alpha-btn" id="alpha-scout-btn" onclick="alphaToggleScout()" style="flex:1;background:linear-gradient(135deg,#1a1a3e,#0d2137);border:1px solid #2a4a6a;">🔍 Scout Mode: OFF</button>
+            </div>
+
             <div class="alpha-section">
               <div class="alpha-stitle">Strategy Profile</div>
               <div class="alpha-strategy" id="alpha-strategy">No strategy yet. Add wallets and click "Study" to analyze their trading patterns.</div>
@@ -2406,7 +2410,7 @@
     const PUMP_API = 'https://pump.fun/api';
     const PUMPPORTAL_API = 'https://pumpportal.fun/api';
     const RPC_URL = 'https://api.mainnet-beta.solana.com';
-    const JUP_API = 'https://quote-api.jup.ag/v6';
+    const JUP_API = 'https://public.jupiterapi.com';
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
     let heliusKey = localStorage.getItem('ghost-helius-key') || '5372d46c-bd92-4783-ba13-f449062be6fe';
@@ -4174,6 +4178,12 @@
     let alphaRecentBuys = {};          // mint -> timestamp (duplicate protection)
     let alphaPendingSignals = {};      // mint -> { wallets: [labels], firstSeen: timestamp } (wallet confirmation)
 
+    // ── Scout Mode ──
+    let alphaScoutEnabled = false;
+    let alphaScoutTimer = null;
+    let alphaScoutSeen = new Set();     // mints already evaluated
+    let alphaScoutBuying = false;       // lock to prevent concurrent AI evals
+
     function saveAlphaState() {
       // Strip trades array from wallet objects to save space — only keep stats
       const walletsForSave = alphaWallets.map(w => ({
@@ -4713,7 +4723,7 @@
           botPerfSection = `\n\nBOT'S OWN RESULTS FROM COPYING (${closedTrades.length} closed trades):\n${JSON.stringify(perfByWallet, null, 2)}\nFactor these results into your wallet rankings and rules.`;
         }
 
-        const strategyPrompt = `You are analyzing cryptocurrency trading wallets on Solana to build a copy-trading strategy. Here is the data from tracked wallets:
+        const strategyPrompt = `You are analyzing cryptocurrency trading wallets on Solana to build a copy-trading AND autonomous scouting strategy. Here is the data from tracked wallets:
 
 ${JSON.stringify(walletData, null, 2)}${botPerfSection}
 
@@ -4723,7 +4733,8 @@ Based on this data, generate a concise trading strategy profile. Include:
 3. ENTRY RULES: When should the bot copy a trade? (consider: wallet confidence, position size, timing patterns)
 4. EXIT RULES: Derive stop-loss and take-profit from how these wallets actually trade — analyze their win/loss ratios, average gains on winners, average losses on losers
 5. AVOID: Any patterns suggesting bad trades to skip
-6. CONFIDENCE SCORE: 0-100 overall confidence in this strategy
+6. SCOUT CRITERIA: What makes a token worth buying WITHOUT a wallet signal? Derive from what winning wallets pick early — describe ideal token profile: preferred age range (minutes), market cap range, liquidity range, minimum buy volume, buy/sell ratio thresholds, and any other patterns. Be specific with numbers.
+7. CONFIDENCE SCORE: 0-100 overall confidence in this strategy
 
 CRITICAL: You MUST include these exact lines somewhere in your response so the bot can parse them:
 SL:XX (stop-loss percentage derived from wallet behavior, e.g. SL:25)
@@ -4813,6 +4824,15 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     function stopAlphaBot() {
       alphaBotRunning = false;
       if (alphaPollTimer) { clearInterval(alphaPollTimer); alphaPollTimer = null; }
+      // Stop scout
+      alphaScoutEnabled = false;
+      if (alphaScoutTimer) { clearInterval(alphaScoutTimer); alphaScoutTimer = null; }
+      const scoutBtn = $('alpha-scout-btn');
+      if (scoutBtn) {
+        scoutBtn.textContent = '🔍 Scout Mode: OFF';
+        scoutBtn.style.background = 'linear-gradient(135deg,#1a1a3e,#0d2137)';
+        scoutBtn.style.borderColor = '#2a4a6a';
+      }
       setAlphaStatus('idle', 'Bot stopped');
       $('alpha-start-btn').textContent = '▶ Start Bot';
       $('alpha-start-btn').className = 'alpha-btn start';
@@ -5589,7 +5609,271 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       }
     }
 
-    // Instant local commands (no API call needed)
+    // ══════════════════════════════════════════════════
+    // ══  SCOUT MODE — Autonomous Market Scanner     ══
+    // ══════════════════════════════════════════════════
+
+    function alphaToggleScout() {
+      if (!alphaBotRunning) { toast('Start the bot first'); return; }
+      if (!apiKey) { toast('API key required for Scout Mode (AI evaluation)'); return; }
+
+      alphaScoutEnabled = !alphaScoutEnabled;
+      const btn = $('alpha-scout-btn');
+
+      if (alphaScoutEnabled) {
+        btn.textContent = '🔍 Scout Mode: ON';
+        btn.style.background = 'linear-gradient(135deg,#1a3a2a,#0d3720)';
+        btn.style.borderColor = '#2a8a5a';
+        alphaLog('🔍 Scout Mode ON — scanning market every 35s for autonomous picks', 'trade');
+        alphaScoutSeen = new Set(Object.keys(alphaPositions)); // Don't re-evaluate held tokens
+        // Add recent buys to seen set
+        for (const m of Object.keys(alphaRecentBuys)) alphaScoutSeen.add(m);
+        alphaScoutTimer = setInterval(() => alphaScoutScan(), 35000);
+        alphaScoutScan(); // First scan immediately
+      } else {
+        btn.textContent = '🔍 Scout Mode: OFF';
+        btn.style.background = 'linear-gradient(135deg,#1a1a3e,#0d2137)';
+        btn.style.borderColor = '#2a4a6a';
+        if (alphaScoutTimer) { clearInterval(alphaScoutTimer); alphaScoutTimer = null; }
+        alphaLog('🔍 Scout Mode OFF');
+      }
+    }
+
+    async function alphaScoutScan() {
+      if (!alphaScoutEnabled || !alphaBotRunning) return;
+      if (alphaScoutBuying) return; // AI eval in progress
+
+      const maxDaily = parseInt($('alpha-max-daily').value) || 10;
+      if (alphaDailyCount >= maxDaily) return;
+
+      try {
+        // ── Step 1: Fetch candidates from multiple sources ──
+        const candidates = [];
+
+        // Source A: DexScreener latest token profiles (new tokens with socials)
+        try {
+          const profRes = await fetchWithTimeout('https://api.dexscreener.com/token-profiles/latest/v1', {}, 8000);
+          if (profRes.ok) {
+            const profiles = await profRes.json();
+            const solProfiles = (profiles || []).filter(p => p.chainId === 'solana').slice(0, 15);
+            for (const p of solProfiles) {
+              if (!alphaScoutSeen.has(p.tokenAddress) && !alphaPositions[p.tokenAddress] && !alphaRecentBuys[p.tokenAddress]) {
+                candidates.push({ mint: p.tokenAddress, source: 'dex-profile', description: p.description || '', links: p.links || [] });
+              }
+            }
+          }
+        } catch (e) { /* DexScreener profiles failed */ }
+
+        // Source B: DexScreener boosted tokens (community signal)
+        try {
+          const boostRes = await fetchWithTimeout('https://api.dexscreener.com/token-boosts/latest/v1', {}, 8000);
+          if (boostRes.ok) {
+            const boosts = await boostRes.json();
+            const solBoosts = (boosts || []).filter(b => b.chainId === 'solana').slice(0, 10);
+            for (const b of solBoosts) {
+              if (!alphaScoutSeen.has(b.tokenAddress) && !alphaPositions[b.tokenAddress] && !alphaRecentBuys[b.tokenAddress]) {
+                if (!candidates.find(c => c.mint === b.tokenAddress)) {
+                  candidates.push({ mint: b.tokenAddress, source: 'dex-boost', totalAmount: b.totalAmount || 0 });
+                }
+              }
+            }
+          }
+        } catch (e) { /* DexScreener boosts failed */ }
+
+        // Source C: Pump.fun currently live (try without auth)
+        try {
+          const pumpRes = await fetchWithTimeout('https://frontend-api-v3.pump.fun/coins/currently-live?offset=0&limit=20&includeNsfw=false&order=DESC', {
+            headers: { 'Accept': 'application/json' },
+          }, 8000);
+          if (pumpRes.ok) {
+            const pumpTokens = await pumpRes.json();
+            for (const t of (pumpTokens || []).slice(0, 15)) {
+              if (t.mint && !alphaScoutSeen.has(t.mint) && !alphaPositions[t.mint] && !alphaRecentBuys[t.mint]) {
+                if (!candidates.find(c => c.mint === t.mint)) {
+                  candidates.push({
+                    mint: t.mint, source: 'pump-live', symbol: t.symbol, name: t.name,
+                    mcap: t.market_cap || 0, complete: t.complete || false,
+                  });
+                }
+              }
+            }
+          }
+        } catch (e) { /* Pump.fun needs auth — that's fine */ }
+
+        if (candidates.length === 0) return; // Nothing new
+
+        // ── Step 2: Get DexScreener pair data for all candidates ──
+        const mintList = candidates.map(c => c.mint).slice(0, 20); // Max 20
+        const enriched = [];
+
+        // Batch in groups of 10 (DexScreener allows comma-separated, up to 30)
+        for (let i = 0; i < mintList.length; i += 10) {
+          const batch = mintList.slice(i, i + 10);
+          try {
+            const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/tokens/${batch.join(',')}`, {}, 10000);
+            if (dsRes.ok) {
+              const dsData = await dsRes.json();
+              const pairs = dsData.pairs || dsData || [];
+              for (const pair of pairs) {
+                if (pair.chainId !== 'solana') continue;
+                const mint = pair.baseToken?.address;
+                if (!mint) continue;
+
+                const cand = candidates.find(c => c.mint === mint);
+                if (!cand) continue;
+
+                const age = pair.pairCreatedAt ? (Date.now() - pair.pairCreatedAt) / 60000 : 9999;
+                const liq = pair.liquidity?.usd || 0;
+                const mcap = pair.marketCap || pair.fdv || 0;
+                const vol24h = pair.volume?.h24 || 0;
+                const vol1h = pair.volume?.h1 || 0;
+                const txns24h = (pair.txns?.h24?.buys || 0) + (pair.txns?.h24?.sells || 0);
+                const txns1h = (pair.txns?.h1?.buys || 0) + (pair.txns?.h1?.sells || 0);
+                const buys1h = pair.txns?.h1?.buys || 0;
+                const sells1h = pair.txns?.h1?.sells || 0;
+                const priceChange5m = pair.priceChange?.m5 || 0;
+                const priceChange1h = pair.priceChange?.h1 || 0;
+
+                // Hard filters — skip obvious garbage
+                if (age > 120) continue;          // Older than 2 hours
+                if (liq < 500) continue;           // Less than $500 liq
+                if (txns1h < 5) continue;          // Dead token
+                if (mcap > 5000000) continue;      // Already too big
+
+                enriched.push({
+                  mint, symbol: pair.baseToken?.symbol || cand.symbol || mint.slice(0, 6),
+                  name: pair.baseToken?.name || cand.name || '',
+                  source: cand.source,
+                  ageMin: Math.round(age),
+                  liq: Math.round(liq),
+                  mcap: Math.round(mcap),
+                  vol1h: Math.round(vol1h),
+                  vol24h: Math.round(vol24h),
+                  txns1h, txns24h,
+                  buyRatio1h: buys1h + sells1h > 0 ? Math.round((buys1h / (buys1h + sells1h)) * 100) : 50,
+                  priceChange5m: Math.round(priceChange5m * 10) / 10,
+                  priceChange1h: Math.round(priceChange1h * 10) / 10,
+                  dexId: pair.dexId || 'unknown',
+                  description: cand.description || '',
+                  hasSocials: (cand.links?.length > 0) || false,
+                });
+              }
+            }
+          } catch (e) { /* batch failed */ }
+          await delay(300);
+        }
+
+        // Mark all as seen regardless of enrichment
+        for (const c of candidates) alphaScoutSeen.add(c.mint);
+
+        // Prune seen set if too large (keep last 500)
+        if (alphaScoutSeen.size > 500) {
+          const arr = [...alphaScoutSeen];
+          alphaScoutSeen = new Set(arr.slice(arr.length - 300));
+        }
+
+        if (enriched.length === 0) return;
+
+        alphaLog(`🔍 Scout found ${enriched.length} candidates — sending to AI...`);
+
+        // ── Step 3: AI Evaluation ──
+        await alphaScoutEvaluate(enriched);
+
+      } catch (e) {
+        alphaLog(`Scout scan error: ${e.message}`, 'error');
+      }
+    }
+
+    async function alphaScoutEvaluate(candidates) {
+      if (alphaScoutBuying || !apiKey) return;
+      alphaScoutBuying = true;
+
+      try {
+        const maxDaily = parseInt($('alpha-max-daily').value) || 10;
+        const remaining = maxDaily - alphaDailyCount;
+        if (remaining <= 0) { alphaScoutBuying = false; return; }
+
+        // Build a concise candidate table for Claude
+        const table = candidates.slice(0, 8).map((c, i) => (
+          `${i + 1}. ${c.symbol} (${c.mint.slice(0, 8)}...) — mcap:$${c.mcap} liq:$${c.liq} age:${c.ageMin}min vol1h:$${c.vol1h} txns1h:${c.txns1h} buyRatio:${c.buyRatio1h}% 5m:${c.priceChange5m}% 1h:${c.priceChange1h}% dex:${c.dexId} src:${c.source}${c.hasSocials ? ' ✓socials' : ''}${c.description ? ' desc:' + c.description.slice(0, 60) : ''}`
+        )).join('\n');
+
+        const evalPrompt = `You are an autonomous memecoin scout on Solana. Your job: find the BEST token to buy RIGHT NOW from this list.
+
+STRATEGY PROFILE (learned from tracked smart wallets):
+${alphaStrategy || 'No strategy yet — use general memecoin best practices.'}
+
+CURRENT CANDIDATES:
+${table}
+
+RULES:
+- You have ${remaining} trades left today at ${parseFloat($('alpha-buy-amt').value) || 0.01} SOL each
+- Look for: strong buy pressure (high buyRatio), fresh tokens (under 30min ideal), growing volume, reasonable liquidity
+- Avoid: tokens dumping (negative 5m/1h change with high sells), extremely low liquidity (<$1K), tokens with no activity
+- Cross-reference with the strategy profile patterns from tracked wallets
+- The BEST picks typically have: rising buy ratio, accelerating volume, fresh age, healthy liquidity for size
+
+RESPOND WITH EXACTLY ONE OF:
+A) BUY:X (where X is the candidate number 1-${Math.min(candidates.length, 8)}) followed by a one-line reason
+B) PASS (if nothing looks good enough)
+
+Examples:
+BUY:3 Strong buy pressure 78%, fresh at 8min, volume accelerating
+PASS No candidates show strong enough momentum
+
+Your response (one line only):`;
+
+        const res = await fetch(CLAUDE_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            max_tokens: 150,
+            messages: [{ role: 'user', content: evalPrompt }],
+          }),
+        });
+
+        if (!res.ok) throw new Error('Claude API ' + res.status);
+        const data = await res.json();
+        const answer = (data.content?.[0]?.text || 'PASS').trim();
+
+        // Parse response
+        const buyMatch = answer.match(/BUY:(\d+)/i);
+        if (buyMatch) {
+          const idx = parseInt(buyMatch[1]) - 1;
+          if (idx >= 0 && idx < candidates.length) {
+            const pick = candidates[idx];
+            const reason = answer.replace(/BUY:\d+/i, '').trim();
+            alphaLog(`🤖 AI picked ${pick.symbol}: ${reason}`, 'trade');
+
+            // Check cooldown + duplicate before buying
+            const cooldownMs = 30 * 1000;
+            if (Date.now() - alphaLastBuyTime < cooldownMs) {
+              alphaLog(`⏳ Cooldown active — skipping ${pick.symbol}`);
+            } else if (alphaPositions[pick.mint] || alphaRecentBuys[pick.mint]) {
+              alphaLog(`⏭ Already holding/bought ${pick.symbol}`);
+            } else {
+              // Execute the buy
+              const isGraduated = pick.dexId.includes('raydium') || pick.dexId.includes('orca') ||
+                pick.dexId.includes('meteora') || pick.dexId.includes('pumpswap') || pick.liq > 5000;
+              await alphaExecuteBuy(pick.mint, pick.symbol, 'Scout AI', isGraduated);
+            }
+          }
+        } else {
+          alphaLog(`🔍 Scout: AI passed — ${answer.slice(0, 80)}`);
+        }
+
+      } catch (e) {
+        alphaLog(`Scout AI error: ${e.message}`, 'error');
+      }
+
+      alphaScoutBuying = false;
+    }
     const LOCAL_COMMANDS = [
       { patterns: [/^open\s+trade/i, /^trade$/i, /^trading$/i, /^swap$/i], action: () => { setMode('trade'); return '⟡ Opened trade panel.'; } },
       { patterns: [/^open\s+launch/i, /^launch$/i, /^launcher$/i], action: () => { setMode('launch'); return '🚀 Opened token launcher.'; } },
@@ -5609,6 +5893,8 @@ Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
       { patterns: [/^learn$/i, /^auto\s*learn$/i, /^self\s*study$/i], action: () => { setMode('alpha'); setTimeout(alphaAutoLearn, 100); return '🧠 Running self-analysis...'; } },
+      { patterns: [/^scout\s+on$/i, /^enable\s+scout$/i, /^start\s+scout$/i], action: () => { setMode('alpha'); if (!alphaScoutEnabled) setTimeout(alphaToggleScout, 100); return '🔍 Scout Mode enabled.'; } },
+      { patterns: [/^scout\s+off$/i, /^disable\s+scout$/i, /^stop\s+scout$/i], action: () => { if (alphaScoutEnabled) alphaToggleScout(); return '🔍 Scout Mode disabled.'; } },
       { patterns: [/^new\s+chat$/i, /^clear\s+chat$/i, /^reset$/i], action: () => { setTimeout(newChat, 100); return '✦ Starting new chat...'; } },
       { patterns: [/^connect\s+wallet$/i, /^connect$/i], action: () => { connectWallet(); return '👻 Connecting Phantom...'; } },
       { patterns: [/^disconnect\s+wallet$/i, /^disconnect$/i], action: () => { disconnectWallet(); return '👻 Disconnecting...'; } },
