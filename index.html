@@ -2139,12 +2139,9 @@
                 <div class="alpha-config">
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Buy Amount (SOL)</span><input type="number" id="alpha-buy-amt" class="alpha-cfg-input" value="0.01" step="0.005" min="0.001"></div>
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Max Daily Trades</span><input type="number" id="alpha-max-daily" class="alpha-cfg-input" value="10" step="1" min="1"></div>
-                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Stop Loss %</span><input type="number" id="alpha-sl" class="alpha-cfg-input" value="30" step="5" min="5"></div>
-                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Take Profit %</span><input type="number" id="alpha-tp" class="alpha-cfg-input" value="100" step="10" min="10"></div>
                   <div class="alpha-cfg-row"><span class="alpha-cfg-label">Slippage %</span><input type="number" id="alpha-slip" class="alpha-cfg-input" value="15" step="1" min="1"></div>
-                  <div class="alpha-cfg-row"><span class="alpha-cfg-label">Poll Interval (s)</span><input type="number" id="alpha-poll" class="alpha-cfg-input" value="15" step="5" min="10"></div>
-                <div class="alpha-cfg-row"><span class="alpha-cfg-label">Auto-Learn Every</span><input type="number" id="alpha-learn-n" class="alpha-cfg-input" value="5" step="1" min="2" title="Re-study after this many closed trades"> <span style="font-size:9px;color:var(--text-faint);position:absolute;right:90px;">trades</span></div>
                 </div>
+                <div style="padding:6px 0 0;font-size:9px;color:var(--text-ghost);line-height:1.5;">TP/SL, timing, and exit rules are learned automatically from studying tracked wallets. Run <strong>Study</strong> to generate.</div>
               </div>
 
               <div class="alpha-section">
@@ -4719,9 +4716,14 @@ Based on this data, generate a concise trading strategy profile. Include:
 1. SUMMARY: One-line assessment of these wallets
 2. WALLET RANKINGS: Rank wallets by reliability (win rate, PnL, consistency)
 3. ENTRY RULES: When should the bot copy a trade? (consider: wallet confidence, position size, timing patterns)
-4. RISK RULES: Stop-loss suggestion, max position, which wallets to weight higher
+4. EXIT RULES: Derive stop-loss and take-profit from how these wallets actually trade — analyze their win/loss ratios, average gains on winners, average losses on losers
 5. AVOID: Any patterns suggesting bad trades to skip
 6. CONFIDENCE SCORE: 0-100 overall confidence in this strategy
+
+CRITICAL: You MUST include these exact lines somewhere in your response so the bot can parse them:
+SL:XX (stop-loss percentage derived from wallet behavior, e.g. SL:25)
+TP:XX (take-profit percentage derived from wallet behavior, e.g. TP:80)
+These should reflect how the tracked wallets actually exit trades, not arbitrary numbers.
 
 Be concise, use numbers. Output as plain text, not markdown.`;
 
@@ -4780,7 +4782,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
       alphaBotRunning = true;
       alphaDailyCount = 0;
-      const pollSec = parseInt($('alpha-poll').value) || 15;
+      const pollSec = 15;
 
       // Record current last signatures for each wallet
       alphaInitLastSigs();
@@ -5127,7 +5129,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         alphaLog(`🔴 SOLD ${symbol} — ${solReceived.toFixed(4)} SOL — PnL: ${pnlStr} — tx: ${sig.slice(0, 8)}...`, 'trade');
 
         // Check if auto-learn should trigger
-        const learnEvery = parseInt($('alpha-learn-n')?.value) || 5;
+        const learnEvery = 5;
         if (alphaClosedCount >= learnEvery && alphaBotRunning) {
           alphaClosedCount = 0;
           saveAlphaState();
@@ -5139,11 +5141,30 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       }
     }
 
+    // ── Parse TP/SL from AI Strategy Profile ──
+    function getStrategyExitRules() {
+      const text = (alphaStrategy || '').toLowerCase();
+      let sl = 30, tp = 100; // sensible defaults
+
+      // Parse SL — look for patterns like "SL:25", "stop-loss: 25%", "stop loss 20%", "sl 15"
+      const slMatch = text.match(/(?:stop[- ]?loss|sl)\s*[:=]?\s*(\d{1,3})\s*%?/);
+      if (slMatch) sl = parseInt(slMatch[1]);
+
+      // Parse TP — look for patterns like "TP:80", "take-profit: 50%", "take profit 60%", "tp 40"
+      const tpMatch = text.match(/(?:take[- ]?profit|tp)\s*[:=]?\s*(\d{1,3})\s*%?/);
+      if (tpMatch) tp = parseInt(tpMatch[1]);
+
+      // Sanity clamp
+      sl = Math.max(5, Math.min(sl, 80));
+      tp = Math.max(10, Math.min(tp, 500));
+
+      return { sl, tp };
+    }
+
     // ── Position Monitoring (Stop-Loss / Take-Profit) ──
     async function alphaCheckPositions() {
       if (!alphaBotRunning) return;
-      const sl = parseFloat($('alpha-sl').value) || 30;
-      const tp = parseFloat($('alpha-tp').value) || 100;
+      const { sl, tp } = getStrategyExitRules();
 
       const mints = Object.keys(alphaPositions);
       if (mints.length === 0) { setTimeout(() => alphaCheckPositions(), 30000); return; }
@@ -5209,11 +5230,12 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         }));
 
         // Current config
+        const { sl: currentSL, tp: currentTP } = getStrategyExitRules();
         const currentConfig = {
           buyAmount: parseFloat($('alpha-buy-amt').value) || 0.01,
-          stopLoss: parseFloat($('alpha-sl').value) || 30,
-          takeProfit: parseFloat($('alpha-tp').value) || 100,
           slippage: parseFloat($('alpha-slip').value) || 15,
+          derivedSL: currentSL,
+          derivedTP: currentTP,
         };
 
         // Total bot stats
@@ -5240,10 +5262,15 @@ Based on the bot's ACTUAL results from copying these wallets, update the strateg
 
 1. PERFORMANCE REVIEW: How is the bot doing? Which copied wallets are profitable vs losing money?
 2. WALLET ADJUSTMENTS: Which wallets should be prioritized, deprioritized, or ignored? Be specific.
-3. PARAMETER SUGGESTIONS: Should SL/TP/buy amount be adjusted based on actual results?
+3. EXIT RULES: Based on actual trade results, what SL and TP percentages work best? Analyze the PnL of closed trades to determine optimal exit points.
 4. PATTERNS: Any patterns in wins vs losses? (token types, timing, sizes)
 5. UPDATED RULES: New entry/exit rules based on what actually works
 6. CONFIDENCE SCORE: 0-100 updated confidence
+
+CRITICAL: You MUST include these exact lines somewhere in your response so the bot can parse them:
+SL:XX (stop-loss percentage, e.g. SL:25)
+TP:XX (take-profit percentage, e.g. TP:80)
+Derive these from actual wallet behavior and bot results — not arbitrary numbers.
 
 Be brutally honest. If a wallet is losing money, say so. Use numbers. Plain text, no markdown.`;
 
@@ -5886,7 +5913,7 @@ RULES:
 - The action tags will be hidden from the user — they only see your text.
 - When someone pastes a contract address, they'll get an auto-scan. If they ask about a token by name, help them find it.
 ${webSearchEnabled ? '- You have web search — use it for real-time prices, news, and alpha.' : ''}
-User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. Alpha Bot: ${alphaBotRunning ? 'RUNNING (' + alphaWallets.length + ' wallets, ' + alphaBotTrades.filter(t=>t.side==='sell').length + ' closed trades, auto-learns every ' + ($('alpha-learn-n')?.value||5) + ')' : 'inactive'}.`;
+User wallet: ${walletAddress || 'not connected'}. Platform: Ghost Crypto v1.0. Alpha Bot: ${alphaBotRunning ? 'RUNNING (' + alphaWallets.length + ' wallets, ' + alphaBotTrades.filter(t=>t.side==='sell').length + ' closed trades, auto-learns every 5)' : 'inactive'}.`;
       } else {
         sysPrompt = `You are Ghost, a crypto-native AI built into a Solana trading terminal. You specialize in: Solana ecosystem, memecoins, DeFi protocols, DEX trading, token analysis, smart money tracking, on-chain data, technical analysis, yield farming, NFTs, and crypto culture.
 
