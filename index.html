@@ -803,6 +803,38 @@
       border-radius: 8px; font-size: 11px; font-weight: 800; color: var(--text-secondary);
       display: flex; align-items: center; gap: 4px;
     }
+    .perps-collat-selector {
+      position: relative; margin-right: 6px;
+    }
+    .perps-collat-selected {
+      padding: 6px 10px; background: var(--bg-elevated); border-radius: 8px;
+      font-size: 11px; font-weight: 800; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 5px; cursor: pointer;
+      border: 1px solid var(--border-primary); transition: all 0.15s;
+      user-select: none; white-space: nowrap;
+    }
+    .perps-collat-selected:hover { border-color: var(--border-glow); color: var(--text-primary); }
+    .perps-collat-selected.open { border-color: var(--border-glow); }
+    .perps-collat-arrow { font-size: 8px; opacity: 0.5; transition: transform 0.2s; }
+    .perps-collat-selected.open .perps-collat-arrow { transform: rotate(180deg); }
+    .perps-collat-dropdown {
+      position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
+      background: var(--bg-elevated); border: 1px solid var(--border-tertiary);
+      border-radius: 10px; padding: 4px; min-width: 120px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none;
+      backdrop-filter: blur(16px);
+    }
+    .perps-collat-dropdown.open { display: block; }
+    .perps-collat-option {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 700;
+      color: var(--text-tertiary); transition: all 0.12s; white-space: nowrap;
+    }
+    .perps-collat-option:hover { background: var(--accent-dim); color: var(--text-primary); }
+    .perps-collat-option.active { background: var(--accent-dim); color: var(--accent); }
+    .perps-collat-option .collat-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
     .perps-collat-presets { display: flex; gap: 4px; margin-top: 6px; }
     .perps-collat-preset {
       flex: 1; padding: 6px; font-size: 10px; font-weight: 600; border-radius: 6px;
@@ -2468,7 +2500,13 @@
               </div>
               <div class="perps-input-wrap">
                 <input type="number" id="perps-collateral" placeholder="0.00" step="0.01" min="0" oninput="updatePerpsOrder()">
-                <div class="perps-input-token" id="perps-collat-token">SOL</div>
+                <div class="perps-collat-selector" id="perps-collat-selector">
+                  <div class="perps-collat-selected" id="perps-collat-selected" onclick="toggleCollatDropdown()">
+                    <span id="perps-collat-token">SOL</span>
+                    <span class="perps-collat-arrow">▼</span>
+                  </div>
+                  <div class="perps-collat-dropdown" id="perps-collat-dropdown"></div>
+                </div>
               </div>
               <div class="perps-collat-presets">
                 <button class="perps-collat-preset" onclick="setPerpsCollateral(0.1)">0.1</button>
@@ -7544,10 +7582,27 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       ETH: { binance: 'ETHUSDT', jup: 'ETH', decimals: 2, color: '#627eea', tokenDecimals: 8, collateralLong: 'ETH', collateralShort: 'USDC' },
     };
 
+    // Collateral options available per market/side (mirrors Jupiter Perps)
+    const COLLATERAL_OPTIONS = {
+      SOL: { long: ['SOL', 'USDC', 'USDT'], short: ['USDC', 'USDT'] },
+      BTC: { long: ['BTC', 'SOL', 'USDC', 'USDT'], short: ['USDC', 'USDT'] },
+      ETH: { long: ['ETH', 'SOL', 'USDC', 'USDT'], short: ['USDC', 'USDT'] },
+    };
+
+    const COLLATERAL_COLORS = {
+      SOL: '#9945FF', BTC: '#f7931a', ETH: '#627eea', USDC: '#2775ca', USDT: '#26a17b',
+    };
+
+    // Stablecoins are denominated in USD
+    const STABLECOINS = ['USDC', 'USDT'];
+
+    let perpsCollateralToken = 'SOL';
+
     let perpsPnlInterval = null;
     function initPerpsPanel() {
       connectPerpsWs();
       loadPerpsChart();
+      buildCollatDropdown();
       updatePerpsOrder();
       renderPerpsPositions();
       fetchPerps24hStats();
@@ -7797,9 +7852,12 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       updatePerpsDisplay();
       updatePerpsOrder();
 
-      // Update collateral token label
-      const collatToken = $('perps-collat-token');
-      if (collatToken) collatToken.textContent = market === 'SOL' ? 'SOL' : (perpsSide === 'long' ? market : 'USDC');
+      // Update collateral token options for new market
+      const options = COLLATERAL_OPTIONS[market]?.[perpsSide] || ['USDC'];
+      if (!options.includes(perpsCollateralToken)) {
+        perpsCollateralToken = options[0];
+      }
+      buildCollatDropdown();
     }
 
     // ── Chart ──
@@ -7829,8 +7887,11 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       }
 
       // Update collateral token label based on side
-      const collatToken = $('perps-collat-token');
-      if (collatToken) collatToken.textContent = side === 'long' ? (perpsMarket === 'SOL' ? 'SOL' : perpsMarket) : 'USDC';
+      const options = COLLATERAL_OPTIONS[perpsMarket]?.[side] || ['USDC'];
+      if (!options.includes(perpsCollateralToken)) {
+        perpsCollateralToken = options[0];
+      }
+      buildCollatDropdown();
 
       updatePerpsOrder();
     }
@@ -7877,6 +7938,60 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       updatePerpsOrder();
     }
 
+    // ── Collateral Token Selector ──
+    function buildCollatDropdown() {
+      const options = COLLATERAL_OPTIONS[perpsMarket]?.[perpsSide] || ['USDC'];
+      const dropdown = $('perps-collat-dropdown');
+      const tokenLabel = $('perps-collat-token');
+      if (!dropdown || !tokenLabel) return;
+
+      tokenLabel.textContent = perpsCollateralToken;
+
+      dropdown.innerHTML = options.map(token => `
+        <div class="perps-collat-option ${token === perpsCollateralToken ? 'active' : ''}" onclick="selectCollatToken('${token}')">
+          <span class="collat-dot" style="background: ${COLLATERAL_COLORS[token] || '#888'}"></span>
+          ${token}
+        </div>
+      `).join('');
+    }
+
+    function toggleCollatDropdown() {
+      const sel = $('perps-collat-selected');
+      const dd = $('perps-collat-dropdown');
+      if (!sel || !dd) return;
+      const isOpen = dd.classList.contains('open');
+      dd.classList.toggle('open', !isOpen);
+      sel.classList.toggle('open', !isOpen);
+    }
+
+    function selectCollatToken(token) {
+      perpsCollateralToken = token;
+      $('perps-collat-token').textContent = token;
+      const dd = $('perps-collat-dropdown');
+      const sel = $('perps-collat-selected');
+      if (dd) dd.classList.remove('open');
+      if (sel) sel.classList.remove('open');
+      buildCollatDropdown();
+      updatePerpsOrder();
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const selector = $('perps-collat-selector');
+      if (selector && !selector.contains(e.target)) {
+        const dd = $('perps-collat-dropdown');
+        const sel = $('perps-collat-selected');
+        if (dd) dd.classList.remove('open');
+        if (sel) sel.classList.remove('open');
+      }
+    });
+
+    // Helper: get collateral value in USD
+    function getCollatPriceUSD(token) {
+      if (STABLECOINS.includes(token)) return 1;
+      return perpsPrices[token] || 0;
+    }
+
     // ── Order Calculation ──
     function updatePerpsOrder() {
       const price = perpsPrices[perpsMarket] || 0;
@@ -7885,14 +8000,10 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       const side = perpsSide;
       const cfg = PERPS_SYMBOLS[perpsMarket];
 
-      // For long positions: collateral in native token → position size = collateral * price * leverage
-      // For short positions: collateral in USDC → position size = collateral * leverage
-      let positionSizeUSD;
-      if (perpsSide === 'long') {
-        positionSizeUSD = collateral * price * leverage;
-      } else {
-        positionSizeUSD = collateral * leverage;
-      }
+      // Calculate collateral value in USD based on selected token
+      const collatPriceUSD = getCollatPriceUSD(perpsCollateralToken);
+      const collateralUSD = collateral * collatPriceUSD;
+      let positionSizeUSD = collateralUSD * leverage;
 
       // Entry price
       const entryPrice = perpsOrderType === 'limit'
@@ -8054,15 +8165,16 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       execBtn.textContent = '⏳ OPENING JUPITER...';
 
       try {
-        const collateralToken = side === 'long' ? cfg.collateralLong : cfg.collateralShort;
-        let positionSizeUSD = side === 'long'
-          ? collateral * price * leverage
-          : collateral * leverage;
+        const collateralToken = perpsCollateralToken;
+        const collatPriceUSD = getCollatPriceUSD(collateralToken);
+        const collateralUSD = collateral * collatPriceUSD;
+        let positionSizeUSD = collateralUSD * leverage;
         const openFee = positionSizeUSD * 0.0007;
 
-        // Build Jupiter Perps URL
+        // Build Jupiter Perps URL with selected collateral
         const jupMarket = market === 'BTC' ? 'WBTC' : market;
-        const jupCollateral = side === 'long' ? (market === 'BTC' ? 'WBTC' : market) : 'USDC';
+        let jupCollateral = collateralToken;
+        if (collateralToken === 'BTC') jupCollateral = 'WBTC';
         const jupUrl = `https://jup.ag/perps/${side}/${jupMarket}-${jupCollateral}`;
 
         // Track position locally
