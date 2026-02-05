@@ -8069,10 +8069,25 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         }
 
         if (!txDetails) {
-          // If we can't verify, but tx was confirmed, likely succeeded
-          console.warn('Could not fetch tx details but was confirmed');
-        } else if (txDetails.meta?.err) {
-          throw new Error(`Transaction failed on-chain: ${JSON.stringify(txDetails.meta.err)}`);
+          throw new Error('Could not fetch transaction details to verify');
+        }
+
+        // Check for transaction-level error
+        if (txDetails.meta?.err) {
+          console.error('Tx failed:', txDetails.meta.err);
+          throw new Error(`Transaction failed: ${JSON.stringify(txDetails.meta.err)}`);
+        }
+
+        // Check instruction logs for program errors
+        const logs = txDetails.meta?.logMessages || [];
+        const errorLog = logs.find(log => 
+          log.toLowerCase().includes('failed') || 
+          log.toLowerCase().includes('error') ||
+          log.toLowerCase().includes('program error')
+        );
+        if (errorLog) {
+          console.error('Instruction error in logs:', errorLog);
+          throw new Error(`Instruction failed: ${errorLog}`);
         }
 
         // ✅ Transaction confirmed AND verified successful on-chain
@@ -8127,9 +8142,11 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
           const txLink = txMatch ? txMatch[0] : '';
           toast('⏱️ Confirmation took too long', 5000);
           addMsg('system', `⏱️ Transaction is still confirming (network congested).\n\n${txLink ? `✅ Position likely opened! Check here:\n${txLink}` : '💡 Check Solscan — position may have opened'}\n\n⚠️ Don't retry immediately — wait 30s to verify on-chain.`);
-        } else if (errMsg.includes('failed on-chain')) {
-          toast('❌ On-chain execution failed', 5000);
-          addMsg('system', `❌ Transaction rejected on-chain: ${errMsg}\n\n💡 Possible reasons:\n• Insufficient collateral\n• Price moved too much\n• Account state error\n\nNo position opened.`);
+        } else if (errMsg.includes('failed on-chain') || errMsg.includes('Instruction failed')) {
+          toast('❌ Instruction failed', 5000);
+          // Extract the specific error from logs
+          const errorDetail = errMsg.includes('Program Error') ? errMsg.match(/Program Error[^"]*/) : 'Check Solscan for details';
+          addMsg('system', `❌ Instruction execution failed: ${errorDetail}\n\n💡 This usually means:\n• Instruction data format is wrong\n• Discriminator doesn't match\n• Field order/types incorrect\n\n🔍 Check the Solscan tx for full logs.`);
         } else {
           toast(`❌ ${errMsg.slice(0, 50)}`, 5000);
           addMsg('system', `❌ Position failed: ${errMsg}\n\n💡 Check:\n• Phantom approved request\n• Internet stable\n• Sufficient gas + collateral`);
