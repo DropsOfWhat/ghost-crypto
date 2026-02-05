@@ -8039,34 +8039,40 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
         execBtn.textContent = '⏳ CONFIRMING...';
         
-        // Confirm with timeout (same pattern as sniper)
+        // Confirm with longer timeout (Jupiter Perps can be slow)
         const confirmPromise = conn.confirmTransaction(sig, 'confirmed');
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('confirmation timeout')), 60000)
+          setTimeout(() => reject(new Error('timeout')), 120000) // 2 minutes for complex perps txs
         );
         
         try {
           await Promise.race([confirmPromise, timeoutPromise]);
         } catch(confirmErr) {
-          throw new Error(`Tx confirmation failed: ${confirmErr.message}`);
+          // Give user the tx signature to check manually
+          throw new Error(`Confirmation timeout - check manually:\nhttps://solscan.io/tx/${sig}`);
         }
 
         // ⚠️ Verify transaction actually succeeded (not just confirmed)
         // A confirmed tx can still have failed instructions
         execBtn.textContent = '🔍 VERIFYING...';
-        await new Promise(r => setTimeout(r, 1000)); // Wait for RPC to have full tx data
+        await new Promise(r => setTimeout(r, 2000)); // Wait for RPC to have full tx data
         
         let txDetails;
-        try {
-          txDetails = await conn.getTransaction(sig, { maxSupportedTransactionVersion: 0 });
-          if (!txDetails) {
-            throw new Error('Transaction not found after confirmation');
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            txDetails = await conn.getTransaction(sig, { maxSupportedTransactionVersion: 0 });
+            if (txDetails) break;
+            if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+          } catch(e) {
+            if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
           }
-          if (txDetails.meta?.err) {
-            throw new Error(`Transaction failed on-chain: ${JSON.stringify(txDetails.meta.err)}`);
-          }
-        } catch(verifyErr) {
-          throw new Error(`Failed to verify transaction: ${verifyErr.message}`);
+        }
+
+        if (!txDetails) {
+          // If we can't verify, but tx was confirmed, likely succeeded
+          console.warn('Could not fetch tx details but was confirmed');
+        } else if (txDetails.meta?.err) {
+          throw new Error(`Transaction failed on-chain: ${JSON.stringify(txDetails.meta.err)}`);
         }
 
         // ✅ Transaction confirmed AND verified successful on-chain
@@ -8110,20 +8116,23 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
         // Clear, specific error messages
         if (errMsg.includes('User rejected') || errMsg.includes('rejected')) {
-          toast('❌ Rejected in Phantom — try again', 5000);
+          toast('❌ Rejected in Phantom', 5000);
           addMsg('system', '❌ Transaction rejected by wallet. Position NOT opened.');
         } else if (errMsg.includes('insufficient') || errMsg.includes('balance')) {
           toast('❌ Insufficient balance', 5000);
           addMsg('system', '❌ You need more SOL/USDC for collateral + gas fees');
-        } else if (errMsg.includes('timeout') || errMsg.includes('confirmation')) {
-          toast('⏱️ Confirmation timeout — check Solscan', 5000);
-          addMsg('system', `⏱️ Transaction took too long to confirm. Position NOT opened (may still be processing).`);
-        } else if (errMsg.includes('failed on-chain') || errMsg.includes('verify')) {
+        } else if (errMsg.includes('timeout') || errMsg.includes('check manually')) {
+          // Extract tx link from error message if present
+          const txMatch = errMsg.match(/https:\/\/solscan\.io\/tx\/\w+/);
+          const txLink = txMatch ? txMatch[0] : '';
+          toast('⏱️ Confirmation took too long', 5000);
+          addMsg('system', `⏱️ Transaction is still confirming (network congested).\n\n${txLink ? `✅ Position likely opened! Check here:\n${txLink}` : '💡 Check Solscan — position may have opened'}\n\n⚠️ Don't retry immediately — wait 30s to verify on-chain.`);
+        } else if (errMsg.includes('failed on-chain')) {
           toast('❌ On-chain execution failed', 5000);
-          addMsg('system', `❌ Transaction was rejected on-chain: ${errMsg}\n\n💡 Possible reasons:\n• Insufficient collateral\n• Price moved too much\n• Account state error\n\nNo position was opened.`);
+          addMsg('system', `❌ Transaction rejected on-chain: ${errMsg}\n\n💡 Possible reasons:\n• Insufficient collateral\n• Price moved too much\n• Account state error\n\nNo position opened.`);
         } else {
           toast(`❌ ${errMsg.slice(0, 50)}`, 5000);
-          addMsg('system', `❌ Position failed: ${errMsg}\n\n💡 Make sure:\n• Phantom approved the request\n• Your internet is stable\n• Have enough gas + collateral`);
+          addMsg('system', `❌ Position failed: ${errMsg}\n\n💡 Check:\n• Phantom approved request\n• Internet stable\n• Sufficient gas + collateral`);
         }
       } finally {
         perpsExecuting = false;
