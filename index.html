@@ -7875,7 +7875,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         const sideNum = side === 'long' ? 1 : 2;
         const [positionPda] = solanaWeb3.PublicKey.findProgramAddressSync(
           [
-            Buffer.from('position'),
+            new TextEncoder().encode('position'),
             traderKey.toBytes(),
             poolKey.toBytes(),
             custodyKey.toBytes(),
@@ -7897,7 +7897,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         // Derive PositionRequest PDA
         const [positionRequestPda] = solanaWeb3.PublicKey.findProgramAddressSync(
           [
-            Buffer.from('position_request'),
+            new TextEncoder().encode('position_request'),
             positionPda.toBytes(),
             counterBytes,
           ],
@@ -7906,19 +7906,19 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
         // Derive Perpetuals PDA (global config)
         const [perpetualsPda] = solanaWeb3.PublicKey.findProgramAddressSync(
-          [Buffer.from('perpetuals')],
+          [new TextEncoder().encode('perpetuals')],
           programId
         );
 
         // Derive Transfer Authority PDA
         const [transferAuthPda] = solanaWeb3.PublicKey.findProgramAddressSync(
-          [Buffer.from('transfer_authority')],
+          [new TextEncoder().encode('transfer_authority')],
           programId
         );
 
         // Derive Event Authority PDA
         const [eventAuthPda] = solanaWeb3.PublicKey.findProgramAddressSync(
-          [Buffer.from('__event_authority')],
+          [new TextEncoder().encode('__event_authority')],
           programId
         );
 
@@ -8161,7 +8161,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
             { pubkey: new solanaWeb3.PublicKey(SYSTEM_PROGRAM), isSigner: false, isWritable: false },
             { pubkey: new solanaWeb3.PublicKey(TOKEN_PROGRAM), isSigner: false, isWritable: false },
           ],
-          data: Buffer.from([1]), // CreateIdempotent
+          data: new Uint8Array([1]), // CreateIdempotent
         })
       );
 
@@ -8179,7 +8179,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         new solanaWeb3.TransactionInstruction({
           programId: new solanaWeb3.PublicKey(TOKEN_PROGRAM),
           keys: [{ pubkey: ata, isSigner: false, isWritable: true }],
-          data: Buffer.from([17]), // SyncNative
+          data: new Uint8Array([17]), // SyncNative
         })
       );
 
