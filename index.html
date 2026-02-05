@@ -839,12 +839,12 @@
       font-size: 14px; font-weight: 800; cursor: pointer;
       font-family: 'Plus Jakarta Sans', sans-serif;
       letter-spacing: 0.04em; transition: all 0.2s;
-      margin-bottom: 12px; position: relative; overflow: hidden;
+      margin-bottom: 12px; position: relative; overflow: hidden; z-index: 5;
     }
     .perps-exec::before {
       content: ''; position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-      opacity: 0; transition: opacity 0.2s;
+      opacity: 0; transition: opacity 0.2s; pointer-events: none;
     }
     .perps-exec:hover::before { opacity: 1; }
     .perps-exec:disabled { opacity: 0.35; cursor: not-allowed; }
@@ -2410,7 +2410,12 @@
     const PUMP_API = 'https://pump.fun/api';
     const PUMPPORTAL_API = 'https://pumpportal.fun/api';
     const RPC_URL = 'https://api.mainnet-beta.solana.com';
-    const JUP_API = 'https://public.jupiterapi.com';
+    const JUP_API = 'https://api.jup.ag';
+    const JUP_ENDPOINTS = [
+      'https://public.jupiterapi.com',
+      'https://api.jup.ag/swap/v1',
+      'https://lite-api.jup.ag/swap/v1',
+    ];
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
     let heliusKey = localStorage.getItem('ghost-helius-key') || '5372d46c-bd92-4783-ba13-f449062be6fe';
@@ -3399,10 +3404,9 @@
       quoteTimer = setTimeout(async () => {
         try {
           const lamports = Math.round(amount * 1e9);
-          const url = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${Math.round(slippage * 100)}`;
-          const res = await fetch(url);
-          if (!res.ok) throw new Error('Quote failed');
-          const quote = await res.json();
+          const jupResult = await jupQuote(SOL_MINT, mint, lamports, Math.round(slippage * 100));
+          if (!jupResult) throw new Error('All Jupiter endpoints failed');
+          const quote = jupResult.quote;
           currentQuote = quote;
 
           $('tq-pay').textContent = amount + ' SOL';
@@ -3479,26 +3483,13 @@
         }
 
         btn.textContent = 'FETCHING ROUTE...';
-        const quoteUrl = `${JUP_API}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${lamports}&slippageBps=${Math.round(slippage * 100)}`;
-        const quoteRes = await fetch(quoteUrl);
-        if (!quoteRes.ok) throw new Error('Failed to get Jupiter quote');
-        const quote = await quoteRes.json();
+        const jupResult = await jupQuote(inputMint, outputMint, lamports, Math.round(slippage * 100));
+        if (!jupResult) throw new Error('All Jupiter endpoints failed — check connection');
+        const quote = jupResult.quote;
 
         // Step 2: Get swap transaction
         btn.textContent = 'BUILDING TX...';
-        const swapRes = await fetch(`${JUP_API}/swap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            quoteResponse: quote,
-            userPublicKey: walletAddress,
-            wrapAndUnwrapSol: true,
-            dynamicComputeUnitLimit: true,
-            prioritizationFeeLamports: Math.round(priority * 1e9),
-          }),
-        });
-        if (!swapRes.ok) throw new Error('Failed to build swap transaction');
-        const swapData = await swapRes.json();
+        const swapData = await jupSwap(jupResult.endpoint, quote, walletAddress, Math.round(priority * 1e9));
 
         // Step 3: Sign with Phantom
         btn.textContent = 'SIGN IN PHANTOM...';
@@ -4810,7 +4801,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       $('alpha-start-btn').textContent = '⏹ Stop Bot';
       $('alpha-start-btn').className = 'alpha-btn stop';
       alphaLog('🟢 Bot started — monitoring ' + alphaWallets.length + ' wallets');
-      alphaLog('🛡 Active: 30s cooldown · duplicate filter · wallet weighting · 15/30min time exits');
+      alphaLog('🛡 Active: 30s cooldown · duplicate filter · wallet weighting · 5/10/20min time exits · dead-token dump · 15s position checks');
 
       // Start polling
       alphaPollTimer = setInterval(() => alphaPoll(), pollSec * 1000);
@@ -5077,6 +5068,45 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       return { success: false, error: 'unverified', unverified: true };
     }
 
+    // Jupiter multi-endpoint helpers
+    let jupLastWorking = 0; // index of last working endpoint
+
+    async function jupQuote(inputMint, outputMint, amount, slipBps = 1500) {
+      // Try last working endpoint first, then cycle through all
+      const order = [jupLastWorking, ...Array.from({length: JUP_ENDPOINTS.length}, (_, i) => i).filter(i => i !== jupLastWorking)];
+      for (const idx of order) {
+        const ep = JUP_ENDPOINTS[idx];
+        try {
+          const url = `${ep}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=${slipBps}`;
+          const res = await fetchWithTimeout(url, {}, 8000);
+          if (!res.ok) continue;
+          const quote = await res.json();
+          if (!quote.outAmount || quote.outAmount === '0') continue;
+          jupLastWorking = idx;
+          return { quote, endpoint: ep };
+        } catch (e) { continue; }
+      }
+      return null;
+    }
+
+    async function jupSwap(endpoint, quote, userPublicKey, priorityFee = 100000) {
+      const swapRes = await fetchWithTimeout(`${endpoint}/swap`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quoteResponse: quote,
+          userPublicKey,
+          wrapAndUnwrapSol: true,
+          dynamicComputeUnitLimit: true,
+          prioritizationFeeLamports: priorityFee,
+        }),
+      }, 15000);
+      if (!swapRes.ok) throw new Error(`Swap build ${swapRes.status}`);
+      const swapData = await swapRes.json();
+      if (!swapData.swapTransaction) throw new Error('No swap tx');
+      return swapData;
+    }
+
     async function alphaExecuteBuy(mint, symbol, copiedFrom = 'unknown', isGraduated = true) {
       const botWallet = getAlphaBotWallet();
       if (!botWallet) { alphaLog('No bot wallet — add one in Settings', 'error'); return; }
@@ -5091,29 +5121,13 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       let jupErr = null;
       let pumpErr = null;
 
-      // ── Always try Jupiter first ──
+      // ── Always try Jupiter first (multiple endpoints) ──
       try {
         alphaLog(`🔄 Jupiter quote for ${symbol}...`, 'info');
-        const quoteUrl = `${JUP_API}/quote?inputMint=${SOL_MINT}&outputMint=${mint}&amount=${lamports}&slippageBps=${slipBps}`;
-        const quoteRes = await fetchWithTimeout(quoteUrl, {}, 10000);
-        if (!quoteRes.ok) throw new Error(`Quote ${quoteRes.status}`);
-        const quote = await quoteRes.json();
-        if (!quote.outAmount || quote.outAmount === '0') throw new Error('No route');
+        const jupResult = await jupQuote(SOL_MINT, mint, lamports, slipBps);
+        if (!jupResult) throw new Error('All Jupiter endpoints failed');
 
-        const swapRes = await fetchWithTimeout(`${JUP_API}/swap`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            quoteResponse: quote,
-            userPublicKey: botWallet.publicKey,
-            wrapAndUnwrapSol: true,
-            dynamicComputeUnitLimit: true,
-            prioritizationFeeLamports: 100000,
-          }),
-        }, 15000);
-        if (!swapRes.ok) throw new Error(`Swap build ${swapRes.status}`);
-        const swapData = await swapRes.json();
-        if (!swapData.swapTransaction) throw new Error('No swap tx');
+        const swapData = await jupSwap(jupResult.endpoint, jupResult.quote, botWallet.publicKey);
 
         const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
         const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
@@ -5134,41 +5148,84 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         jupErr = e.message;
       }
 
-      // ── If Jupiter failed, try PumpPortal ──
+      // ── If Jupiter failed, try PumpPortal (bonding curve tokens only) ──
       if (!sig) {
-        try {
-          alphaLog(`⚠ Jupiter: ${jupErr}. Trying PumpPortal...`, 'warn');
-          const pumpRes = await fetchWithTimeout(`${PUMPPORTAL_API}/trade-local`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              publicKey: botWallet.publicKey,
-              action: 'buy',
-              mint: mint,
-              amount: buyAmt,
-              denominatedInSol: 'true',
-              slippage: slippage,
-              priorityFee: 0.0001,
-            }),
-          }, 15000);
+        if (isGraduated) {
+          alphaLog(`❌ Jupiter failed: ${jupErr}. Token is graduated — PumpPortal won't work.`, 'error');
+          return;
+        }
 
-          if (!pumpRes.ok) {
-            const errText = await pumpRes.text().catch(() => '');
-            throw new Error(`${pumpRes.status}: ${errText.slice(0, 60)}`);
+        // Try PumpPortal with increasing slippage (50%, then 80% on retry)
+        const slippageLevels = [Math.max(slippage, 50), 80];
+        for (let attempt = 0; attempt < slippageLevels.length; attempt++) {
+          const pumpSlip = slippageLevels[attempt];
+          try {
+            alphaLog(`${attempt === 0 ? '⚠' : '🔄'} ${attempt === 0 ? 'Jupiter: ' + jupErr + '. ' : ''}PumpPortal attempt ${attempt + 1} (${pumpSlip}% slip)...`, attempt === 0 ? 'warn' : 'info');
+            const pumpRes = await fetchWithTimeout(`${PUMPPORTAL_API}/trade-local`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                publicKey: botWallet.publicKey,
+                action: 'buy',
+                mint: mint,
+                amount: buyAmt,
+                denominatedInSol: 'true',
+                slippage: pumpSlip,
+                priorityFee: 0.001,
+              }),
+            }, 15000);
+
+            if (!pumpRes.ok) {
+              const errText = await pumpRes.text().catch(() => '');
+              throw new Error(`${pumpRes.status}: ${errText.slice(0, 60)}`);
+            }
+
+            const txData = await pumpRes.arrayBuffer();
+            const tx = solanaWeb3.VersionedTransaction.deserialize(new Uint8Array(txData));
+            const secretKey = bs58Decode(botWallet.secretKey);
+            const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+            tx.sign([keypair]);
+
+            const rawTx = tx.serialize();
+            const sendConn = await getWorkingConnection();
+            const trySig = await sendConn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+
+            // Quick verify before accepting
+            await delay(3000);
+            const verifyResult = await verifyTransaction(trySig);
+            if (verifyResult.success) {
+              sig = trySig;
+              method = 'PumpPortal';
+              break; // Success!
+            } else if (verifyResult.error && verifyResult.error.includes('6005') && attempt < slippageLevels.length - 1) {
+              alphaLog(`⚠ Slippage exceeded (6005) — retrying with ${slippageLevels[attempt + 1]}%...`, 'warn');
+              await delay(1000);
+              continue; // Try next slippage level
+            } else {
+              // Check balance as last resort
+              try {
+                await delay(2000);
+                const conn2 = await getWorkingConnection();
+                const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+                const tokenAccounts = await conn2.getParsedTokenAccountsByOwner(pubkey, {
+                  programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+                });
+                const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
+                const bal = ta ? (ta.account.data.parsed.info.tokenAmount.uiAmount || 0) : 0;
+                if (bal > 0) {
+                  sig = trySig;
+                  method = 'PumpPortal';
+                  break;
+                }
+              } catch (e) { /* balance check failed */ }
+
+              if (attempt < slippageLevels.length - 1) continue;
+              pumpErr = verifyResult.error || 'tx failed on-chain';
+            }
+          } catch (e) {
+            pumpErr = e.message;
+            if (attempt < slippageLevels.length - 1) continue;
           }
-
-          const txData = await pumpRes.arrayBuffer();
-          const tx = solanaWeb3.VersionedTransaction.deserialize(new Uint8Array(txData));
-          const secretKey = bs58Decode(botWallet.secretKey);
-          const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
-          tx.sign([keypair]);
-
-          const rawTx = tx.serialize();
-          const conn = await getWorkingConnection();
-          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
-          method = 'PumpPortal';
-        } catch (e) {
-          pumpErr = e.message;
         }
       }
 
@@ -5179,38 +5236,44 @@ Be concise, use numbers. Output as plain text, not markdown.`;
 
       // ── Confirm & Verify ──
       try {
-        alphaLog(`📡 Confirming ${symbol} via ${method}...`, 'info');
-        const confirmConn = await getWorkingConnection();
-        try { await confirmConn.confirmTransaction(sig, 'confirmed'); } catch (e) { /* continue to verify */ }
-
-        // CRITICAL: Check if the tx actually succeeded on-chain
-        const result = await verifyTransaction(sig);
-
-        let confirmed = result.success;
+        let confirmed = false;
         let balanceConfirmed = false;
 
-        // If tx verification failed or unverified, fallback: check if tokens arrived in wallet
-        if (!confirmed) {
-          try {
-            await delay(2000);
-            const conn2 = await getWorkingConnection();
-            const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
-            const tokenAccounts = await conn2.getParsedTokenAccountsByOwner(pubkey, {
-              programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
-            });
-            const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
-            const bal = ta ? (ta.account.data.parsed.info.tokenAmount.uiAmount || 0) : 0;
-            if (bal > 0) {
-              confirmed = true;
-              balanceConfirmed = true;
-              alphaLog(`✅ ${symbol} confirmed via balance check (${bal.toLocaleString()} tokens)`, 'info');
-            }
-          } catch (e) { /* balance check failed too */ }
-        }
+        if (method === 'PumpPortal') {
+          // PumpPortal already verified in retry loop
+          confirmed = true;
+          alphaLog(`✅ ${symbol} verified via ${method}`, 'info');
+        } else {
+          // Jupiter needs full verification
+          alphaLog(`📡 Confirming ${symbol} via ${method}...`, 'info');
+          const confirmConn = await getWorkingConnection();
+          try { await confirmConn.confirmTransaction(sig, 'confirmed'); } catch (e) { /* continue to verify */ }
 
-        if (!confirmed) {
-          alphaLog(`❌ ${symbol} tx FAILED — ${result.error || 'no tokens received'} — tx: ${sig.slice(0, 8)}...`, 'error');
-          return; // Do NOT track a failed position
+          const result = await verifyTransaction(sig);
+          confirmed = result.success;
+
+          if (!confirmed) {
+            try {
+              await delay(2000);
+              const conn2 = await getWorkingConnection();
+              const pubkey = new solanaWeb3.PublicKey(botWallet.publicKey);
+              const tokenAccounts = await conn2.getParsedTokenAccountsByOwner(pubkey, {
+                programId: new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'),
+              });
+              const ta = tokenAccounts.value.find(t => t.account.data.parsed.info.mint === mint);
+              const bal = ta ? (ta.account.data.parsed.info.tokenAmount.uiAmount || 0) : 0;
+              if (bal > 0) {
+                confirmed = true;
+                balanceConfirmed = true;
+                alphaLog(`✅ ${symbol} confirmed via balance check (${bal.toLocaleString()} tokens)`, 'info');
+              }
+            } catch (e) { /* balance check failed too */ }
+          }
+
+          if (!confirmed) {
+            alphaLog(`❌ ${symbol} tx FAILED — ${result.error || 'no tokens received'} — tx: ${sig.slice(0, 8)}...`, 'error');
+            return;
+          }
         }
 
         alphaPositions[mint] = {
@@ -5287,28 +5350,12 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         let solReceived = 0;
         let method = '';
 
-        // ── Attempt 1: Jupiter Sell ──
+        // ── Attempt 1: Jupiter Sell (multi-endpoint) ──
         try {
-          const quoteUrl = `${JUP_API}/quote?inputMint=${mint}&outputMint=${SOL_MINT}&amount=${tokenLamports}&slippageBps=${Math.round(slippage * 100)}`;
-          const quoteRes = await fetchWithTimeout(quoteUrl, {}, 10000);
-          if (!quoteRes.ok) throw new Error(`Quote ${quoteRes.status}`);
-          const quote = await quoteRes.json();
-          if (!quote.outAmount || quote.outAmount === '0') throw new Error('No route');
+          const jupResult = await jupQuote(mint, SOL_MINT, tokenLamports, Math.round(slippage * 100));
+          if (!jupResult) throw new Error('All Jupiter endpoints failed');
 
-          const swapRes = await fetchWithTimeout(`${JUP_API}/swap`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              quoteResponse: quote,
-              userPublicKey: botWallet.publicKey,
-              wrapAndUnwrapSol: true,
-              dynamicComputeUnitLimit: true,
-              prioritizationFeeLamports: 100000,
-            }),
-          }, 15000);
-          if (!swapRes.ok) throw new Error(`Swap build ${swapRes.status}`);
-          const swapData = await swapRes.json();
-          if (!swapData.swapTransaction) throw new Error('No swap tx');
+          const swapData = await jupSwap(jupResult.endpoint, jupResult.quote, botWallet.publicKey);
 
           const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
           const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
@@ -5323,7 +5370,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           } else {
             sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
           }
-          solReceived = parseInt(quote.outAmount) / 1e9;
+          solReceived = parseInt(jupResult.quote.outAmount) / 1e9;
           method = 'Jupiter';
 
         } catch (jupErr) {
@@ -5339,7 +5386,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
                 mint: mint,
                 amount: tokenLamports.toString(),
                 denominatedInSol: 'false',
-                slippage: slippage,
+                slippage: Math.max(slippage, 50), // High slippage for guaranteed exit
                 priorityFee: 0.0001,
               }),
             }, 15000);
@@ -5456,7 +5503,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       const botWallet = getAlphaBotWallet();
 
       const mints = Object.keys(alphaPositions);
-      if (mints.length === 0) { setTimeout(() => alphaCheckPositions(), 30000); return; }
+      if (mints.length === 0) { setTimeout(() => alphaCheckPositions(), 15000); return; }
 
       for (const mint of mints) {
         const pos = alphaPositions[mint];
@@ -5498,17 +5545,30 @@ Be concise, use numbers. Output as plain text, not markdown.`;
             try {
               const tokenDecimals = await getTokenDecimals(mint);
               const tokenLamports = Math.round(pos.amount * Math.pow(10, tokenDecimals));
-              const quoteRes = await fetchWithTimeout(
-                `${JUP_API}/quote?inputMint=${mint}&outputMint=${SOL_MINT}&amount=${tokenLamports}&slippageBps=1500`, {}, 8000
-              );
-              if (quoteRes.ok) {
-                const quote = await quoteRes.json();
-                currentValueSOL = parseInt(quote.outAmount || '0') / 1e9;
+              const jupResult = await jupQuote(mint, SOL_MINT, tokenLamports, 1500);
+              if (jupResult) {
+                currentValueSOL = parseInt(jupResult.quote.outAmount || '0') / 1e9;
               }
             } catch (e) { /* Jupiter also failed */ }
           }
 
-          if (currentValueSOL <= 0) continue; // Can't determine value
+          if (currentValueSOL <= 0) {
+            // Can't determine value — track failures and dump if dead
+            pos.priceFailCount = (pos.priceFailCount || 0) + 1;
+            const ageMin = (Date.now() - pos.entryTime) / 60000;
+
+            // After 3 failed price checks (~90 seconds) OR position older than 10 min with no price: emergency dump
+            if (pos.priceFailCount >= 3 || ageMin >= 10) {
+              alphaLog(`☠️ ${pos.symbol} — no price data after ${pos.priceFailCount} checks (${ageMin.toFixed(0)}min old) — emergency dump`, 'warn');
+              await alphaExecuteSell(mint);
+            } else {
+              alphaLog(`⚠ ${pos.symbol} — can't get price (attempt ${pos.priceFailCount}/3)`, 'info');
+            }
+            continue;
+          }
+
+          // Reset fail counter on successful price fetch
+          pos.priceFailCount = 0;
 
           // Step 4: Calculate PnL and check exit rules
           const pnlSOL = currentValueSOL - pos.entrySOL;
@@ -5524,13 +5584,18 @@ Be concise, use numbers. Output as plain text, not markdown.`;
             // ── 4. TIME-BASED EXIT: Dump stale positions ──
             const ageMin = (Date.now() - pos.entryTime) / 60000;
 
-            // After 15min: exit if losing or flat
-            if (ageMin >= 15 && pnlPct < 10) {
-              alphaLog(`⏰ Time exit for ${pos.symbol}: ${ageMin.toFixed(0)}min old, ${pnlPct.toFixed(1)}% — cutting loss`, 'warn');
+            // After 5min: exit if losing
+            if (ageMin >= 5 && pnlPct < 0) {
+              alphaLog(`⏰ Time exit for ${pos.symbol}: ${ageMin.toFixed(0)}min old, ${pnlPct.toFixed(1)}% — cutting loss early`, 'warn');
               await alphaExecuteSell(mint);
             }
-            // After 30min: exit anything under +50%
-            else if (ageMin >= 30 && pnlPct < 50) {
+            // After 10min: exit if barely positive or flat
+            else if (ageMin >= 10 && pnlPct < 20) {
+              alphaLog(`⏰ Time exit for ${pos.symbol}: ${ageMin.toFixed(0)}min old, ${pnlPct.toFixed(1)}% — not running, exiting`, 'warn');
+              await alphaExecuteSell(mint);
+            }
+            // After 20min: exit anything under +50%
+            else if (ageMin >= 20 && pnlPct < 50) {
               alphaLog(`⏰ Time exit for ${pos.symbol}: ${ageMin.toFixed(0)}min old, +${pnlPct.toFixed(1)}% — taking what we have`, 'warn');
               await alphaExecuteSell(mint);
             }
@@ -5540,8 +5605,8 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         } catch (e) { /* skip this position */ }
       }
 
-      // Schedule next check
-      if (alphaBotRunning) setTimeout(() => alphaCheckPositions(), 30000);
+      // Schedule next check — every 15 seconds for fast memecoin exits
+      if (alphaBotRunning) setTimeout(() => alphaCheckPositions(), 15000);
     }
 
     // ── Auto-Learn — Bot Studies Its Own Performance ──
