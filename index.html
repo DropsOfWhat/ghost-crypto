@@ -807,27 +807,27 @@
       position: relative; margin-right: 6px;
     }
     .perps-collat-selected {
-      padding: 6px 10px; background: var(--bg-elevated); border-radius: 8px;
-      font-size: 11px; font-weight: 800; color: var(--text-secondary);
-      display: flex; align-items: center; gap: 5px; cursor: pointer;
-      border: 1px solid var(--border-primary); transition: all 0.15s;
+      padding: 8px 10px; background: var(--accent-dim); border-radius: 8px;
+      font-size: 12px; font-weight: 800; color: var(--text-primary);
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      border: 1px solid var(--border-glow); transition: all 0.15s;
       user-select: none; white-space: nowrap;
     }
-    .perps-collat-selected:hover { border-color: var(--border-glow); color: var(--text-primary); }
-    .perps-collat-selected.open { border-color: var(--border-glow); }
-    .perps-collat-arrow { font-size: 8px; opacity: 0.5; transition: transform 0.2s; }
+    .perps-collat-selected:hover { background: rgba(34,209,238,0.15); border-color: var(--accent); }
+    .perps-collat-selected.open { background: rgba(34,209,238,0.15); border-color: var(--accent); }
+    .perps-collat-arrow { font-size: 9px; opacity: 0.7; transition: transform 0.2s; }
     .perps-collat-selected.open .perps-collat-arrow { transform: rotate(180deg); }
     .perps-collat-dropdown {
       position: absolute; top: calc(100% + 4px); right: 0; z-index: 100;
       background: var(--bg-elevated); border: 1px solid var(--border-tertiary);
-      border-radius: 10px; padding: 4px; min-width: 120px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none;
+      border-radius: 10px; padding: 4px; min-width: 130px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none;
       backdrop-filter: blur(16px);
     }
     .perps-collat-dropdown.open { display: block; }
     .perps-collat-option {
-      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
-      border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+      border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 700;
       color: var(--text-tertiary); transition: all 0.12s; white-space: nowrap;
     }
     .perps-collat-option:hover { background: var(--accent-dim); color: var(--text-primary); }
@@ -2502,6 +2502,7 @@
                 <input type="number" id="perps-collateral" placeholder="0.00" step="0.01" min="0" oninput="updatePerpsOrder()">
                 <div class="perps-collat-selector" id="perps-collat-selector">
                   <div class="perps-collat-selected" id="perps-collat-selected" onclick="toggleCollatDropdown()">
+                    <span class="collat-dot" id="perps-collat-dot" style="width:8px;height:8px;border-radius:50%;background:#9945FF;flex-shrink:0;"></span>
                     <span id="perps-collat-token">SOL</span>
                     <span class="perps-collat-arrow">▼</span>
                   </div>
@@ -7943,9 +7944,11 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       const options = COLLATERAL_OPTIONS[perpsMarket]?.[perpsSide] || ['USDC'];
       const dropdown = $('perps-collat-dropdown');
       const tokenLabel = $('perps-collat-token');
+      const dot = $('perps-collat-dot');
       if (!dropdown || !tokenLabel) return;
 
       tokenLabel.textContent = perpsCollateralToken;
+      if (dot) dot.style.background = COLLATERAL_COLORS[perpsCollateralToken] || '#888';
 
       dropdown.innerHTML = options.map(token => `
         <div class="perps-collat-option ${token === perpsCollateralToken ? 'active' : ''}" onclick="selectCollatToken('${token}')">
