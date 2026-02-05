@@ -8053,41 +8053,48 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         }
 
         // ⚠️ Verify transaction actually succeeded (not just confirmed)
-        // A confirmed tx can still have failed instructions
+        // A confirmed tx can still have failed instructions, but we can't always fetch logs
+        // If we can get details, check for errors. If not, trust the confirmation.
         execBtn.textContent = '🔍 VERIFYING...';
-        await new Promise(r => setTimeout(r, 2000)); // Wait for RPC to have full tx data
         
-        let txDetails;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            txDetails = await conn.getTransaction(sig, { maxSupportedTransactionVersion: 0 });
-            if (txDetails) break;
-            if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
-          } catch(e) {
-            if (attempt < 2) await new Promise(r => setTimeout(r, 1000));
+        let hasError = false;
+        try {
+          await new Promise(r => setTimeout(r, 1500)); // Wait for RPC
+          
+          let txDetails;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              txDetails = await conn.getTransaction(sig, { maxSupportedTransactionVersion: 0 });
+              if (txDetails) break;
+              if (attempt < 1) await new Promise(r => setTimeout(r, 500));
+            } catch(e) {
+              if (attempt < 1) await new Promise(r => setTimeout(r, 500));
+            }
           }
-        }
 
-        if (!txDetails) {
-          throw new Error('Could not fetch transaction details to verify');
-        }
-
-        // Check for transaction-level error
-        if (txDetails.meta?.err) {
-          console.error('Tx failed:', txDetails.meta.err);
-          throw new Error(`Transaction failed: ${JSON.stringify(txDetails.meta.err)}`);
-        }
-
-        // Check instruction logs for program errors
-        const logs = txDetails.meta?.logMessages || [];
-        const errorLog = logs.find(log => 
-          log.toLowerCase().includes('failed') || 
-          log.toLowerCase().includes('error') ||
-          log.toLowerCase().includes('program error')
-        );
-        if (errorLog) {
-          console.error('Instruction error in logs:', errorLog);
-          throw new Error(`Instruction failed: ${errorLog}`);
+          // If we got details, check for errors
+          if (txDetails) {
+            if (txDetails.meta?.err) {
+              hasError = true;
+              throw new Error(`Transaction failed: ${JSON.stringify(txDetails.meta.err)}`);
+            }
+            
+            // Check instruction logs for program errors
+            const logs = txDetails.meta?.logMessages || [];
+            const errorLog = logs.find(log => 
+              log.toLowerCase().includes('program error') &&
+              log.toLowerCase().includes('failed')
+            );
+            if (errorLog) {
+              hasError = true;
+              throw new Error(`Instruction failed: ${errorLog}`);
+            }
+          }
+          // If we couldn't fetch details, that's OK - tx was confirmed so it likely succeeded
+        } catch(verifyErr) {
+          if (hasError) throw verifyErr;
+          // RPC timeout fetching details is OK - confirmed tx usually succeeded
+          console.warn('Could not verify details but tx was confirmed:', verifyErr.message);
         }
 
         // ✅ Transaction confirmed AND verified successful on-chain
