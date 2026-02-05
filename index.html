@@ -835,6 +835,19 @@
     .perps-collat-option .collat-dot {
       width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
     }
+    .perps-token-row {
+      display: flex; gap: 4px; margin-top: 6px;
+    }
+    .perps-token-btn {
+      flex: 1; padding: 7px 4px; font-size: 10px; font-weight: 700; border-radius: 6px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      color: var(--text-muted); cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      text-align: center; transition: all 0.15s; display: flex; align-items: center;
+      justify-content: center; gap: 4px;
+    }
+    .perps-token-btn:hover { border-color: var(--border-glow); color: var(--text-secondary); }
+    .perps-token-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .perps-token-btn .collat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .perps-collat-presets { display: flex; gap: 4px; margin-top: 6px; }
     .perps-collat-preset {
       flex: 1; padding: 6px; font-size: 10px; font-weight: 600; border-radius: 6px;
@@ -2500,14 +2513,7 @@
               </div>
               <div class="perps-input-wrap">
                 <input type="number" id="perps-collateral" placeholder="0.00" step="0.01" min="0" oninput="updatePerpsOrder()">
-                <div class="perps-collat-selector" id="perps-collat-selector">
-                  <div class="perps-collat-selected" id="perps-collat-selected" onclick="toggleCollatDropdown()">
-                    <span class="collat-dot" id="perps-collat-dot" style="width:8px;height:8px;border-radius:50%;background:#9945FF;flex-shrink:0;"></span>
-                    <span id="perps-collat-token">SOL</span>
-                    <span class="perps-collat-arrow">▼</span>
-                  </div>
-                  <div class="perps-collat-dropdown" id="perps-collat-dropdown"></div>
-                </div>
+                <div class="perps-input-token" id="perps-collat-token">SOL</div>
               </div>
               <div class="perps-collat-presets">
                 <button class="perps-collat-preset" onclick="setPerpsCollateral(0.1)">0.1</button>
@@ -2516,6 +2522,7 @@
                 <button class="perps-collat-preset" onclick="setPerpsCollateral(5)">5.0</button>
                 <button class="perps-collat-preset" onclick="setPerpsCollateral(10)">10</button>
               </div>
+              <div class="perps-token-row" id="perps-token-row"></div>
             </div>
 
             <!-- Order Summary -->
@@ -7939,55 +7946,29 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       updatePerpsOrder();
     }
 
-    // ── Collateral Token Selector ──
+    // ── Collateral Token Selector (inline buttons) ──
     function buildCollatDropdown() {
       const options = COLLATERAL_OPTIONS[perpsMarket]?.[perpsSide] || ['USDC'];
-      const dropdown = $('perps-collat-dropdown');
+      const row = $('perps-token-row');
       const tokenLabel = $('perps-collat-token');
-      const dot = $('perps-collat-dot');
-      if (!dropdown || !tokenLabel) return;
+      if (!row || !tokenLabel) return;
 
       tokenLabel.textContent = perpsCollateralToken;
-      if (dot) dot.style.background = COLLATERAL_COLORS[perpsCollateralToken] || '#888';
 
-      dropdown.innerHTML = options.map(token => `
-        <div class="perps-collat-option ${token === perpsCollateralToken ? 'active' : ''}" onclick="selectCollatToken('${token}')">
+      row.innerHTML = options.map(token => `
+        <button class="perps-token-btn ${token === perpsCollateralToken ? 'active' : ''}" onclick="selectCollatToken('${token}')">
           <span class="collat-dot" style="background: ${COLLATERAL_COLORS[token] || '#888'}"></span>
           ${token}
-        </div>
+        </button>
       `).join('');
-    }
-
-    function toggleCollatDropdown() {
-      const sel = $('perps-collat-selected');
-      const dd = $('perps-collat-dropdown');
-      if (!sel || !dd) return;
-      const isOpen = dd.classList.contains('open');
-      dd.classList.toggle('open', !isOpen);
-      sel.classList.toggle('open', !isOpen);
     }
 
     function selectCollatToken(token) {
       perpsCollateralToken = token;
       $('perps-collat-token').textContent = token;
-      const dd = $('perps-collat-dropdown');
-      const sel = $('perps-collat-selected');
-      if (dd) dd.classList.remove('open');
-      if (sel) sel.classList.remove('open');
       buildCollatDropdown();
       updatePerpsOrder();
     }
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      const selector = $('perps-collat-selector');
-      if (selector && !selector.contains(e.target)) {
-        const dd = $('perps-collat-dropdown');
-        const sel = $('perps-collat-selected');
-        if (dd) dd.classList.remove('open');
-        if (sel) sel.classList.remove('open');
-      }
-    });
 
     // Helper: get collateral value in USD
     function getCollatPriceUSD(token) {
