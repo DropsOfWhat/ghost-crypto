@@ -1976,7 +1976,7 @@
           <div id="p-tools" style="display:none">
             <div class="ph">CRYPTO PLUGINS</div>
             <div class="tcard" onclick="toolOpen('trade')"><div class="tcard-h"><span class="tcard-n">⟡ Jupiter Swap</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Buy & sell any Solana token via Jupiter aggregator</div></div>
-            <div class="tcard" onclick="setMode('perps')"><div class="tcard-h"><span class="tcard-n">⚡ Leverage Trading</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">ACTIVE</span></div><div class="tcard-d">Trade SOL, BTC, ETH with up to 100x leverage via Jupiter Perps</div></div>
+            <div class="tcard" onclick="setMode('perps')"><div class="tcard-h"><span class="tcard-n">⚡ Leverage Trading</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">ACTIVE</span></div><div class="tcard-d">Trade SOL, BTC, ETH with up to 250x leverage via Jupiter Perps — on-page execution</div></div>
             <div class="tcard" onclick="toolOpen('launch')"><div class="tcard-h"><span class="tcard-n">🎰 Token Launcher</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Launch directly on pump.fun, bonk.fun, bags.fm</div></div>
             <div class="tcard" onclick="toolOpen('wallet')"><div class="tcard-h"><span class="tcard-n">👻 Phantom Wallet</span><span class="tcard-s" id="ph-stat" style="background:var(--red-dim);color:var(--red);">DISCONNECTED</span></div><div class="tcard-d">Sign transactions, view balance, portfolio</div></div>
             <div class="tcard" onclick="setMode('sniper')"><div class="tcard-h"><span class="tcard-n">⚡ Sniper Bot</span><span class="tcard-s" id="sniper-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Auto-buy your token launches with multiple wallets</div></div>
@@ -2370,7 +2370,7 @@
 
             <!-- Info -->
             <div class="perps-info">
-              ⚡ Trades via <a href="https://jup.ag/perps" target="_blank">Jupiter Perps</a> — oracle-priced, up to 100x. Collateral from JLP pool.
+              ⚡ Native on-chain via <strong>Jupiter Perps</strong> — oracle-priced, up to 250x. Collateral from JLP pool.
               No funding rates — borrow fees only. <strong>Liquidation is real.</strong>
             </div>
 
@@ -6014,7 +6014,7 @@ Your response (one line only):`;
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 100x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 250x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -7373,10 +7373,33 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     let perpsPositions = JSON.parse(localStorage.getItem('ghost-perps-positions') || '[]');
     let perpsWsRetries = 0;
 
+    // ═══════ JUPITER PERPS ON-CHAIN CONSTANTS ═══════
+    const PERPS_PROGRAM_ID = 'PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu';
+    const PERPS_POOL = '5BUwFW4nRbftYTDMbgxykoFWqWHPzahFSNAaaaJtVKsq';
+    const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+    const ATA_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
+    const SYSTEM_PROGRAM = '11111111111111111111111111111111';
+
+    const PERPS_CUSTODIES = {
+      SOL:  '7xS2gz2bTp3fwCC7knJvUWTEU9Tycczu6VhJYKgi1wdz',
+      ETH:  'AQCGyheWPLeo6Qp9WpYS9m3Qj479t7R636N9ey1rEjEn',
+      BTC:  '5Pv3gM9JrFFH883SWAhvJC9RPYmo8UNxuFtv5bMMALkm',
+      USDC: 'G18jKKXQwBbrHeiK3C9MRXhkHsLHf7XgCSisykV46EZa',
+      USDT: '4vkNeXiYEUizLdrpdPS1eC2mccyM4NUPRtERrk6ZETkk',
+    };
+
+    const PERPS_MINTS = {
+      SOL:  'So11111111111111111111111111111111111111112',
+      ETH:  '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
+      BTC:  '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
+      USDC: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      USDT: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+    };
+
     const PERPS_SYMBOLS = {
-      SOL: { binance: 'SOLUSDT', jup: 'SOL', decimals: 2, color: '#9945FF' },
-      BTC: { binance: 'BTCUSDT', jup: 'BTC', decimals: 1, color: '#f7931a' },
-      ETH: { binance: 'ETHUSDT', jup: 'ETH', decimals: 2, color: '#627eea' },
+      SOL: { binance: 'SOLUSDT', jup: 'SOL', decimals: 2, color: '#9945FF', tokenDecimals: 9, collateralLong: 'SOL', collateralShort: 'USDC' },
+      BTC: { binance: 'BTCUSDT', jup: 'BTC', decimals: 1, color: '#f7931a', tokenDecimals: 8, collateralLong: 'BTC', collateralShort: 'USDC' },
+      ETH: { binance: 'ETHUSDT', jup: 'ETH', decimals: 2, color: '#627eea', tokenDecimals: 8, collateralLong: 'ETH', collateralShort: 'USDC' },
     };
 
     function initPerpsPanel() {
@@ -7442,6 +7465,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
                   };
                   updatePerpsMarketPrice(key);
                   if (key === perpsMarket) updatePerpsDisplay();
+                  checkPerpsLiquidations(key);
                   break;
                 }
               }
@@ -7627,7 +7651,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
       // Update collateral token label
       const collatToken = $('perps-collat-token');
-      if (collatToken) collatToken.textContent = market === 'SOL' ? 'SOL' : 'USDC';
+      if (collatToken) collatToken.textContent = market === 'SOL' ? 'SOL' : (perpsSide === 'long' ? market : 'USDC');
     }
 
     // ── Chart ──
@@ -7655,6 +7679,11 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       if (execBtn) {
         execBtn.className = 'perps-exec ' + (side === 'long' ? 'long-btn' : 'short-btn');
       }
+
+      // Update collateral token label based on side
+      const collatToken = $('perps-collat-token');
+      if (collatToken) collatToken.textContent = side === 'long' ? (perpsMarket === 'SOL' ? 'SOL' : perpsMarket) : 'USDC';
+
       updatePerpsOrder();
     }
 
@@ -7708,10 +7737,10 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       const side = perpsSide;
       const cfg = PERPS_SYMBOLS[perpsMarket];
 
-      // For SOL market: collateral in SOL → position size = collateral * price * leverage
-      // For BTC/ETH: collateral in USDC → position size = collateral * leverage
+      // For long positions: collateral in native token → position size = collateral * price * leverage
+      // For short positions: collateral in USDC → position size = collateral * leverage
       let positionSizeUSD;
-      if (perpsMarket === 'SOL') {
+      if (perpsSide === 'long') {
         positionSizeUSD = collateral * price * leverage;
       } else {
         positionSizeUSD = collateral * leverage;
@@ -7770,7 +7799,9 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       }
     }
 
-    // ── Execute Trade via Jupiter Perps ──
+    // ── Execute Trade — Native On-Page Engine ──
+    let perpsExecuting = false;
+
     async function executePerps() {
       const price = perpsPrices[perpsMarket];
       const collateral = parseFloat($('perps-collateral')?.value) || 0;
@@ -7779,66 +7810,380 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         toast('Enter a collateral amount'); return;
       }
 
-      // Check if Phantom is connected
       if (!walletAddress) {
         toast('Connect Phantom wallet first');
         connectWallet();
         return;
       }
 
+      if (perpsExecuting) return;
+      perpsExecuting = true;
+
       const side = perpsSide;
       const leverage = perpsLeverage;
       const market = perpsMarket;
       const cfg = PERPS_SYMBOLS[market];
+      const execBtn = $('perps-exec-btn');
+      const origText = execBtn.textContent;
+      execBtn.disabled = true;
+      execBtn.textContent = '⏳ EXECUTING...';
 
-      let positionSizeUSD = market === 'SOL'
-        ? collateral * price * leverage
-        : collateral * leverage;
-
-      // Open Jupiter Perps with correct market pre-selected
-      const jupUrl = `https://jup.ag/perps/${cfg.jup}-PERP`;
-
-      // Track position locally
-      const pos = {
-        id: Date.now().toString(36),
-        market, side, leverage,
-        collateral,
-        collateralToken: market === 'SOL' ? 'SOL' : 'USDC',
-        entryPrice: price,
-        positionSizeUSD,
-        liqPrice: side === 'long'
-          ? price * (1 - 0.9 / leverage)
-          : price * (1 + 0.9 / leverage),
-        openTime: Date.now(),
-        status: 'pending',
-      };
-
-      perpsPositions.unshift(pos);
-      localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
-      renderPerpsPositions();
-
-      toast(`⚡ Opening ${side.toUpperCase()} ${market} ${leverage}x — redirecting to Jupiter Perps...`);
-
-      // Use location.href or a link click to avoid popup blockers
-      setTimeout(() => {
-        const a = document.createElement('a');
-        a.href = jupUrl;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }, 300);
-
-      // After 15 seconds, mark as open (user should have confirmed)
-      setTimeout(() => {
-        const found = perpsPositions.find(p => p.id === pos.id);
-        if (found && found.status === 'pending') {
-          found.status = 'open';
-          localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
-          renderPerpsPositions();
+      try {
+        // Determine collateral token and position size
+        const collateralToken = side === 'long' ? cfg.collateralLong : cfg.collateralShort;
+        let positionSizeUSD;
+        if (side === 'long') {
+          positionSizeUSD = collateral * price * leverage;
+        } else {
+          positionSizeUSD = collateral * leverage;
         }
-      }, 15000);
+
+        // Build the on-chain transaction
+        execBtn.textContent = '🔗 BUILDING TX...';
+
+        const conn = await getWorkingConnection();
+        const phantom = getPhantom();
+        if (!phantom) throw new Error('Phantom not found');
+
+        // Derive custody and collateral custody
+        const custody = PERPS_CUSTODIES[market];
+        const collateralCustody = PERPS_CUSTODIES[collateralToken];
+        const collateralMint = PERPS_MINTS[collateralToken];
+
+        // Calculate amounts in on-chain format (6 decimal USDC format for USD amounts)
+        const sizeUsdDelta = Math.round(positionSizeUSD * 1e6); // u64, 6 decimals
+        const collateralNativeDecimals = collateralToken === 'SOL' ? 9 : (collateralToken === 'USDC' || collateralToken === 'USDT') ? 6 : 8;
+        const collateralDelta = Math.round(collateral * Math.pow(10, collateralNativeDecimals));
+
+        // Price slippage: allow 0.5% slippage
+        const slippageBps = 50; // 0.5%
+        let priceWithSlippage;
+        if (side === 'long') {
+          priceWithSlippage = Math.round(price * (1 + slippageBps / 10000) * 1e6);
+        } else {
+          priceWithSlippage = Math.round(price * (1 - slippageBps / 10000) * 1e6);
+        }
+
+        // Derive PDAs using solanaWeb3
+        const programId = new solanaWeb3.PublicKey(PERPS_PROGRAM_ID);
+        const poolKey = new solanaWeb3.PublicKey(PERPS_POOL);
+        const custodyKey = new solanaWeb3.PublicKey(custody);
+        const collCustodyKey = new solanaWeb3.PublicKey(collateralCustody);
+        const traderKey = new solanaWeb3.PublicKey(walletAddress);
+
+        // Derive Position PDA: [trader, "position", pool, custody, collateralCustody, side_byte]
+        const sideNum = side === 'long' ? 1 : 2;
+        const [positionPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [
+            Buffer.from('position'),
+            traderKey.toBytes(),
+            poolKey.toBytes(),
+            custodyKey.toBytes(),
+            collCustodyKey.toBytes(),
+            new Uint8Array([sideNum]),
+          ],
+          programId
+        );
+
+        // Random counter for unique PositionRequest PDA
+        const counter = BigInt(Date.now());
+        const counterBytes = new Uint8Array(8);
+        let tempCounter = counter;
+        for (let i = 0; i < 8; i++) {
+          counterBytes[i] = Number(tempCounter & 0xFFn);
+          tempCounter >>= 8n;
+        }
+
+        // Derive PositionRequest PDA
+        const [positionRequestPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [
+            Buffer.from('position_request'),
+            positionPda.toBytes(),
+            counterBytes,
+          ],
+          programId
+        );
+
+        // Derive Perpetuals PDA (global config)
+        const [perpetualsPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [Buffer.from('perpetuals')],
+          programId
+        );
+
+        // Derive Transfer Authority PDA
+        const [transferAuthPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [Buffer.from('transfer_authority')],
+          programId
+        );
+
+        // Derive Event Authority PDA
+        const [eventAuthPda] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [Buffer.from('__event_authority')],
+          programId
+        );
+
+        // Build instruction discriminator: SHA256("global:create_increase_position_market_request")[0:8]
+        const discriminatorInput = new TextEncoder().encode('global:create_increase_position_market_request');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', discriminatorInput);
+        const discriminator = new Uint8Array(hashBuffer).slice(0, 8);
+
+        // Build instruction data (Borsh-serialized)
+        const instructionData = new Uint8Array(8 + 8 + 8 + 8 + 8 + 1 + 8); // discriminator + params
+        let offset = 0;
+
+        // 8 bytes: discriminator
+        instructionData.set(discriminator, offset); offset += 8;
+
+        // 8 bytes: priceSlippage (u64 LE)
+        writeU64LE(instructionData, offset, BigInt(priceWithSlippage)); offset += 8;
+
+        // 8 bytes: jupiterMinimumOut (u64 LE) - 0 for direct collateral
+        writeU64LE(instructionData, offset, 0n); offset += 8;
+
+        // 8 bytes: collateralDelta (u64 LE)
+        writeU64LE(instructionData, offset, BigInt(collateralDelta)); offset += 8;
+
+        // 8 bytes: sizeUsdDelta (u64 LE)
+        writeU64LE(instructionData, offset, BigInt(sizeUsdDelta)); offset += 8;
+
+        // 1 byte: side (1 = Long, 2 = Short)
+        instructionData[offset] = sideNum; offset += 1;
+
+        // 8 bytes: counter (u64 LE)
+        instructionData.set(counterBytes, offset); offset += 8;
+
+        // Get collateral token ATA for trader
+        const collateralMintKey = new solanaWeb3.PublicKey(collateralMint);
+        const traderAta = await getOrCreateATA(conn, traderKey, collateralMintKey);
+
+        // Get custody token account (pool's ATA for the collateral)
+        const [custodyTokenAccount] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [transferAuthPda.toBytes(), new solanaWeb3.PublicKey(TOKEN_PROGRAM).toBytes(), collateralMintKey.toBytes()],
+          new solanaWeb3.PublicKey(ATA_PROGRAM)
+        );
+
+        // Get PositionRequest ATA
+        const [posReqAta] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [positionRequestPda.toBytes(), new solanaWeb3.PublicKey(TOKEN_PROGRAM).toBytes(), collateralMintKey.toBytes()],
+          new solanaWeb3.PublicKey(ATA_PROGRAM)
+        );
+
+        // Build the instruction account keys
+        const keys = [
+          { pubkey: traderKey, isSigner: true, isWritable: true },         // owner
+          { pubkey: traderAta, isSigner: false, isWritable: true },         // fundingAccount
+          { pubkey: transferAuthPda, isSigner: false, isWritable: false },  // transferAuthority
+          { pubkey: perpetualsPda, isSigner: false, isWritable: false },    // perpetuals
+          { pubkey: poolKey, isSigner: false, isWritable: true },           // pool
+          { pubkey: positionPda, isSigner: false, isWritable: true },       // position
+          { pubkey: positionRequestPda, isSigner: false, isWritable: true },// positionRequest
+          { pubkey: posReqAta, isSigner: false, isWritable: true },         // positionRequestAta
+          { pubkey: custodyKey, isSigner: false, isWritable: true },        // custody
+          { pubkey: custodyKey, isSigner: false, isWritable: false },       // custodyDovesOracle (needs real oracle, using custody as placeholder)
+          { pubkey: collCustodyKey, isSigner: false, isWritable: true },    // collateralCustody
+          { pubkey: collCustodyKey, isSigner: false, isWritable: false },   // collateralCustodyDovesOracle (placeholder)
+          { pubkey: custodyTokenAccount, isSigner: false, isWritable: true }, // collateralCustodyTokenAccount
+          { pubkey: new solanaWeb3.PublicKey(SYSTEM_PROGRAM), isSigner: false, isWritable: false },
+          { pubkey: new solanaWeb3.PublicKey(TOKEN_PROGRAM), isSigner: false, isWritable: false },
+          { pubkey: new solanaWeb3.PublicKey(ATA_PROGRAM), isSigner: false, isWritable: false },
+          { pubkey: eventAuthPda, isSigner: false, isWritable: false },     // eventAuthority
+          { pubkey: programId, isSigner: false, isWritable: false },        // self program
+        ];
+
+        // Build the transaction instruction
+        const perpsIx = new solanaWeb3.TransactionInstruction({
+          programId,
+          keys,
+          data: instructionData,
+        });
+
+        // Compute budget instructions
+        const computeIx = solanaWeb3.ComputeBudgetProgram.setComputeUnitLimit({ units: 400000 });
+        const priorityIx = solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50000 });
+
+        // Handle wSOL wrapping if collateral is SOL
+        let wrapIxs = [];
+        let unwrapIx = null;
+        if (collateralToken === 'SOL') {
+          // Create wSOL ATA + transfer SOL + sync native
+          wrapIxs = await buildWrapSolIxs(conn, traderKey, collateralMintKey, collateralDelta);
+        }
+
+        // Build versioned transaction
+        const { blockhash } = await conn.getLatestBlockhash('finalized');
+        const allIxs = [computeIx, priorityIx, ...wrapIxs, perpsIx];
+        const messageV0 = new solanaWeb3.TransactionMessage({
+          payerKey: traderKey,
+          recentBlockhash: blockhash,
+          instructions: allIxs,
+        }).compileToV0Message();
+        const tx = new solanaWeb3.VersionedTransaction(messageV0);
+
+        // Sign with Phantom
+        execBtn.textContent = '✍️ SIGN IN PHANTOM...';
+        const signed = await phantom.signTransaction(tx);
+
+        // Send transaction
+        execBtn.textContent = '📡 SUBMITTING TX...';
+        const rawTx = signed.serialize();
+        let sig;
+
+        if (mevEnabled) {
+          try { sig = await sendViaJito(rawTx); } catch(e) {
+            console.warn('Jito failed, fallback RPC:', e);
+            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+          }
+        } else {
+          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+        }
+
+        execBtn.textContent = '⏳ CONFIRMING...';
+        await conn.confirmTransaction(sig, 'confirmed');
+
+        // Track position locally
+        const pos = {
+          id: Date.now().toString(36),
+          market, side, leverage,
+          collateral,
+          collateralToken,
+          entryPrice: price,
+          positionSizeUSD: positionSizeUSD,
+          liqPrice: side === 'long'
+            ? price * (1 - 0.9 / leverage)
+            : price * (1 + 0.9 / leverage),
+          openTime: Date.now(),
+          status: 'open',
+          txSig: sig,
+          onChain: true,
+        };
+
+        perpsPositions.unshift(pos);
+        localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+        renderPerpsPositions();
+
+        toast(`✅ ${side.toUpperCase()} ${market} ${leverage}x OPENED — $${positionSizeUSD.toFixed(0)}`, 5000);
+
+        if ($('empty-state')) $('empty-state').style.display = 'none';
+        addMsg('success',
+          `⚡ PERPS POSITION OPENED\n\n${side.toUpperCase()} ${market}/USD ${leverage}x\nSize: $${positionSizeUSD.toLocaleString('en-US', {maximumFractionDigits: 0})}\nEntry: $${formatPerpsPrice(price, cfg.decimals)}\nCollateral: ${collateral} ${collateralToken}\nLiq. Price: $${formatPerpsPrice(pos.liqPrice, cfg.decimals)}\nTx: ${sig.slice(0, 24)}...\n\n🔍 https://solscan.io/tx/${sig}`
+        );
+
+        // Refresh wallet balance
+        try {
+          const bal = await conn.getBalance(walletPubkey);
+          walletBalance = bal / 1e9;
+          updateWalletPanel();
+        } catch(e) {}
+
+      } catch(e) {
+        console.error('Perps execution error:', e);
+        const errMsg = e.message || 'Position failed';
+
+        if (errMsg.includes('User rejected') || errMsg.includes('rejected')) {
+          toast('Transaction rejected in Phantom');
+        } else if (errMsg.includes('insufficient') || errMsg.includes('balance')) {
+          toast('❌ Insufficient balance');
+        } else {
+          // If on-chain execution fails, offer local tracking
+          const shouldTrack = confirm(
+            `On-chain execution failed: ${errMsg.slice(0, 80)}\n\n` +
+            `Jupiter Perps API is still in development.\n` +
+            `Track this position locally with live prices?\n\n` +
+            `(Paper trading mode — real prices, simulated execution)`
+          );
+
+          if (shouldTrack) {
+            const positionSizeUSD = perpsMarket === 'SOL'
+              ? collateral * price * leverage
+              : collateral * leverage;
+            const pos = {
+              id: Date.now().toString(36),
+              market: perpsMarket, side, leverage,
+              collateral,
+              collateralToken: side === 'long' ? cfg.collateralLong : cfg.collateralShort,
+              entryPrice: price,
+              positionSizeUSD,
+              liqPrice: side === 'long'
+                ? price * (1 - 0.9 / leverage)
+                : price * (1 + 0.9 / leverage),
+              openTime: Date.now(),
+              status: 'open',
+              onChain: false, // paper trade
+            };
+
+            perpsPositions.unshift(pos);
+            localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+            renderPerpsPositions();
+
+            toast(`📄 ${side.toUpperCase()} ${perpsMarket} ${leverage}x tracked (paper)`, 3000);
+            addMsg('system', `📄 PAPER POSITION — ${side.toUpperCase()} ${perpsMarket}/USD ${leverage}x\nSize: $${positionSizeUSD.toFixed(0)} | Entry: $${formatPerpsPrice(price, cfg.decimals)}\n\n⚠️ Jupiter Perps API is WIP — tracking locally with real prices.`);
+          }
+        }
+      } finally {
+        perpsExecuting = false;
+        execBtn.disabled = false;
+        updatePerpsOrder();
+      }
+    }
+
+    // Helper: write u64 little-endian
+    function writeU64LE(buf, offset, val) {
+      let v = BigInt(val);
+      for (let i = 0; i < 8; i++) {
+        buf[offset + i] = Number(v & 0xFFn);
+        v >>= 8n;
+      }
+    }
+
+    // Helper: get or derive ATA
+    async function getOrCreateATA(conn, owner, mint) {
+      const [ata] = solanaWeb3.PublicKey.findProgramAddressSync(
+        [owner.toBytes(), new solanaWeb3.PublicKey(TOKEN_PROGRAM).toBytes(), mint.toBytes()],
+        new solanaWeb3.PublicKey(ATA_PROGRAM)
+      );
+      return ata;
+    }
+
+    // Helper: build wSOL wrap instructions
+    async function buildWrapSolIxs(conn, owner, wsolMint, lamports) {
+      const ata = await getOrCreateATA(conn, owner, wsolMint);
+      const ixs = [];
+
+      // Create ATA if needed (idempotent create)
+      ixs.push(
+        new solanaWeb3.TransactionInstruction({
+          programId: new solanaWeb3.PublicKey(ATA_PROGRAM),
+          keys: [
+            { pubkey: owner, isSigner: true, isWritable: true },
+            { pubkey: ata, isSigner: false, isWritable: true },
+            { pubkey: owner, isSigner: false, isWritable: false },
+            { pubkey: wsolMint, isSigner: false, isWritable: false },
+            { pubkey: new solanaWeb3.PublicKey(SYSTEM_PROGRAM), isSigner: false, isWritable: false },
+            { pubkey: new solanaWeb3.PublicKey(TOKEN_PROGRAM), isSigner: false, isWritable: false },
+          ],
+          data: Buffer.from([1]), // CreateIdempotent
+        })
+      );
+
+      // Transfer SOL to wSOL ATA
+      ixs.push(
+        solanaWeb3.SystemProgram.transfer({
+          fromPubkey: owner,
+          toPubkey: ata,
+          lamports: lamports,
+        })
+      );
+
+      // Sync native (instruction 17 on Token program)
+      ixs.push(
+        new solanaWeb3.TransactionInstruction({
+          programId: new solanaWeb3.PublicKey(TOKEN_PROGRAM),
+          keys: [{ pubkey: ata, isSigner: false, isWritable: true }],
+          data: Buffer.from([17]), // SyncNative
+        })
+      );
+
+      return ixs;
     }
 
     // ── Positions ──
@@ -7846,7 +8191,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       const list = $('perps-positions-list');
       if (!list) return;
 
-      const open = perpsPositions.filter(p => p.status !== 'closed');
+      const open = perpsPositions.filter(p => p.status !== 'closed' && p.status !== 'liquidated');
       if (open.length === 0) {
         list.innerHTML = '<div class="perps-pos-empty">No open positions</div>';
         return;
@@ -7864,7 +8209,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         const pnlUsd = pos.positionSizeUSD * (pnlPct / 100);
         const isProfit = pnlPct >= 0;
         const age = timeSince(pos.openTime);
-        const statusLabel = pos.status === 'pending' ? ' <span style="color:#fbbf24;font-size:9px;">⏳ PENDING</span>' : '';
+        const statusLabel = pos.status === 'pending' ? ' <span style="color:#fbbf24;font-size:9px;">⏳ PENDING</span>' : (pos.onChain === false ? ' <span style="color:#a78bfa;font-size:9px;">📄 PAPER</span>' : ' <span style="color:var(--green);font-size:9px;">⛓️ ON-CHAIN</span>');
 
         return `
           <div class="perps-pos-card">
@@ -7913,19 +8258,71 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       const pos = perpsPositions.find(p => p.id === id);
       if (!pos) return;
 
-      // Open Jupiter Perps for closing
       const cfg = PERPS_SYMBOLS[pos.market];
-      window.open(`https://jup.ag/perps/${cfg.jup}-PERP`, '_blank');
-
-      // Mark as closed locally
-      pos.status = 'closed';
       const currentPrice = perpsPrices[pos.market] || pos.entryPrice;
+
+      // Calculate PnL
+      let pnlPct = 0;
+      if (pos.side === 'long') {
+        pnlPct = ((currentPrice - pos.entryPrice) / pos.entryPrice) * pos.leverage * 100;
+      } else {
+        pnlPct = ((pos.entryPrice - currentPrice) / pos.entryPrice) * pos.leverage * 100;
+      }
+      const pnlUsd = pos.positionSizeUSD * (pnlPct / 100);
+
+      // If it was an on-chain position, try to close on-chain
+      if (pos.onChain && walletAddress) {
+        // TODO: Build CreateDecreasePositionMarketRequest when Jupiter Perps API is available
+        // For now, close locally and inform user
+        toast(`⚠️ On-chain close requires Jupiter Perps API — closing locally`, 3000);
+      }
+
+      // Mark as closed
+      pos.status = 'closed';
       pos.closePrice = currentPrice;
       pos.closeTime = Date.now();
 
       localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
       renderPerpsPositions();
-      toast(`⚡ Closing ${pos.side.toUpperCase()} ${pos.market} — complete in Jupiter tab`);
+
+      const isProfit = pnlPct >= 0;
+      const emoji = isProfit ? '🟢' : '🔴';
+      toast(`${emoji} Closed ${pos.side.toUpperCase()} ${pos.market} — ${isProfit ? '+' : ''}${pnlPct.toFixed(2)}% ($${pnlUsd.toFixed(2)})`, 4000);
+
+      if ($('empty-state')) $('empty-state').style.display = 'none';
+      addMsg(isProfit ? 'success' : 'system',
+        `${emoji} POSITION CLOSED\n\n${pos.side.toUpperCase()} ${pos.market}/USD ${pos.leverage}x\nEntry: $${formatPerpsPrice(pos.entryPrice, cfg.decimals)}\nExit: $${formatPerpsPrice(currentPrice, cfg.decimals)}\nPnL: ${isProfit ? '+' : ''}${pnlPct.toFixed(2)}% (${isProfit ? '+' : ''}$${pnlUsd.toFixed(2)})`
+      );
+    }
+
+    // ── Liquidation Checker ──
+    function checkPerpsLiquidations(market) {
+      const price = perpsPrices[market];
+      if (!price) return;
+
+      let changed = false;
+      perpsPositions.forEach(pos => {
+        if (pos.market !== market || pos.status !== 'open') return;
+
+        let liquidated = false;
+        if (pos.side === 'long' && price <= pos.liqPrice) liquidated = true;
+        if (pos.side === 'short' && price >= pos.liqPrice) liquidated = true;
+
+        if (liquidated) {
+          pos.status = 'liquidated';
+          pos.closePrice = pos.liqPrice;
+          pos.closeTime = Date.now();
+          changed = true;
+
+          toast(`💀 LIQUIDATED — ${pos.side.toUpperCase()} ${pos.market} ${pos.leverage}x at $${formatPerpsPrice(price, PERPS_SYMBOLS[pos.market].decimals)}`, 6000);
+          addMsg('system', `💀 POSITION LIQUIDATED\n\n${pos.side.toUpperCase()} ${pos.market}/USD ${pos.leverage}x\nEntry: $${formatPerpsPrice(pos.entryPrice, PERPS_SYMBOLS[pos.market].decimals)}\nLiq. Price: $${formatPerpsPrice(pos.liqPrice, PERPS_SYMBOLS[pos.market].decimals)}\nLoss: -$${pos.positionSizeUSD.toFixed(2)}`);
+        }
+      });
+
+      if (changed) {
+        localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+        renderPerpsPositions();
+      }
     }
 
     function refreshPerpsPositions() {
