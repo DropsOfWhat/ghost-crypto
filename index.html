@@ -8038,9 +8038,20 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         }
 
         execBtn.textContent = '⏳ CONFIRMING...';
-        await conn.confirmTransaction(sig, 'confirmed');
+        
+        // Confirm with timeout (same pattern as sniper)
+        const confirmPromise = conn.confirmTransaction(sig, 'confirmed');
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('confirmation timeout')), 60000)
+        );
+        
+        try {
+          await Promise.race([confirmPromise, timeoutPromise]);
+        } catch(confirmErr) {
+          throw new Error(`Tx confirmation failed: ${confirmErr.message}`);
+        }
 
-        // Track position locally
+        // ✅ Transaction confirmed on-chain — add to positions
         const pos = {
           id: Date.now().toString(36),
           market, side, leverage,
@@ -8065,7 +8076,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
         if ($('empty-state')) $('empty-state').style.display = 'none';
         addMsg('success',
-          `⚡ PERPS POSITION OPENED\n\n${side.toUpperCase()} ${market}/USD ${leverage}x\nSize: $${positionSizeUSD.toLocaleString('en-US', {maximumFractionDigits: 0})}\nEntry: $${formatPerpsPrice(price, cfg.decimals)}\nCollateral: ${collateral} ${collateralToken}\nLiq. Price: $${formatPerpsPrice(pos.liqPrice, cfg.decimals)}\nTx: ${sig.slice(0, 24)}...\n\n🔍 https://solscan.io/tx/${sig}`
+          `⚡ PERPS POSITION OPENED ✅\n\n${side.toUpperCase()} ${market}/USD ${leverage}x\nSize: $${positionSizeUSD.toLocaleString('en-US', {maximumFractionDigits: 0})}\nEntry: $${formatPerpsPrice(price, cfg.decimals)}\nCollateral: ${collateral} ${collateralToken}\nLiq. Price: $${formatPerpsPrice(pos.liqPrice, cfg.decimals)}\nTx: ${sig.slice(0, 24)}...\n\n🔍 https://solscan.io/tx/${sig}`
         );
 
         // Refresh wallet balance
@@ -8079,45 +8090,19 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         console.error('Perps execution error:', e);
         const errMsg = e.message || 'Position failed';
 
+        // Clear error messages
         if (errMsg.includes('User rejected') || errMsg.includes('rejected')) {
-          toast('Transaction rejected in Phantom');
+          toast('❌ Rejected in Phantom — try again', 5000);
+          addMsg('system', '❌ Transaction rejected by wallet. Position NOT opened.');
         } else if (errMsg.includes('insufficient') || errMsg.includes('balance')) {
-          toast('❌ Insufficient balance');
+          toast('❌ Insufficient balance', 5000);
+          addMsg('system', '❌ You need more SOL/USDC for collateral + gas fees');
+        } else if (errMsg.includes('timeout') || errMsg.includes('confirmation')) {
+          toast('⏱️ Confirmation timeout — check Solscan', 5000);
+          addMsg('system', `⏱️ Transaction took too long to confirm. The position may still open — check Solscan. (Tx: pending...)`);
         } else {
-          // If on-chain execution fails, offer local tracking
-          const shouldTrack = confirm(
-            `On-chain execution failed: ${errMsg.slice(0, 80)}\n\n` +
-            `Jupiter Perps API is still in development.\n` +
-            `Track this position locally with live prices?\n\n` +
-            `(Paper trading mode — real prices, simulated execution)`
-          );
-
-          if (shouldTrack) {
-            const positionSizeUSD = perpsMarket === 'SOL'
-              ? collateral * price * leverage
-              : collateral * leverage;
-            const pos = {
-              id: Date.now().toString(36),
-              market: perpsMarket, side, leverage,
-              collateral,
-              collateralToken: side === 'long' ? cfg.collateralLong : cfg.collateralShort,
-              entryPrice: price,
-              positionSizeUSD,
-              liqPrice: side === 'long'
-                ? price * (1 - 0.9 / leverage)
-                : price * (1 + 0.9 / leverage),
-              openTime: Date.now(),
-              status: 'open',
-              onChain: false, // paper trade
-            };
-
-            perpsPositions.unshift(pos);
-            localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
-            renderPerpsPositions();
-
-            toast(`📄 ${side.toUpperCase()} ${perpsMarket} ${leverage}x tracked (paper)`, 3000);
-            addMsg('system', `📄 PAPER POSITION — ${side.toUpperCase()} ${perpsMarket}/USD ${leverage}x\nSize: $${positionSizeUSD.toFixed(0)} | Entry: $${formatPerpsPrice(price, cfg.decimals)}\n\n⚠️ Jupiter Perps API is WIP — tracking locally with real prices.`);
-          }
+          toast(`❌ ${errMsg.slice(0, 50)}`, 5000);
+          addMsg('system', `❌ Position failed: ${errMsg}\n\n💡 Make sure:\n• Phantom approved the request\n• Your internet is stable\n• Buffer size is enough for gas`);
         }
       } finally {
         perpsExecuting = false;
