@@ -7780,8 +7780,10 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       }
 
       // Check if Phantom is connected
-      if (!userPublicKey) {
-        toast('Connect Phantom wallet first'); return;
+      if (!walletAddress) {
+        toast('Connect Phantom wallet first');
+        connectWallet();
+        return;
       }
 
       const side = perpsSide;
@@ -7795,7 +7797,6 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
       // Open Jupiter Perps with correct market pre-selected
       const jupUrl = `https://jup.ag/perps/${cfg.jup}-PERP`;
-      window.open(jupUrl, '_blank');
 
       // Track position locally
       const pos = {
@@ -7816,9 +7817,20 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
       renderPerpsPositions();
 
-      toast(`⚡ Opening ${side.toUpperCase()} ${market} — complete in Jupiter Perps tab`);
+      toast(`⚡ Opening ${side.toUpperCase()} ${market} ${leverage}x — redirecting to Jupiter Perps...`);
 
-      // After 10 seconds, mark as open (user should have confirmed)
+      // Use location.href or a link click to avoid popup blockers
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = jupUrl;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, 300);
+
+      // After 15 seconds, mark as open (user should have confirmed)
       setTimeout(() => {
         const found = perpsPositions.find(p => p.id === pos.id);
         if (found && found.status === 'pending') {
@@ -7826,7 +7838,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
           localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
           renderPerpsPositions();
         }
-      }, 12000);
+      }, 15000);
     }
 
     // ── Positions ──
