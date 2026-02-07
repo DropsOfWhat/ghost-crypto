@@ -2970,7 +2970,8 @@
     }
 
     let currentModel = localStorage.getItem('ghost-model') || 'claude-sonnet-4-20250514';
-    let apiKey = localStorage.getItem('ghost-claude-key') || '';
+    let apiKey = localStorage.getItem('ghost-claude-key') || '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';
+    if (!localStorage.getItem('ghost-claude-key')) localStorage.setItem('ghost-claude-key', apiKey);
     let isGenerating = false;
     let chatMessages = [];
     let walletPubkey = null;
@@ -3989,6 +3990,7 @@
       if (currentMode && currentMode !== mode) modeHistory.push(currentMode);
       if (modeHistory.length > 10) modeHistory = modeHistory.slice(-10);
       currentMode = mode;
+      localStorage.setItem('ghost-mode', mode);
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
       $('p-trade').style.display = mode === 'trade' ? 'block' : 'none';
       $('p-launch').style.display = mode === 'launch' ? 'block' : 'none';
@@ -10418,7 +10420,6 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
     $('model-sel').value = currentModel;
     checkApiKey();
-    if (!apiKey) setTimeout(promptApiKey, 600);
     renderTradeHistory();
     updateWsBtn();
     updateSniperSwitch();
@@ -10429,6 +10430,12 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     // Restore chain state on init
     if (activeChain !== 'solana') {
       switchChain(activeChain);
+    }
+
+    // Restore last mode
+    const savedMode = localStorage.getItem('ghost-mode');
+    if (savedMode && savedMode !== 'chat') {
+      setTimeout(() => setMode(savedMode), 100);
     }
 
     // Restore last chat session
@@ -10477,9 +10484,6 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     if (alphaBotLog.length > 0) renderAlphaLog();
     // Render alpha bot wallet
     renderAlphaBotWallet();
-
-    // Auto-prompt for key if not set
-    if (!apiKey) setTimeout(promptApiKey, 500);
 
     // Save state before user leaves
     window.addEventListener('beforeunload', () => {
