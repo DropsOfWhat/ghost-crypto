@@ -9,8 +9,95 @@
     (function(){var t=localStorage.getItem('ghost-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
   </script>
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap');
+
+
+    /* ═══════ WALLET SELECTOR MODAL ═══════ */
+    .wallet-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center;
+    }
+    .wallet-modal-overlay.open { display: flex; }
+    .wallet-modal {
+      background: var(--bg-elevated); border: 1px solid var(--border-tertiary);
+      border-radius: 16px; padding: 24px; width: 340px; max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .wallet-modal-title {
+      font-size: 16px; font-weight: 700; color: var(--text-primary);
+      margin-bottom: 4px; text-align: center;
+    }
+    .wallet-modal-sub {
+      font-size: 11px; color: var(--text-muted); text-align: center;
+      margin-bottom: 16px;
+    }
+    .wallet-option {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+      border-radius: 12px; border: 1px solid var(--border-primary);
+      background: var(--bg-glass); cursor: pointer; margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .wallet-option:hover { border-color: var(--accent); background: var(--accent-dim); }
+    .wallet-option.detected { }
+    .wallet-option.not-detected { opacity: 0.45; }
+    .wallet-option .wo-icon { font-size: 28px; flex-shrink: 0; width: 36px; text-align: center; }
+    .wallet-option .wo-info { flex: 1; }
+    .wallet-option .wo-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .wallet-option .wo-status {
+      font-size: 10px; margin-top: 2px; font-weight: 600; letter-spacing: 0.04em;
+    }
+    .wallet-option .wo-status.ok { color: var(--green); }
+    .wallet-option .wo-status.missing { color: var(--text-faint); }
+    .wallet-option .wo-chains {
+      display: flex; gap: 4px; margin-top: 4px;
+    }
+    .wallet-option .wo-chain-tag {
+      font-size: 9px; padding: 1px 6px; border-radius: 4px;
+      font-weight: 600; letter-spacing: 0.03em;
+      background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border-primary);
+    }
+    .wallet-option .wo-chain-tag.active {
+      color: var(--accent); border-color: var(--accent); background: var(--accent-dim);
+    }
+    .wallet-modal-close {
+      display: block; width: 100%; margin-top: 8px; padding: 10px;
+      background: none; border: 1px solid var(--border-primary); border-radius: 10px;
+      color: var(--text-muted); font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .wallet-modal-close:hover { color: var(--text-secondary); border-color: var(--border-tertiary); }
+
+    /* ═══════ CHAIN SELECTOR ═══════ */
+    .chain-bar {
+      display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border-primary);
+      background: var(--bg-secondary); flex-shrink: 0;
+    }
+    .chain-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border-primary);
+      background: var(--bg-glass); color: var(--text-muted); cursor: pointer;
+      font-size: 11px; font-weight: 600; font-family: 'Fira Code', monospace;
+      transition: all 0.2s; letter-spacing: 0.03em;
+    }
+    .chain-btn:hover { border-color: var(--border-tertiary); color: var(--text-secondary); }
+    .chain-btn.active {
+      border-color: var(--chain-color, var(--accent)); color: var(--chain-color, var(--accent));
+      background: var(--chain-bg, var(--accent-dim)); box-shadow: 0 0 12px var(--chain-glow, rgba(34,209,238,0.1));
+    }
+    .chain-btn .chain-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;
+    }
+    .chain-btn[data-chain="solana"] { --chain-color: #9945FF; --chain-bg: rgba(153,69,255,0.1); --chain-glow: rgba(153,69,255,0.15); }
+    .chain-btn[data-chain="ethereum"] { --chain-color: #627EEA; --chain-bg: rgba(98,126,234,0.1); --chain-glow: rgba(98,126,234,0.15); }
+    .chain-btn[data-chain="base"] { --chain-color: #0052FF; --chain-bg: rgba(0,82,255,0.1); --chain-glow: rgba(0,82,255,0.15); }
+    .chain-btn[data-chain="bsc"] { --chain-color: #F0B90B; --chain-bg: rgba(240,185,11,0.1); --chain-glow: rgba(240,185,11,0.15); }
+    .evm-settings-row {
+      display: flex; flex-direction: column; gap: 6px; margin-top: 8px; padding: 10px 12px;
+      background: var(--bg-glass); border: 1px solid var(--border-primary); border-radius: 10px;
+    }
+    .evm-settings-row .fl { font-size: 10px; }
 
     /* ═══════ OBSIDIAN TERMINAL — DARK ═══════ */
     :root {
@@ -393,6 +480,13 @@
     }
     .sidebar.open { width: 340px; }
     .sidebar-inner { width: 340px; height: 100%; overflow-y: auto; padding-bottom: 20px; }
+    .sidebar-close-mobile {
+      display: none; position: absolute; top: 10px; right: 10px; z-index: 110;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--bg-elevated); border: 1px solid var(--border-primary);
+      color: var(--text-primary); font-size: 16px; cursor: pointer;
+      align-items: center; justify-content: center;
+    }
 
     .ph {
       padding: 16px 18px; font-size: 11px; font-weight: 700;
@@ -1049,6 +1143,142 @@
       .perps-topbar-right { gap: 10px; }
       .perps-topbar-stats { display: none; }
       .perps-pos-grid { grid-template-columns: repeat(3, 1fr); }
+
+      /* ═══ MOBILE: HEADER ═══ */
+      .header {
+        flex-wrap: wrap; height: auto; padding: 8px 10px; gap: 6px;
+      }
+      .logo-area { gap: 6px; }
+      .logo-text { font-size: 13px; }
+      .logo-sub { display: none; }
+      .logo-icon { font-size: 18px; }
+      .sbadge { font-size: 8px; padding: 3px 8px; }
+
+      /* ═══ MOBILE: MODE BAR — scrollable ═══ */
+      .mode-bar {
+        order: 10; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; gap: 0; flex-shrink: 0;
+      }
+      .mode-bar::-webkit-scrollbar { display: none; }
+      .mode-btn { padding: 5px 10px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+      .mode-btn .ic { font-size: 11px; }
+      .new-chat-btn { padding: 5px 8px; font-size: 12px; }
+
+      /* ═══ MOBILE: HEADER RIGHT ═══ */
+      .header-right { gap: 4px; }
+      .header-right .theme-toggle { width: 28px; height: 28px; font-size: 14px; }
+      .ws-toggle { padding: 4px 8px; font-size: 10px; }
+      #ws-label { font-size: 11px; }
+      .model-select { font-size: 10px; padding: 4px 6px; max-width: 80px; }
+      .wallet-btn { padding: 6px 10px; font-size: 10px; gap: 4px; }
+      #wbtn-t { max-width: 70px; overflow: hidden; text-overflow: ellipsis; }
+
+      /* ═══ MOBILE: CHAIN BAR ═══ */
+      .chain-bar { padding: 6px 8px; gap: 4px; }
+      .chain-btn { font-size: 10px; padding: 5px 10px; }
+
+      /* ═══ MOBILE: SIDEBAR — full width overlay ═══ */
+      .sidebar {
+        position: fixed !important; top: 0; left: 0; bottom: 0;
+        z-index: 100; width: 0 !important;
+        transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .sidebar.open { width: 100vw !important; }
+      .sidebar-inner { width: 100vw; position: relative; }
+      .sidebar-close-mobile { display: flex; }
+
+      /* ═══ MOBILE: SIDEBAR PANELS ═══ */
+      .ph { padding: 12px 14px; font-size: 10px; }
+      .ph-back { font-size: 16px; padding: 4px 8px; }
+      .lsection { padding: 10px; }
+      .lplatform { padding: 10px 12px; }
+      .lp-name { font-size: 13px; }
+      .lp-desc { font-size: 10px; }
+      .lp-tag { font-size: 9px; padding: 2px 6px; }
+      .lform { padding: 10px; }
+      .fg { margin-bottom: 10px; }
+      .fl { font-size: 9px; }
+      .fi { font-size: 13px; padding: 10px; }
+      .lbtn { font-size: 12px; padding: 12px; }
+      .lwarn { font-size: 9px; padding: 10px; }
+
+      /* ═══ MOBILE: TRADE PANEL ═══ */
+      .trade-pair { padding: 10px; }
+      .tp-name { font-size: 16px; }
+      .tp-price { font-size: 14px; }
+      .trade-info { padding: 8px; }
+      .ti-item { font-size: 10px; }
+      .trade-section { padding: 8px 10px; }
+      .trade-section .fl { font-size: 9px; }
+      .trade-form { padding: 10px; }
+      .tslippage-btn { font-size: 10px; padding: 4px 8px; }
+      .qbox { padding: 8px 10px; }
+      .qrow { font-size: 10px; }
+      .qval { font-size: 11px; }
+
+      /* ═══ MOBILE: WALLET PANEL ═══ */
+      .wp-avatar { width: 44px; height: 44px; font-size: 18px; }
+      .wp-balance { font-size: 22px; }
+      .wp-actions { gap: 6px; }
+      .wp-action-btn { padding: 8px 14px; font-size: 11px; }
+      .wp-holding { padding: 10px 12px; }
+      .wp-holding-icon { width: 32px; height: 32px; font-size: 14px; }
+      .wp-holding-name { font-size: 12px; }
+      .wp-holding-amt { font-size: 12px; }
+      .wp-holding-val { font-size: 10px; }
+
+      /* ═══ MOBILE: TOOLS CARDS ═══ */
+      .tcard { padding: 12px; margin: 6px 10px; }
+      .tcard-n { font-size: 13px; }
+      .tcard-d { font-size: 10px; }
+      .tcard-s { font-size: 8px; padding: 2px 6px; }
+
+      /* ═══ MOBILE: CHAT AREA ═══ */
+      .messages { padding: 12px 10px; }
+      .message { max-width: 95%; padding: 10px 12px; font-size: 13px; }
+      .mh { margin-bottom: 4px; }
+      .mr { font-size: 9px; }
+      .mt { font-size: 8px; }
+      .edesc { font-size: 12px; max-width: 100%; }
+      .etitle { font-size: 22px; }
+      .eicon { font-size: 36px; }
+      .empty-state { padding: 40px 16px; }
+
+      /* ═══ MOBILE: INPUT AREA ═══ */
+      .input-area { padding: 8px 10px; }
+      .input-box { padding: 8px 10px; border-radius: 12px; }
+      #input { font-size: 13px; }
+      .pc { font-size: 14px; }
+      .send-btn { width: 34px; height: 34px; font-size: 14px; }
+      .mode-toggle { padding: 4px 8px; font-size: 10px; }
+
+      /* ═══ MOBILE: FOOTER ═══ */
+      .footer { font-size: 8px; padding: 6px 10px; }
+
+      /* ═══ MOBILE: MODALS ═══ */
+      .wallet-modal { width: 95vw; padding: 18px; }
+      .wallet-option { padding: 12px; }
+      .wo-name { font-size: 14px; }
+      .wo-status { font-size: 10px; }
+      .wo-chains { gap: 4px; }
+      .wo-chain-tag { font-size: 8px; padding: 2px 5px; }
+
+      /* ═══ MOBILE: TOAST ═══ */
+      .toast { left: 10px; right: 10px; transform: none; max-width: none; font-size: 11px; }
+
+      /* ═══ MOBILE: PORTFOLIO ═══ */
+      .portfolio-header { padding: 10px 12px; }
+      .portfolio-total-val { font-size: 22px; }
+      .portfolio-holding { padding: 10px 12px; }
+
+      /* ═══ MOBILE: ALPHA BOT ═══ */
+      .alpha-wallet { padding: 10px 12px; }
+      .alpha-log { font-size: 9px; }
+
+      /* ═══ MOBILE: LAUNCH STEPS ═══ */
+      .launch-steps { padding: 10px; }
+      .launch-step { padding: 8px 10px; font-size: 11px; }
+      .step-num { width: 22px; height: 22px; font-size: 10px; }
     }
 
     /* ═══════ BUNDLE CHECKER ═══════ */
@@ -2018,7 +2248,7 @@
         </select>
         <button class="theme-toggle" id="key-btn" onclick="promptApiKey()" title="Set Claude API Key">🔑</button>
         <button id="wbtn" class="wallet-btn off" onclick="connectWallet()">
-          <span>👻</span> <span id="wbtn-t">Connect Phantom</span>
+          <span id="wbtn-icon">🔗</span> <span id="wbtn-t">Connect Wallet</span>
         </button>
       </div>
     </div>
@@ -2026,15 +2256,25 @@
     <div class="main-layout" id="main-layout">
       <div id="sidebar" class="sidebar">
         <div class="sidebar-inner">
+        <button class="sidebar-close-mobile" onclick="setMode('chat')" title="Close panel">✕</button>
+        <!-- CHAIN SELECTOR -->
+        <div class="chain-bar" id="chain-bar">
+          <button class="chain-btn active" data-chain="solana" onclick="switchChain('solana')"><span class="chain-dot"></span>SOL</button>
+          <button class="chain-btn" data-chain="ethereum" onclick="switchChain('ethereum')"><span class="chain-dot"></span>ETH</button>
+          <button class="chain-btn" data-chain="base" onclick="switchChain('base')"><span class="chain-dot"></span>BASE</button>
+          <button class="chain-btn" data-chain="bsc" onclick="switchChain('bsc')"><span class="chain-dot"></span>BNB</button>
+        </div>
+
+
 
           <!-- TRADE -->
           <div id="p-trade" style="display:none">
-            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⟡ SWAP TERMINAL <span style="font-size:10px;font-weight:400;color:var(--text-faint);">via Jupiter</span></div>
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>⟡ SWAP TERMINAL <span id="trade-dex-label" style="font-size:10px;font-weight:400;color:var(--text-faint);">via Jupiter</span></div>
 
             <div class="trade-section">
               <div class="fg">
                 <label class="fl">TOKEN ADDRESS</label>
-                <input type="text" id="tr-mint" class="fi" placeholder="Paste token mint address..." oninput="onMintInput(this.value)">
+                <input type="text" id="tr-mint" class="fi" placeholder="Paste token mint address..." oninput="onMintInput(this.value)" autocomplete="off">
               </div>
               <div id="tr-token-info" style="display:none;padding:10px 12px;background:var(--bg-glass);border:1px solid var(--border-primary);border-radius:10px;margin-bottom:12px;font-size:12px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -2075,9 +2315,32 @@
               </div>
 
               <button id="tr-buy-btn" class="trade-exec trade-buy" onclick="executeTrade('buy')" disabled>🟢 BUY TOKEN</button>
-              <button id="tr-sell-btn" class="trade-exec trade-sell" onclick="executeTrade('sell')" disabled>🔴 SELL TOKEN</button>
+              <div class="trade-amt-row" style="margin-bottom:6px;">
+                <button class="trade-preset" onclick="setSellPct(25)" id="sell-pct-25">25%</button>
+                <button class="trade-preset" onclick="setSellPct(50)" id="sell-pct-50">50%</button>
+                <button class="trade-preset" onclick="setSellPct(75)" id="sell-pct-75">75%</button>
+                <button class="trade-preset active" onclick="setSellPct(100)" id="sell-pct-100">100%</button>
+              </div>
+              <button id="tr-sell-btn" class="trade-exec trade-sell" onclick="executeTrade('sell')" disabled>🔴 SELL 100%</button>
 
-              <div class="lwarn" style="font-size:11px;">⚠️ Trades execute on-chain via Jupiter. You approve each transaction in Phantom. Always DYOR.</div>
+              <div class="lwarn" style="font-size:11px;">⚠️ Trades execute on-chain via your selected DEX. You approve each transaction in your wallet. Always DYOR.</div>
+
+              <div style="margin-top:10px;padding:10px 12px;background:var(--bg-glass);border:1px solid var(--border-primary);border-radius:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="$('sltp-body').style.display=$('sltp-body').style.display==='none'?'block':'none';$('sltp-arrow').textContent=$('sltp-body').style.display==='none'?'▸':'▾';">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--text-muted);">🎯 AUTO SL / TP</span>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <button class="mev-toggle" id="sltp-toggle" onclick="event.stopPropagation();toggleSltp();" style="transform:scale(0.8);"></button>
+                    <span id="sltp-arrow" style="color:var(--text-faint);font-size:10px;">▸</span>
+                  </div>
+                </div>
+                <div id="sltp-body" style="display:none;margin-top:8px;">
+                  <div style="display:flex;gap:8px;">
+                    <div class="fg" style="flex:1;"><label class="fl">STOP-LOSS %</label><input type="number" id="manual-sl" class="fi" value="30" min="5" max="80" step="5"></div>
+                    <div class="fg" style="flex:1;"><label class="fl">TAKE-PROFIT %</label><input type="number" id="manual-tp" class="fi" value="100" min="10" max="500" step="10"></div>
+                  </div>
+                  <div style="font-size:10px;color:var(--text-faint);margin-top:4px;">After buying, Ghost monitors price and auto-sells at SL/TP via Jupiter.</div>
+                </div>
+              </div>
             </div>
 
             <hr class="trade-divider">
@@ -2094,7 +2357,10 @@
 
             <div class="pos-header">
               <span>TRADE HISTORY</span>
-              <button onclick="clearTradeHistory()">Clear</button>
+              <div style="display:flex;gap:6px;">
+                <button onclick="exportTradesCsv()">📥 CSV</button>
+                <button onclick="clearTradeHistory()">Clear</button>
+              </div>
             </div>
             <div id="trade-history" class="trade-history">
               <div class="pos-empty" style="padding:16px;">No trades yet</div>
@@ -2105,26 +2371,30 @@
           <div id="p-launch" style="display:none">
             <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🚀 TOKEN LAUNCHER</div>
             <div class="launch-steps" id="launch-steps" style="display:none">
-              <div class="launch-step pending" id="step-1"><span class="step-num">1</span><span class="step-label">Upload metadata to IPFS</span><span class="step-status"></span></div>
-              <div class="launch-step pending" id="step-2"><span class="step-num">2</span><span class="step-label">Build transaction</span><span class="step-status"></span></div>
-              <div class="launch-step pending" id="step-3"><span class="step-num">3</span><span class="step-label">Sign with Phantom</span><span class="step-status"></span></div>
-              <div class="launch-step pending" id="step-4"><span class="step-num">4</span><span class="step-label">Submit to Solana</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-1"><span class="step-num">1</span><span class="step-label" id="step-1-label">Upload metadata to IPFS</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-2"><span class="step-num">2</span><span class="step-label" id="step-2-label">Build transaction</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-3"><span class="step-num">3</span><span class="step-label" id="step-3-label">Sign with wallet</span><span class="step-status"></span></div>
+              <div class="launch-step pending" id="step-4"><span class="step-num">4</span><span class="step-label" id="step-4-label">Submit to blockchain</span><span class="step-status"></span></div>
               <div class="launch-step pending" id="step-5"><span class="step-num">5</span><span class="step-label">Token is live!</span><span class="step-status"></span></div>
               <div class="launch-step pending" id="step-6" style="display:none"><span class="step-num">6</span><span class="step-label">Sniper buys</span><span class="step-status"></span></div>
             </div>
             <div id="launch-form-area">
-              <div class="lsection">
-                <div class="lplatform sel" data-p="pumpfun" onclick="selPlatform('pumpfun')">
+              <div class="lsection" id="launch-platforms">
+                <div class="lplatform sel sol-platform" data-p="pumpfun" onclick="selPlatform('pumpfun')">
                   <div class="lp-head"><span class="lp-name">🎰 Pump.fun</span><span class="lp-tag">SOL</span></div>
                   <div class="lp-desc">Fair launch, bonding curve, auto-LP</div>
                 </div>
-                <div class="lplatform" data-p="bonkfun" onclick="selPlatform('bonkfun')">
+                <div class="lplatform sol-platform" data-p="bonkfun" onclick="selPlatform('bonkfun')">
                   <div class="lp-head"><span class="lp-name">🐕 Bonk.fun</span><span class="lp-tag">SOL</span></div>
                   <div class="lp-desc">Bonk ecosystem launcher</div>
                 </div>
-                <div class="lplatform" data-p="bagsfm" onclick="selPlatform('bagsfm')">
+                <div class="lplatform sol-platform" data-p="bagsfm" onclick="selPlatform('bagsfm')">
                   <div class="lp-head"><span class="lp-name">💰 Bags.fm</span><span class="lp-tag">SOL</span></div>
                   <div class="lp-desc">Social token launcher</div>
+                </div>
+                <div class="lplatform bnb-platform" data-p="fourmeme" onclick="selPlatform('fourmeme')" style="display:none">
+                  <div class="lp-head"><span class="lp-name">🟡 Four.meme</span><span class="lp-tag" style="background:rgba(240,185,11,0.15);color:#F0B90B;">BNB</span></div>
+                  <div class="lp-desc">BSC memecoin launchpad — bonding curve, auto-LP to PancakeSwap</div>
                 </div>
               </div>
               <div class="lform">
@@ -2132,12 +2402,12 @@
                 <div class="fg"><label class="fl">TICKER *</label><input type="text" id="t-ticker" class="fi" placeholder="e.g. $GHOST" maxlength="10" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9$]/g,'')"></div>
                 <div class="fg"><label class="fl">DESCRIPTION</label><textarea id="t-desc" class="fi fi-ta" placeholder="What's your token about?"></textarea></div>
                 <div class="fg"><label class="fl">TOKEN IMAGE *</label><label class="file-upload" id="file-label">📁 Click to upload image (PNG, JPG, GIF)<input type="file" id="t-image" accept="image/*" onchange="handleImageUpload(event)"></label></div>
-                <div class="fg"><label class="fl">INITIAL BUY (SOL)</label><input type="number" id="t-buy" class="fi" placeholder="0 = no initial buy" step="0.01" min="0"></div>
+                <div class="fg"><label class="fl" id="launch-buy-label">INITIAL BUY (SOL)</label><input type="number" id="t-buy" class="fi" placeholder="0 = no initial buy" step="0.01" min="0"></div>
                 <div class="fg"><label class="fl">TWITTER (optional)</label><input type="text" id="t-twitter" class="fi" placeholder="https://x.com/yourtoken"></div>
                 <div class="fg"><label class="fl">TELEGRAM (optional)</label><input type="text" id="t-telegram" class="fi" placeholder="https://t.me/yourtoken"></div>
                 <div class="fg"><label class="fl">WEBSITE (optional)</label><input type="text" id="t-website" class="fi" placeholder="https://yourtoken.com"></div>
                 <button id="lbtn" class="lbtn dis" onclick="launchToken()">CONNECT WALLET TO LAUNCH</button>
-                <div class="lwarn">⚠️ This creates a real token on Solana. You need SOL for gas (~0.02 SOL). DYOR. Ghost is a tool — you are responsible for your actions.</div>
+                <div class="lwarn" id="launch-warning">⚠️ This creates a real token on Solana. You need SOL for gas (~0.02 SOL). DYOR. Ghost is a tool — you are responsible for your actions.</div>
               </div>
             </div>
           </div>
@@ -2145,10 +2415,10 @@
           <!-- TOOLS -->
           <div id="p-tools" style="display:none">
             <div class="ph">CRYPTO PLUGINS</div>
-            <div class="tcard" onclick="toolOpen('trade')"><div class="tcard-h"><span class="tcard-n">⟡ Jupiter Swap</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Buy & sell any Solana token via Jupiter aggregator</div></div>
+            <div class="tcard" onclick="toolOpen('trade')"><div class="tcard-h"><span class="tcard-n" id="swap-card-name">⟡ Jupiter Swap</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d" id="swap-card-desc">Buy & sell any Solana token via Jupiter aggregator</div></div>
             <div class="tcard" onclick="setMode('perps')"><div class="tcard-h"><span class="tcard-n">⚡ Leverage Trading</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">ACTIVE</span></div><div class="tcard-d">Trade SOL, BTC, ETH up to 250x — set up in Ghost, execute on Jupiter, track live</div></div>
-            <div class="tcard" onclick="toolOpen('launch')"><div class="tcard-h"><span class="tcard-n">🎰 Token Launcher</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Launch directly on pump.fun, bonk.fun, bags.fm</div></div>
-            <div class="tcard" onclick="toolOpen('wallet')"><div class="tcard-h"><span class="tcard-n">👻 Phantom Wallet</span><span class="tcard-s" id="ph-stat" style="background:var(--red-dim);color:var(--red);">DISCONNECTED</span></div><div class="tcard-d">Sign transactions, view balance, portfolio</div></div>
+            <div class="tcard" onclick="toolOpen('launch')"><div class="tcard-h"><span class="tcard-n">🎰 Token Launcher</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Launch on pump.fun (SOL), bonk.fun, bags.fm, or Four.meme (BNB)</div></div>
+            <div class="tcard" onclick="toolOpen('wallet')"><div class="tcard-h"><span class="tcard-n" id="wallet-card-name">🔗 Wallet</span><span class="tcard-s" id="ph-stat" style="background:var(--red-dim);color:var(--red);">DISCONNECTED</span></div><div class="tcard-d" id="wallet-card-desc">Connect Phantom, MetaMask, or Trust Wallet</div></div>
             <div class="tcard" onclick="setMode('sniper')"><div class="tcard-h"><span class="tcard-n">⚡ Sniper Bot</span><span class="tcard-s" id="sniper-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Auto-buy your token launches with multiple wallets</div></div>
             <div class="tcard" onclick="setMode('intel')"><div class="tcard-h"><span class="tcard-n">⬡ Token Intel</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Scan any token: holders, liquidity, rug risk score</div></div>
             <div class="tcard" onclick="setMode('portfolio')"><div class="tcard-h"><span class="tcard-n">◐ Portfolio</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Full portfolio dashboard with PnL tracking</div></div>
@@ -2165,7 +2435,7 @@
                 <div style="font-size:40px;margin-bottom:14px;">👻</div>
                 <div style="font-size:14px;margin-bottom:6px;color:var(--text);font-weight:600;">Not Connected</div>
                 <div style="font-size:12px;margin-bottom:20px;">Connect your Phantom wallet to view holdings</div>
-                <button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button>
+                <button class="wallet-btn off" onclick="connectWallet()">Connect Wallet</button>
               </div>
             </div>
           </div>
@@ -2387,11 +2657,12 @@
       </div>
 
       <div class="chat-area">
+        <div id="session-stats" style="display:none;padding:4px 14px;font-size:10px;font-family:'Fira Code',monospace;color:var(--text-faint);background:var(--bg-glass);border-bottom:1px solid var(--border-secondary);align-items:center;flex-shrink:0;gap:12px;"></div>
         <div id="messages" class="messages">
           <div class="empty-state" id="empty-state">
             <div class="eicon">◬</div>
             <div class="etitle">Ghost Crypto</div>
-            <div class="edesc">AI-powered crypto command center. Trade via Jupiter, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.</div>
+            <div class="edesc">AI-powered crypto command center. Multi-chain trading (Solana, Ethereum, Base, BNB Chain). Trade via Jupiter/OpenOcean, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.</div>
           </div>
         </div>
       </div>
@@ -2571,7 +2842,17 @@
       </div>
     </div>
 
-    <div class="footer" id="app-footer">Ghost Crypto v0.9 • <span class="g">Powered by Claude</span> • Swaps via Jupiter • Wallet via Phantom</div>
+    <div class="footer" id="app-footer">Ghost Crypto v0.9 • <span class="g">Powered by Claude</span> • Swaps via Jupiter • Wallet via Phantom • <span style="color:#9945FF;font-weight:600;">Solana</span></div>
+  </div>
+
+  <!-- Wallet Selector Modal -->
+  <div class="wallet-modal-overlay" id="wallet-modal" onclick="if(event.target===this)closeWalletModal()">
+    <div class="wallet-modal">
+      <div class="wallet-modal-title">Connect Wallet</div>
+      <div class="wallet-modal-sub" id="wm-subtitle">Choose a wallet to connect</div>
+      <div id="wm-options"></div>
+      <button class="wallet-modal-close" onclick="closeWalletModal()">Cancel</button>
+    </div>
   </div>
 
   <!-- Jupiter Trade Bridge Modal -->
@@ -2606,7 +2887,7 @@
     ];
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
-    let heliusKey = localStorage.getItem('ghost-helius-key') || '5372d46c-bd92-4783-ba13-f449062be6fe';
+    let heliusKey = localStorage.getItem('ghost-helius-key') || '';
 
     // Backup RPCs for avoiding 403 on public RPC
     const BACKUP_RPCS = [
@@ -2615,7 +2896,15 @@
       RPC_URL,
     ];
 
+    let _cachedConn = null;
+    let _cachedConnTime = 0;
+    const CONN_CACHE_TTL = 30000; // 30 seconds
+
     async function getWorkingConnection() {
+      // Return cached connection if still fresh
+      if (_cachedConn && Date.now() - _cachedConnTime < CONN_CACHE_TTL) {
+        return _cachedConn;
+      }
       const rpcs = heliusKey
         ? [`https://mainnet.helius-rpc.com/?api-key=${heliusKey}`, ...BACKUP_RPCS]
         : BACKUP_RPCS;
@@ -2623,6 +2912,8 @@
         try {
           const conn = new solanaWeb3.Connection(rpc);
           await conn.getBalance(new solanaWeb3.PublicKey('11111111111111111111111111111111'));
+          _cachedConn = conn;
+          _cachedConnTime = Date.now();
           return conn;
         } catch (e) { continue; }
       }
@@ -2650,7 +2941,946 @@
     let tradeHistory = JSON.parse(localStorage.getItem('ghost-trades') || '[]');
     let quoteTimer = null;
     let isTrading = false;
+    let sellPct = 100; // Sell percentage (25, 50, 75, 100)
+    let sltpEnabled = localStorage.getItem('ghost-sltp') === 'true';
+    let manualPositions = JSON.parse(localStorage.getItem('ghost-manual-positions') || '{}');
+    let manualSltpTimer = null;
     let webSearchEnabled = localStorage.getItem('ghost-websearch') === 'true';
+
+    // ═══════ MULTI-CHAIN CONFIG ═══════
+    const CHAINS = {
+      solana: {
+        name: 'Solana', symbol: 'SOL', decimals: 9, icon: '◎', color: '#9945FF',
+        explorer: 'https://solscan.io', explorerTx: 'https://solscan.io/tx/',
+        explorerAddr: 'https://solscan.io/account/',
+        nativeMint: 'So11111111111111111111111111111111111111112',
+        walletType: 'phantom', walletName: 'Phantom', walletIcon: '👻',
+        dexName: 'Jupiter', dexLabel: 'via Jupiter',
+        dexScreenerChain: 'solana', addressRegex: /^[1-9A-HJ-NP-Za-km-z]{32,50}$/,
+      },
+      ethereum: {
+        name: 'Ethereum', symbol: 'ETH', decimals: 18, icon: 'Ξ', color: '#627EEA',
+        chainId: 1, chainIdHex: '0x1',
+        explorer: 'https://etherscan.io', explorerTx: 'https://etherscan.io/tx/',
+        explorerAddr: 'https://etherscan.io/address/',
+        nativeMint: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        wrappedNative: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+        walletType: 'metamask', walletName: 'MetaMask', walletIcon: '🦊',
+        dexName: 'Uniswap', dexLabel: 'via OpenOcean',
+        dexScreenerChain: 'ethereum', addressRegex: /^0x[a-fA-F0-9]{40}$/,
+        rpcUrls: ['https://eth.llamarpc.com', 'https://rpc.ankr.com/eth', 'https://ethereum-rpc.publicnode.com'],
+        openOceanChain: 'eth',
+      },
+      base: {
+        name: 'Base', symbol: 'ETH', decimals: 18, icon: '🔵', color: '#0052FF',
+        chainId: 8453, chainIdHex: '0x2105',
+        explorer: 'https://basescan.org', explorerTx: 'https://basescan.org/tx/',
+        explorerAddr: 'https://basescan.org/address/',
+        nativeMint: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        wrappedNative: '0x4200000000000000000000000000000000000006',
+        walletType: 'metamask', walletName: 'MetaMask', walletIcon: '🦊',
+        dexName: 'Aerodrome', dexLabel: 'via OpenOcean',
+        dexScreenerChain: 'base', addressRegex: /^0x[a-fA-F0-9]{40}$/,
+        rpcUrls: ['https://mainnet.base.org', 'https://rpc.ankr.com/base', 'https://base-rpc.publicnode.com'],
+        openOceanChain: 'base',
+      },
+      bsc: {
+        name: 'BNB Chain', symbol: 'BNB', decimals: 18, icon: '⬡', color: '#F0B90B',
+        chainId: 56, chainIdHex: '0x38',
+        explorer: 'https://bscscan.com', explorerTx: 'https://bscscan.com/tx/',
+        explorerAddr: 'https://bscscan.com/address/',
+        nativeMint: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        wrappedNative: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+        walletType: 'metamask', walletName: 'MetaMask', walletIcon: '🦊',
+        dexName: 'PancakeSwap', dexLabel: 'via OpenOcean',
+        dexScreenerChain: 'bsc', addressRegex: /^0x[a-fA-F0-9]{40}$/,
+        rpcUrls: ['https://bsc-dataseed.binance.org', 'https://rpc.ankr.com/bsc', 'https://bsc-rpc.publicnode.com'],
+        openOceanChain: 'bsc',
+      },
+    };
+
+    let activeChain = localStorage.getItem('ghost-chain') || 'solana';
+    let evmProvider = null; // ethers.js provider for EVM chains
+    let evmSigner = null;   // ethers.js signer for EVM chains
+
+    function getChain() { return CHAINS[activeChain]; }
+    function isEVM() { return activeChain !== 'solana'; }
+
+    // ═══════ CHAIN SWITCHING ═══════
+    function switchChain(chain) {
+      if (chain === activeChain) return;
+      
+      // Disconnect current wallet
+      if (walletAddress) {
+        disconnectWallet();
+      }
+      
+      activeChain = chain;
+      localStorage.setItem('ghost-chain', chain);
+      
+      // Update chain selector UI
+      document.querySelectorAll('.chain-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.chain === chain);
+      });
+      
+      // Update wallet button
+      const cfg = getChain();
+      $('wbtn-icon').textContent = '🔗';
+      $('wbtn-t').textContent = 'Connect Wallet';
+      
+      // Update trade panel
+      if ($('trade-dex-label')) $('trade-dex-label').textContent = cfg.dexLabel;
+      
+      // Update tool cards
+      if ($('swap-card-name')) $('swap-card-name').textContent = '⟡ ' + cfg.dexName + ' Swap';
+      if ($('swap-card-desc')) $('swap-card-desc').textContent = 'Buy & sell any ' + cfg.name + ' token via ' + cfg.dexName;
+      if ($('wallet-card-name')) $('wallet-card-name').textContent = '🔗 Wallet';
+      if ($('wallet-card-desc')) $('wallet-card-desc').textContent = 'Connect & manage wallet on ' + cfg.name;
+      
+      // Update trade panel labels
+      const amtLabel = document.querySelector('#p-trade .fl');
+      
+      // Show/hide Solana-only features
+      const isSol = chain === 'solana';
+      const mevRow = document.querySelector('.mev-row');
+      if (mevRow) mevRow.style.display = isSol ? 'flex' : 'none';
+      const sltpPanel = document.querySelector('#p-trade [onclick*="sltp-body"]')?.closest('div[style*="margin-top:10px"]');
+      if (sltpPanel) sltpPanel.style.display = isSol ? 'block' : 'none';
+      
+      // Show/hide chain-specific modes
+      const showLaunch = chain === 'solana' || chain === 'bsc';
+      ['sniper', 'alpha', 'bundle', 'perps'].forEach(mode => {
+        const card = document.querySelector(`.tcard[onclick*="${mode}"]`);
+        if (card) card.style.display = isSol ? '' : 'none';
+      });
+      // Launch visible on SOL + BNB
+      const launchCard = document.querySelector('.tcard[onclick*="launch"]');
+      if (launchCard) launchCard.style.display = showLaunch ? '' : 'none';
+      // Launch mode button in navbar
+      const launchModeBtn = document.querySelector('.mode-btn[data-mode="launch"]');
+      if (launchModeBtn) launchModeBtn.style.display = showLaunch ? '' : 'none';
+      
+      // Update launch platforms visibility
+      updateLaunchPlatforms();
+      
+      // Update amount label 
+      const amtLabels = document.querySelectorAll('#p-trade .fl');
+      amtLabels.forEach(l => {
+        if (l.textContent.includes('AMOUNT')) l.textContent = 'AMOUNT (' + cfg.symbol + ')';
+      });
+      
+      // Update trade warnings
+      const warns = document.querySelectorAll('#p-trade .lwarn');
+      warns.forEach(w => {
+        if (w.textContent.includes('Trades execute')) {
+          w.textContent = '⚠️ Trades execute on-chain via ' + cfg.dexName + '. You approve each transaction in your wallet. Always DYOR.';
+        }
+      });
+      
+      // Update preset amounts for the chain
+      updateTradePresets();
+      
+      // Reset trade state
+      $('tr-mint').placeholder = isEVM() ? 'Paste 0x token contract address...' : 'Paste token mint address...';
+      $('tr-mint').value = '';
+      $('tr-token-info').style.display = 'none';
+      $('tr-quote').style.display = 'none';
+      currentQuote = null;
+      $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
+      
+      // Update footer
+      const footer = $('app-footer');
+      if (footer) {
+        footer.innerHTML = `Ghost Crypto v0.9 • <span class="g">Powered by Claude</span> • Swaps via ${cfg.dexName} • <span style="color:${cfg.color};font-weight:600;">${cfg.name}</span>`;
+      }
+      
+      toast(`⛓️ Switched to ${cfg.name}`);
+    }
+    
+    function updateTradePresets() {
+      const cfg = getChain();
+      const presets = isEVM() ? [0.001, 0.005, 0.01, 0.05, 0.1] : [0.01, 0.05, 0.1, 0.5, 1.0];
+      const btns = document.querySelectorAll('#p-trade .trade-amt-row:first-of-type .trade-preset');
+      btns.forEach((btn, i) => {
+        if (presets[i] !== undefined) {
+          btn.textContent = presets[i];
+          btn.setAttribute('onclick', `setTradeAmt(${presets[i]})`);
+        }
+      });
+    }
+
+    // ═══════ EVM PROVIDER HELPERS ═══════
+    function getMetaMask() {
+      if (window.ethereum?.isMetaMask) return window.ethereum;
+      if (window.ethereum?.providers) {
+        return window.ethereum.providers.find(p => p.isMetaMask);
+      }
+      return window.ethereum || null;
+    }
+
+    // ═══════ WALLET PROVIDERS ═══════
+    let activeWalletId = null; // 'phantom' | 'metamask' | 'trustwallet'
+
+    const WALLET_PROVIDERS = {
+      phantom: {
+        name: 'Phantom', icon: '👻', installUrl: 'https://phantom.app',
+        supportsSolana: true, supportsEVM: true,
+        detect: () => !!window.phantom?.solana?.isPhantom,
+        detectEVM: () => !!window.phantom?.ethereum,
+        getSolana: () => window.phantom?.solana,
+        getEVM: () => {
+          if (window.phantom?.ethereum) return window.phantom.ethereum;
+          return null;
+        },
+      },
+      metamask: {
+        name: 'MetaMask', icon: '🦊', installUrl: 'https://metamask.io',
+        supportsSolana: false, supportsEVM: true,
+        detect: () => {
+          if (window.ethereum?.isMetaMask) return true;
+          if (window.ethereum?.providers?.some(p => p.isMetaMask)) return true;
+          return false;
+        },
+        detectEVM: () => WALLET_PROVIDERS.metamask.detect(),
+        getEVM: () => {
+          if (window.ethereum?.isMetaMask) return window.ethereum;
+          if (window.ethereum?.providers) return window.ethereum.providers.find(p => p.isMetaMask);
+          return window.ethereum || null;
+        },
+      },
+      trustwallet: {
+        name: 'Trust Wallet', icon: '🛡️', installUrl: 'https://trustwallet.com',
+        supportsSolana: true, supportsEVM: true,
+        detect: () => !!window.trustwallet || !!window.ethereum?.isTrust,
+        detectEVM: () => {
+          if (window.trustwallet?.ethereum) return true;
+          if (window.ethereum?.isTrust) return true;
+          return false;
+        },
+        detectSolana: () => !!window.trustwallet?.solana,
+        getSolana: () => window.trustwallet?.solana || null,
+        getEVM: () => {
+          if (window.trustwallet?.ethereum) return window.trustwallet.ethereum;
+          if (window.ethereum?.isTrust) return window.ethereum;
+          return null;
+        },
+      },
+    };
+
+    function openWalletModal() {
+      const cfg = getChain();
+      const isSol = !isEVM();
+      $('wm-subtitle').textContent = `Connect to ${cfg.name}`;
+      
+      const providers = Object.entries(WALLET_PROVIDERS);
+      let html = '';
+      
+      for (const [id, wp] of providers) {
+        // Check if this wallet supports the active chain
+        const supportsChain = isSol ? wp.supportsSolana : wp.supportsEVM;
+        if (!supportsChain) continue;
+        
+        // Check if detected
+        const detected = isSol
+          ? (id === 'trustwallet' ? (wp.detectSolana?.() || wp.detect()) : wp.detect())
+          : wp.detectEVM();
+        
+        // Build chain support tags
+        const chains = [];
+        if (wp.supportsSolana) chains.push({ name: 'SOL', active: isSol });
+        if (wp.supportsEVM) {
+          chains.push({ name: 'ETH', active: !isSol && activeChain === 'ethereum' });
+          chains.push({ name: 'BASE', active: !isSol && activeChain === 'base' });
+          chains.push({ name: 'BNB', active: !isSol && activeChain === 'bsc' });
+        }
+        const chainTags = chains.map(c =>
+          `<span class="wo-chain-tag${c.active ? ' active' : ''}">${c.name}</span>`
+        ).join('');
+        
+        html += `<div class="wallet-option ${detected ? 'detected' : 'not-detected'}" 
+                      onclick="${detected ? `closeWalletModal();connectWithProvider('${id}')` : `window.open('${wp.installUrl}','_blank')`}">
+          <div class="wo-icon">${wp.icon}</div>
+          <div class="wo-info">
+            <div class="wo-name">${wp.name}</div>
+            <div class="wo-status ${detected ? 'ok' : 'missing'}">${detected ? '● Detected' : '○ Not installed — click to install'}</div>
+            <div class="wo-chains">${chainTags}</div>
+          </div>
+        </div>`;
+      }
+      
+      $('wm-options').innerHTML = html;
+      $('wallet-modal').classList.add('open');
+    }
+
+    function closeWalletModal() {
+      $('wallet-modal').classList.remove('open');
+    }
+
+    async function connectWithProvider(providerId) {
+      activeWalletId = providerId;
+      localStorage.setItem('ghost-wallet-provider', providerId);
+      const wp = WALLET_PROVIDERS[providerId];
+      
+      if (isEVM()) {
+        await connectEVMWithProvider(wp, providerId);
+      } else {
+        await connectSolanaWithProvider(wp, providerId);
+      }
+    }
+
+    async function connectSolanaWithProvider(wp, providerId) {
+      // For Phantom
+      if (providerId === 'phantom') {
+        toast('🔍 Connecting to Phantom...');
+        let phantom = await waitForPhantom(5000);
+        if (!phantom) {
+          toast('Phantom not found');
+          addMsg('system', '👻 **Phantom not detected.** Install it from https://phantom.app');
+          return;
+        }
+        try {
+          const resp = await phantom.connect();
+          onSolanaWalletConnected(resp.publicKey, resp.publicKey.toString(), '👻', 'Phantom');
+        } catch (err) { toast('Connection rejected'); }
+        return;
+      }
+      
+      // For Trust Wallet (Solana)
+      if (providerId === 'trustwallet') {
+        toast('🔍 Connecting to Trust Wallet...');
+        const solProvider = wp.getSolana?.();
+        if (!solProvider) {
+          toast('Trust Wallet Solana provider not found');
+          addMsg('system', '🛡️ **Trust Wallet Solana provider not detected.** Make sure Trust Wallet browser extension is installed and Solana is enabled.');
+          return;
+        }
+        try {
+          const resp = await solProvider.connect();
+          const pubkey = resp.publicKey;
+          onSolanaWalletConnected(pubkey, pubkey.toString(), '🛡️', 'Trust Wallet');
+        } catch (err) { toast('Connection rejected'); }
+        return;
+      }
+    }
+
+    function onSolanaWalletConnected(pubkey, address, icon, name) {
+      walletPubkey = pubkey;
+      walletAddress = address;
+      $('wbtn').className = 'wallet-btn on';
+      $('wbtn-icon').textContent = icon;
+      $('wbtn-t').textContent = address.slice(0, 4) + '...' + address.slice(-4);
+      $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN';
+      $('ph-stat').style.background = 'var(--green-dim)'; $('ph-stat').style.color = 'var(--green)'; $('ph-stat').textContent = 'CONNECTED';
+      getWorkingConnection().then(conn => {
+        conn.getBalance(pubkey).then(bal => { walletBalance = bal / 1e9; updateWalletPanel(); }).catch(() => {});
+      }).catch(() => {});
+      updateWalletPanel();
+      toast(`✅ ${name} connected: ${address.slice(0, 8)}...`);
+      $('tr-buy-btn').disabled = false;
+      $('tr-sell-btn').disabled = false;
+      setTimeout(refreshPositions, 500);
+    }
+
+    // ═══════ SOLANA SIGNER HELPER ═══════
+    function getSolanaSigner() {
+      if (activeWalletId === 'trustwallet') {
+        const tw = WALLET_PROVIDERS.trustwallet.getSolana?.();
+        if (tw) return tw;
+      }
+      if (activeWalletId === 'phantom' || !activeWalletId) {
+        return getPhantom();
+      }
+      return getPhantom(); // fallback
+    }
+
+    async function connectEVMWithProvider(wp, providerId) {
+      const evmEth = wp.getEVM();
+      if (!evmEth) {
+        toast(`${wp.name} EVM provider not found`);
+        addMsg('system', `${wp.icon} **${wp.name} not detected for EVM.**\\n\\nInstall from ${wp.installUrl}`);
+        return;
+      }
+      
+      try {
+        // Switch to correct chain
+        const cfg = getChain();
+        const currentChainId = await evmEth.request({ method: 'eth_chainId' });
+        if (currentChainId !== cfg.chainIdHex) {
+          try {
+            await evmEth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: cfg.chainIdHex }] });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              const addParams = {
+                ethereum: { chainId: '0x1', chainName: 'Ethereum Mainnet', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://eth.llamarpc.com'], blockExplorerUrls: ['https://etherscan.io'] },
+                base: { chainId: '0x2105', chainName: 'Base', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org'] },
+                bsc: { chainId: '0x38', chainName: 'BNB Smart Chain', nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }, rpcUrls: ['https://bsc-dataseed.binance.org'], blockExplorerUrls: ['https://bscscan.com'] },
+              };
+              await evmEth.request({ method: 'wallet_addEthereumChain', params: [addParams[activeChain]] });
+            } else throw switchError;
+          }
+        }
+        
+        const accounts = await evmEth.request({ method: 'eth_requestAccounts' });
+        if (!accounts || accounts.length === 0) throw new Error('No accounts returned');
+        
+        walletAddress = accounts[0];
+        walletPubkey = walletAddress;
+        evmProvider = new ethers.providers.Web3Provider(evmEth);
+        evmSigner = evmProvider.getSigner();
+        
+        $('wbtn').className = 'wallet-btn on';
+        $('wbtn-icon').textContent = wp.icon;
+        $('wbtn-t').textContent = walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4);
+        $('ph-stat').style.background = 'var(--green-dim)';
+        $('ph-stat').style.color = 'var(--green)';
+        $('ph-stat').textContent = 'CONNECTED';
+        
+        try {
+          const balance = await evmProvider.getBalance(walletAddress);
+          walletBalance = parseFloat(ethers.utils.formatEther(balance));
+        } catch (e) { walletBalance = '—'; }
+        
+        updateWalletPanel();
+        toast(`✅ ${wp.name} connected: ${walletAddress.slice(0, 8)}...`);
+        $('tr-buy-btn').disabled = false;
+        $('tr-sell-btn').disabled = false;
+        setTimeout(refreshPositions, 500);
+        
+        // Listen for changes
+        evmEth.on('accountsChanged', (accs) => {
+          if (accs.length === 0) disconnectWallet();
+          else { walletAddress = accs[0]; walletPubkey = accs[0]; updateWalletPanel(); }
+        });
+        evmEth.on('chainChanged', () => { window.location.reload(); });
+        
+      } catch (err) {
+        if (err.code === 4001) toast('Connection rejected');
+        else toast('❌ ' + (err.message || 'Connection failed').slice(0, 60));
+      }
+    }
+
+    async function ensureEVMChain() {
+      const cfg = getChain();
+      const mm = getMetaMask();
+      if (!mm) throw new Error('MetaMask not found');
+      
+      const currentChainId = await mm.request({ method: 'eth_chainId' });
+      if (currentChainId !== cfg.chainIdHex) {
+        try {
+          await mm.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: cfg.chainIdHex }] });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            // Chain not added, add it
+            const addParams = {
+              ethereum: { chainId: '0x1', chainName: 'Ethereum Mainnet', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://eth.llamarpc.com'], blockExplorerUrls: ['https://etherscan.io'] },
+              base: { chainId: '0x2105', chainName: 'Base', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: ['https://mainnet.base.org'], blockExplorerUrls: ['https://basescan.org'] },
+              bsc: { chainId: '0x38', chainName: 'BNB Smart Chain', nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }, rpcUrls: ['https://bsc-dataseed.binance.org'], blockExplorerUrls: ['https://bscscan.com'] },
+            };
+            await mm.request({ method: 'wallet_addEthereumChain', params: [addParams[activeChain]] });
+          } else {
+            throw switchError;
+          }
+        }
+      }
+    }
+
+    async function getEVMProvider() {
+      const cfg = getChain();
+      for (const rpc of cfg.rpcUrls) {
+        try {
+          const provider = new ethers.providers.JsonRpcProvider(rpc);
+          await provider.getBlockNumber(); // test connection
+          return provider;
+        } catch (e) { continue; }
+      }
+      return new ethers.providers.JsonRpcProvider(cfg.rpcUrls[0]);
+    }
+
+    async function connectEVMWallet() {
+      const mm = getMetaMask();
+      if (!mm) {
+        toast('MetaMask not found — install it from metamask.io');
+        addMsg('system', '🦊 **MetaMask not detected.**\n\nInstall MetaMask from https://metamask.io to trade on EVM chains (Ethereum, Base, BNB Chain).');
+        return;
+      }
+      
+      try {
+        await ensureEVMChain();
+        const accounts = await mm.request({ method: 'eth_requestAccounts' });
+        if (!accounts || accounts.length === 0) throw new Error('No accounts returned');
+        
+        walletAddress = accounts[0];
+        walletPubkey = walletAddress; // For EVM, we just use the address
+        evmProvider = new ethers.providers.Web3Provider(mm);
+        evmSigner = evmProvider.getSigner();
+        
+        const cfg = getChain();
+        $('wbtn').className = 'wallet-btn on';
+        $('wbtn-t').textContent = walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4);
+        $('ph-stat').style.background = 'var(--green-dim)';
+        $('ph-stat').style.color = 'var(--green)';
+        $('ph-stat').textContent = 'CONNECTED';
+        
+        // Get native balance
+        try {
+          const balance = await evmProvider.getBalance(walletAddress);
+          walletBalance = parseFloat(ethers.utils.formatEther(balance));
+        } catch (e) { walletBalance = '—'; }
+        
+        updateWalletPanel();
+        toast('✅ Wallet connected: ' + walletAddress.slice(0, 8) + '...');
+        $('tr-buy-btn').disabled = false;
+        $('tr-sell-btn').disabled = false;
+        setTimeout(refreshPositions, 500);
+        
+        // Listen for account/chain changes
+        mm.on('accountsChanged', (accs) => {
+          if (accs.length === 0) disconnectWallet();
+          else { walletAddress = accs[0]; walletPubkey = accs[0]; updateWalletPanel(); }
+        });
+        mm.on('chainChanged', () => { window.location.reload(); });
+        
+      } catch (err) {
+        if (err.code === 4001) toast('Connection rejected');
+        else toast('❌ ' + (err.message || 'Connection failed').slice(0, 60));
+      }
+    }
+
+    // ═══════ EVM TOKEN HELPERS ═══════
+    const ERC20_ABI = [
+      'function balanceOf(address) view returns (uint256)',
+      'function decimals() view returns (uint8)',
+      'function symbol() view returns (string)',
+      'function name() view returns (string)',
+      'function allowance(address owner, address spender) view returns (uint256)',
+      'function approve(address spender, uint256 amount) returns (bool)',
+    ];
+
+    async function getEVMTokenBalance(tokenAddress) {
+      try {
+        if (!walletAddress || !evmProvider) return 0;
+        const contract = new ethers.Contract(tokenAddress, ERC20_ABI, evmProvider);
+        const [balance, decimals] = await Promise.all([
+          contract.balanceOf(walletAddress),
+          contract.decimals(),
+        ]);
+        return parseFloat(ethers.utils.formatUnits(balance, decimals));
+      } catch (e) { return 0; }
+    }
+
+    async function getEVMTokenDecimals(tokenAddress) {
+      try {
+        const provider = evmProvider || await getEVMProvider();
+        const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        return await contract.decimals();
+      } catch (e) { return 18; }
+    }
+
+    // ═══════ EVM SWAP VIA OPENOCEAN ═══════
+    const OPENOCEAN_API = 'https://open-api.openocean.finance/v3';
+
+    async function openOceanQuote(inToken, outToken, amount, slippage, chainKey) {
+      const cfg = CHAINS[chainKey || activeChain];
+      const url = `${OPENOCEAN_API}/${cfg.openOceanChain}/quote?inTokenAddress=${inToken}&outTokenAddress=${outToken}&amount=${amount}&gasPrice=5&slippage=${slippage}`;
+      const res = await fetchWithTimeout(url, {}, 10000);
+      if (!res.ok) throw new Error('OpenOcean quote failed: ' + res.status);
+      const data = await res.json();
+      if (data.code !== 200) throw new Error(data.error || 'Quote error');
+      return data.data;
+    }
+
+    async function openOceanSwap(inToken, outToken, amount, slippage, account, chainKey) {
+      const cfg = CHAINS[chainKey || activeChain];
+      const gasPrice = '5'; // Will be overridden by wallet
+      const url = `${OPENOCEAN_API}/${cfg.openOceanChain}/swap_quote?inTokenAddress=${inToken}&outTokenAddress=${outToken}&amount=${amount}&gasPrice=${gasPrice}&slippage=${slippage}&account=${account}`;
+      const res = await fetchWithTimeout(url, {}, 15000);
+      if (!res.ok) throw new Error('OpenOcean swap failed: ' + res.status);
+      const data = await res.json();
+      if (data.code !== 200) throw new Error(data.error || 'Swap error');
+      return data.data;
+    }
+
+    async function executeEVMTrade(side) {
+      if (!walletAddress || !evmSigner) { toast('Connect wallet first!'); return; }
+      if (isTrading) return;
+      
+      const cfg = getChain();
+      const mint = $('tr-mint').value.trim();
+      const amount = parseFloat($('tr-amount').value);
+      const slippage = parseFloat($('tr-slippage').value) || 1;
+      
+      if (!mint || !cfg.addressRegex.test(mint)) { toast('Paste a valid ' + cfg.name + ' token address'); return; }
+      if (!amount || amount <= 0) { toast('Enter an amount'); return; }
+      
+      isTrading = true;
+      const btn = side === 'buy' ? $('tr-buy-btn') : $('tr-sell-btn');
+      const origText = btn.textContent;
+      btn.classList.add('loading');
+      btn.disabled = true;
+      
+      try {
+        let inToken, outToken, swapAmount;
+        
+        if (side === 'buy') {
+          // Buying token with native currency
+          inToken = cfg.nativeMint;
+          outToken = mint;
+          swapAmount = amount; // amount in native token (ETH/BNB)
+        } else {
+          // Selling token for native currency
+          inToken = mint;
+          outToken = cfg.nativeMint;
+          // Get token balance
+          const tokenBal = await getEVMTokenBalance(mint);
+          if (!tokenBal || tokenBal <= 0) throw new Error('No token balance to sell');
+          swapAmount = tokenBal * (sellPct / 100);
+        }
+        
+        btn.textContent = 'GETTING QUOTE...';
+        
+        // Get swap data from OpenOcean
+        btn.textContent = 'BUILDING TX...';
+        const swapData = await openOceanSwap(inToken, outToken, swapAmount, slippage, walletAddress);
+        
+        if (!swapData || !swapData.to) throw new Error('Failed to build swap transaction');
+        
+        // Check if we need to approve the token first (for sells)
+        if (side === 'sell') {
+          btn.textContent = 'CHECKING APPROVAL...';
+          const tokenContract = new ethers.Contract(mint, ERC20_ABI, evmSigner);
+          const allowance = await tokenContract.allowance(walletAddress, swapData.to);
+          const decimals = await tokenContract.decimals();
+          const requiredAmount = ethers.utils.parseUnits(String(swapAmount), decimals);
+          
+          if (allowance.lt(requiredAmount)) {
+            btn.textContent = 'APPROVE IN WALLET...';
+            const approveTx = await tokenContract.approve(swapData.to, ethers.constants.MaxUint256);
+            btn.textContent = 'WAITING APPROVAL...';
+            await approveTx.wait();
+            toast('✅ Token approved');
+          }
+        }
+        
+        // Build and send transaction
+        btn.textContent = 'SIGN IN ' + (activeWalletId ? WALLET_PROVIDERS[activeWalletId].name.toUpperCase() : 'WALLET') + '...';
+        
+        const txParams = {
+          to: swapData.to,
+          data: swapData.data,
+          value: side === 'buy' ? ethers.utils.parseEther(String(amount)) : ethers.BigNumber.from(swapData.value || '0'),
+          gasLimit: swapData.estimatedGas ? ethers.BigNumber.from(swapData.estimatedGas).mul(130).div(100) : undefined,
+        };
+        
+        const tx = await evmSigner.sendTransaction(txParams);
+        
+        btn.textContent = 'CONFIRMING...';
+        const receipt = await tx.wait();
+        
+        if (receipt.status === 0) throw new Error('Transaction reverted on-chain');
+        
+        // Success
+        const symbol = $('tr-token-name')?.textContent || mint.slice(0, 10);
+        const outAmount = swapData.outAmount ? parseFloat(swapData.outAmount) : 0;
+        
+        toast(`✅ ${side === 'buy' ? 'Bought' : 'Sold'} ${symbol}!`, 5000);
+        
+        const trade = {
+          side, symbol, mint, chain: activeChain,
+          amountIn: side === 'buy' ? amount + ' ' + cfg.symbol : formatNum(swapAmount) + ' ' + symbol,
+          amountOut: side === 'buy' ? formatNum(outAmount) + ' ' + symbol : outAmount.toFixed(6) + ' ' + cfg.symbol,
+          sig: tx.hash,
+          time: Date.now(),
+        };
+        tradeHistory.unshift(trade);
+        if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
+        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        renderTradeHistory();
+        
+        if ($('empty-state')) $('empty-state').style.display = 'none';
+        addMsg('success',
+          `${side === 'buy' ? '🟢 BUY' : '🔴 SELL'} EXECUTED on ${cfg.name}\n\nToken: ${symbol}\nPaid: ${trade.amountIn}\nReceived: ${trade.amountOut}\nTx: ${tx.hash.slice(0, 20)}...\n\n🔍 ${cfg.explorerTx}${tx.hash}`
+        );
+        
+        // Refresh balance
+        try {
+          const balance = await evmProvider.getBalance(walletAddress);
+          walletBalance = parseFloat(ethers.utils.formatEther(balance));
+          updateWalletPanel();
+        } catch(e) {}
+        
+        setTimeout(refreshPositions, 3000);
+        
+      } catch(e) {
+        console.error('EVM Trade error:', e);
+        const errMsg = e.message || 'Trade failed';
+        if (errMsg.includes('user rejected') || errMsg.includes('User denied') || errMsg.includes('ACTION_REJECTED')) {
+          toast('Transaction rejected in wallet');
+        } else {
+          toast('❌ ' + errMsg.slice(0, 60));
+          if ($('empty-state')) $('empty-state').style.display = 'none';
+          addMsg('system', `❌ ${side.toUpperCase()} failed on ${getChain().name}: ${errMsg}`);
+        }
+      }
+      
+      isTrading = false;
+      const btn2 = side === 'buy' ? $('tr-buy-btn') : $('tr-sell-btn');
+      btn2.classList.remove('loading');
+      btn2.disabled = !walletAddress;
+      btn2.textContent = side === 'buy' ? '🟢 BUY TOKEN' : `🔴 SELL ${sellPct}%`;
+    }
+
+    // ═══════ EVM POSITIONS ═══════
+    async function refreshEVMPositions() {
+      if (!walletAddress) {
+        $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
+        return;
+      }
+      $('positions-list').innerHTML = '<div class="pos-empty">Loading positions...</div>';
+      
+      try {
+        const cfg = getChain();
+        // Use DexScreener to find tokens in wallet via their API
+        // Alternative: use blockchain explorer APIs
+        // For now, use a simpler approach - check recent trade history tokens
+        const chainTokens = tradeHistory
+          .filter(t => (t.chain || 'solana') === activeChain && t.side === 'buy')
+          .map(t => t.mint)
+          .filter((v, i, a) => a.indexOf(v) === i) // unique
+          .slice(0, 20);
+        
+        if (chainTokens.length === 0) {
+          $('positions-list').innerHTML = '<div class="pos-empty">No tracked positions on ' + cfg.name + '.<br>Tokens you buy will appear here.</div>';
+          return;
+        }
+        
+        const provider = evmProvider || await getEVMProvider();
+        const positions = [];
+        
+        for (const tokenAddr of chainTokens) {
+          try {
+            const contract = new ethers.Contract(tokenAddr, ERC20_ABI, provider);
+            const [balance, decimals, symbol] = await Promise.all([
+              contract.balanceOf(walletAddress),
+              contract.decimals(),
+              contract.symbol().catch(() => tokenAddr.slice(0, 6)),
+            ]);
+            const amt = parseFloat(ethers.utils.formatUnits(balance, decimals));
+            if (amt > 0) {
+              positions.push({ mint: tokenAddr, amount: amt, symbol, decimals });
+            }
+          } catch (e) { continue; }
+        }
+        
+        if (positions.length === 0) {
+          $('positions-list').innerHTML = '<div class="pos-empty">No token positions on ' + cfg.name + '</div>';
+          return;
+        }
+        
+        // Get prices from DexScreener
+        let prices = {};
+        try {
+          const addrs = positions.map(p => p.mint).join(',');
+          const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addrs}`);
+          if (dsRes.ok) {
+            const dsData = await dsRes.json();
+            (dsData.pairs || []).filter(p => p.chainId === cfg.dexScreenerChain).forEach(pair => {
+              const addr = pair.baseToken?.address?.toLowerCase();
+              if (addr && pair.priceUsd) {
+                prices[addr] = { price: parseFloat(pair.priceUsd), symbol: pair.baseToken.symbol };
+              }
+            });
+          }
+        } catch (e) {}
+        
+        let html = '';
+        for (const pos of positions) {
+          const priceInfo = prices[pos.mint.toLowerCase()] || {};
+          const price = priceInfo.price || 0;
+          const value = price * pos.amount;
+          const sym = priceInfo.symbol || pos.symbol || pos.mint.slice(0, 6);
+          
+          html += `<div class="pos-item">
+            <div class="pos-top">
+              <div class="pos-name">${escapeHtml(sym)}</div>
+              <div class="pos-val">${value > 0 ? '$' + value.toFixed(2) : '—'}</div>
+            </div>
+            <div class="pos-bottom">
+              <span>${formatNum(pos.amount)} tokens</span>
+              <span>${price > 0 ? '$' + (price < 0.01 ? price.toFixed(8) : price.toFixed(4)) : 'price N/A'}</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button class="tk-btn buy" style="font-size:10px;padding:4px 8px;" onclick="$('tr-mint').value='${pos.mint}';setMode('trade');onMintInput('${pos.mint}');">BUY</button>
+              <button class="tk-btn" style="font-size:10px;padding:4px 8px;background:var(--red-dim);color:var(--red);" onclick="$('tr-mint').value='${pos.mint}';setMode('trade');onMintInput('${pos.mint}');setTimeout(()=>setSellPct(100),500);">SELL</button>
+              <button class="tk-btn" style="font-size:10px;padding:4px 8px;" onclick="window.open('${cfg.explorerAddr}${pos.mint}','_blank')">🔍</button>
+            </div>
+          </div>`;
+        }
+        
+        $('positions-list').innerHTML = html;
+        
+      } catch (e) {
+        $('positions-list').innerHTML = '<div class="pos-empty">Error loading positions: ' + escapeHtml(e.message) + '</div>';
+      }
+    }
+
+    // ═══════ EVM TOKEN LOOKUP ═══════
+    async function lookupEVMToken(address) {
+      try {
+        const cfg = getChain();
+        // Use DexScreener which works for all chains
+        const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+        if (!dsRes.ok) return;
+        const dsData = await dsRes.json();
+        const pairs = (dsData.pairs || []).filter(p => p.chainId === cfg.dexScreenerChain);
+        
+        if (pairs.length > 0) {
+          const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+          $('tr-token-name').textContent = best.baseToken?.symbol || address.slice(0, 10);
+          $('tr-token-price').textContent = best.priceUsd ? '$' + parseFloat(best.priceUsd).toFixed(best.priceUsd < 0.01 ? 8 : 4) : 'price N/A';
+          $('tr-token-info').style.display = 'block';
+          $('tr-buy-btn').disabled = !walletAddress;
+          $('tr-sell-btn').disabled = !walletAddress;
+          if (parseFloat($('tr-amount').value) > 0) getQuote();
+        } else {
+          // Try to read from contract directly
+          try {
+            const provider = evmProvider || await getEVMProvider();
+            const contract = new ethers.Contract(address, ERC20_ABI, provider);
+            const [symbol, name] = await Promise.all([
+              contract.symbol().catch(() => address.slice(0, 8)),
+              contract.name().catch(() => ''),
+            ]);
+            $('tr-token-name').textContent = symbol;
+            $('tr-token-price').textContent = 'price unavailable';
+            $('tr-token-info').style.display = 'block';
+            $('tr-buy-btn').disabled = !walletAddress;
+            $('tr-sell-btn').disabled = !walletAddress;
+          } catch (e) {
+            $('tr-token-name').textContent = address.slice(0, 10) + '...';
+            $('tr-token-price').textContent = 'unknown token';
+            $('tr-token-info').style.display = 'block';
+          }
+        }
+      } catch (e) {
+        $('tr-token-info').style.display = 'none';
+      }
+    }
+
+    // ═══════ EVM QUOTE ═══════
+    async function getEVMQuote() {
+      const cfg = getChain();
+      const mint = $('tr-mint').value.trim();
+      const amount = parseFloat($('tr-amount').value);
+      const slippage = parseFloat($('tr-slippage').value) || 1;
+      if (!mint || !cfg.addressRegex.test(mint) || !amount || amount <= 0) {
+        $('tr-quote').style.display = 'none';
+        currentQuote = null;
+        return;
+      }
+      clearTimeout(quoteTimer);
+      quoteTimer = setTimeout(async () => {
+        try {
+          const quoteData = await openOceanQuote(cfg.nativeMint, mint, amount, slippage);
+          currentQuote = quoteData;
+          
+          $('tq-pay').textContent = amount + ' ' + cfg.symbol;
+          const outAmt = parseFloat(quoteData.outAmount || 0);
+          $('tq-receive').textContent = formatNum(outAmt) + ' tokens';
+          // Price impact (estimated)
+          const estimatedImpact = quoteData.price_impact || quoteData.priceImpact || 0;
+          $('tq-impact').textContent = (parseFloat(estimatedImpact) || 0).toFixed(3) + '%';
+          $('tq-route').textContent = cfg.dexName + ' (OpenOcean)';
+          $('tr-quote').style.display = 'block';
+        } catch (e) {
+          $('tr-quote').style.display = 'none';
+          currentQuote = null;
+        }
+      }, 400);
+    }
+
+    // ═══════ EVM WALLET PANEL ═══════
+    function updateEVMWalletPanel() {
+      if (!walletAddress) return;
+      const cfg = getChain();
+      const wp = activeWalletId ? WALLET_PROVIDERS[activeWalletId] : null;
+      const walletIcon = wp ? wp.icon : cfg.walletIcon;
+      const walletName = wp ? wp.name : cfg.walletName;
+      const shortAddr = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+      $('wallet-content').innerHTML = `
+        <div class="wp-header">
+          <div class="wp-avatar">${walletIcon}</div>
+          <div class="wp-balance">${typeof walletBalance === 'number' ? walletBalance.toFixed(6) : '—'}</div>
+          <div class="wp-balance-label">${cfg.symbol} BALANCE <span style="color:${cfg.color};font-size:10px;margin-left:4px;">${cfg.name}</span></div>
+          <div class="wp-addr">
+            <span>${shortAddr}</span>
+            <button class="wp-addr-copy" onclick="navigator.clipboard.writeText('${walletAddress}');toast('📋 Copied!')">Copy</button>
+          </div>
+        </div>
+        <div class="wp-actions">
+          <button class="wp-action" onclick="window.open('${cfg.explorerAddr}${walletAddress}','_blank')">
+            <span class="wp-action-icon">🔍</span>Explorer
+          </button>
+          <button class="wp-action" onclick="setMode('portfolio')">
+            <span class="wp-action-icon">◐</span>Portfolio
+          </button>
+          <button class="wp-action danger" onclick="disconnectWallet()">
+            <span class="wp-action-icon">⏏</span>Disconnect
+          </button>
+        </div>
+        <div class="wp-section">
+          <div class="wp-stitle">${cfg.name} Holdings</div>
+          <div id="wp-holdings"><div class="wp-loading">Loading tokens...</div></div>
+        </div>`;
+      // Fetch EVM holdings
+      fetchEVMWalletHoldings();
+    }
+
+    async function fetchEVMWalletHoldings() {
+      const holdingsEl = $('wp-holdings');
+      if (!holdingsEl || !walletAddress) return;
+      
+      try {
+        const cfg = getChain();
+        // Check recent traded tokens
+        const tokenAddrs = tradeHistory
+          .filter(t => (t.chain || 'solana') === activeChain && t.side === 'buy')
+          .map(t => t.mint)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .slice(0, 15);
+        
+        if (tokenAddrs.length === 0) {
+          holdingsEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">No tracked holdings on ' + cfg.name + '.<br>Tokens you trade will appear here.</div>';
+          return;
+        }
+        
+        const provider = evmProvider || await getEVMProvider();
+        let html = '';
+        
+        for (const addr of tokenAddrs) {
+          try {
+            const contract = new ethers.Contract(addr, ERC20_ABI, provider);
+            const [balance, decimals, symbol] = await Promise.all([
+              contract.balanceOf(walletAddress),
+              contract.decimals(),
+              contract.symbol().catch(() => addr.slice(0, 6)),
+            ]);
+            const amt = parseFloat(ethers.utils.formatUnits(balance, decimals));
+            if (amt > 0) {
+              html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-primary);font-size:12px;">
+                <span style="color:var(--text-primary);font-weight:600;">${escapeHtml(symbol)}</span>
+                <span style="color:var(--text-secondary);font-family:'Fira Code',monospace;">${formatNum(amt)}</span>
+              </div>`;
+            }
+          } catch (e) { continue; }
+        }
+        
+        holdingsEl.innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">No token balances found</div>';
+        
+      } catch (e) {
+        holdingsEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">Error loading holdings</div>';
+      }
+    }
+
 
     const $ = id => document.getElementById(id);
 
@@ -2700,6 +3930,13 @@
     let modeHistory = [];
 
     function setMode(mode) {
+      // Cleanup timers when leaving modes
+      if (currentMode === 'trade' && mode !== 'trade') {
+        clearTimeout(quoteTimer); quoteTimer = null;
+      }
+      if (currentMode === 'perps' && mode !== 'perps') {
+        if (perpsPnlInterval) { clearInterval(perpsPnlInterval); perpsPnlInterval = null; }
+      }
       if (currentMode && currentMode !== mode) modeHistory.push(currentMode);
       if (modeHistory.length > 10) modeHistory = modeHistory.slice(-10);
       currentMode = mode;
@@ -2731,6 +3968,19 @@
       if (mode === 'alpha') { renderAlphaWallets(); renderAlphaLog(); renderAlphaBotWallet(); refreshAlphaBotBalance(); }
       if (mode === 'watchlist') { renderWatchlist(); refreshWatchlistPrices(); }
       if (mode === 'perps') { initPerpsPanel(); }
+
+      // In launch mode, only show SOL and BNB chains
+      const ethBtn = document.querySelector('.chain-btn[data-chain="ethereum"]');
+      const baseBtn = document.querySelector('.chain-btn[data-chain="base"]');
+      if (ethBtn) ethBtn.style.display = mode === 'launch' ? 'none' : '';
+      if (baseBtn) baseBtn.style.display = mode === 'launch' ? 'none' : '';
+      
+      // If entering launch mode on ETH/BASE, auto-switch to SOL
+      if (mode === 'launch' && (activeChain === 'ethereum' || activeChain === 'base')) {
+        switchChain('solana');
+      }
+      // Update launch platform visibility when entering launch
+      if (mode === 'launch') updateLaunchPlatforms();
     }
 
     function goBack() {
@@ -2744,6 +3994,213 @@
       selectedPlatform = p;
       document.querySelectorAll('.lplatform').forEach(el => el.classList.toggle('sel', el.dataset.p === p));
     }
+
+    function updateLaunchPlatforms() {
+      const isBNB = activeChain === 'bsc';
+      // Show/hide platform options
+      document.querySelectorAll('.sol-platform').forEach(el => el.style.display = isBNB ? 'none' : '');
+      document.querySelectorAll('.bnb-platform').forEach(el => el.style.display = isBNB ? '' : 'none');
+      
+      // Auto-select the right platform
+      if (isBNB) {
+        selPlatform('fourmeme');
+      } else if (selectedPlatform === 'fourmeme') {
+        selPlatform('pumpfun');
+      }
+      
+      // Update form labels
+      const sym = isBNB ? 'BNB' : 'SOL';
+      const chainName = isBNB ? 'BNB Chain' : 'Solana';
+      if ($('launch-buy-label')) $('launch-buy-label').textContent = `INITIAL BUY (${sym})`;
+      if ($('launch-warning')) $('launch-warning').textContent = `⚠️ This creates a real token on ${chainName}. You need ${sym} for gas (~${isBNB ? '0.005 BNB' : '0.02 SOL'}). DYOR. Ghost is a tool — you are responsible for your actions.`;
+    }
+
+
+    // ═══════ FOUR.MEME (BNB CHAIN) LAUNCHER ═══════
+    const FOURMEME_CONTRACT = '0x5c952063c7fc8610FFDB798152D69F0B9550762b';
+    const FOURMEME_CREATE_FEE = '0.01'; // 0.01 BNB creation fee
+    const FOURMEME_API_BASE = 'https://four.meme';
+
+    async function launchTokenFourMeme() {
+      if (!walletAddress) { toast('Connect wallet first!'); return; }
+      if (!evmSigner) { toast('Connect a BNB wallet first!'); return; }
+
+      const name = $('t-name').value.trim();
+      const ticker = $('t-ticker').value.trim().replace('$', '');
+      const desc = $('t-desc').value.trim();
+      const initialBuy = parseFloat($('t-buy').value) || 0;
+      const twitter = $('t-twitter').value.trim();
+      const telegram = $('t-telegram').value.trim();
+      const website = $('t-website').value.trim();
+
+      if (!name) { toast('Token name is required!'); return; }
+      if (!ticker) { toast('Ticker is required!'); return; }
+      if (!tokenImageFile) { toast('Token image is required!'); return; }
+
+      $('launch-steps').style.display = 'block';
+      if ($('step-1-label')) $('step-1-label').textContent = 'Upload image to Four.meme';
+      if ($('step-2-label')) $('step-2-label').textContent = 'Prepare token';
+      if ($('step-3-label')) $('step-3-label').textContent = 'Sign transaction';
+      if ($('step-4-label')) $('step-4-label').textContent = 'Confirm on BSC';
+      $('lbtn').className = 'lbtn loading'; $('lbtn').textContent = 'LAUNCHING ON FOUR.MEME...';
+
+      let apiWorked = false;
+
+      try {
+        // ═══ Step 1: Upload image ═══
+        setStep(1, 'active', 'uploading image...');
+        
+        let imageUrl = '';
+        const imgFormData = new FormData();
+        imgFormData.append('file', tokenImageFile);
+        
+        try {
+          const imgRes = await fetchWithTimeout(`${FOURMEME_API_BASE}/meme-api/upload/img`, {
+            method: 'POST', body: imgFormData,
+          }, 15000);
+          if (imgRes.ok) {
+            const imgData = await imgRes.json();
+            imageUrl = imgData.data || imgData.url || '';
+          }
+        } catch (e) {
+          console.warn('Four.meme image upload (CORS expected):', e.message);
+        }
+        
+        // Base64 fallback if API blocked by CORS
+        if (!imageUrl) {
+          imageUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(tokenImageFile);
+          });
+        }
+        setStep(1, 'done', '✓');
+
+        // ═══ Step 2: Try Four.meme prepare API for createArg + signature ═══
+        setStep(2, 'active', 'preparing token...');
+        
+        let createArg = null;
+        let apiSign = null;
+
+        try {
+          const prepareRes = await fetchWithTimeout(`${FOURMEME_API_BASE}/meme-api/token/prepare`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name, symbol: ticker,
+              desc: desc || name + ' — launched via Ghost',
+              image: imageUrl, label: 'Meme', onlyMPC: false,
+              webUrl: website, twitterUrl: twitter, telegramUrl: telegram,
+              presaleBNB: String(initialBuy || 0),
+              creator: walletAddress,
+            }),
+          }, 15000);
+
+          if (prepareRes.ok) {
+            const prepData = await prepareRes.json();
+            if (prepData.data) {
+              createArg = prepData.data.createArg || prepData.data.arg || prepData.data;
+              apiSign = prepData.data.sign || prepData.data.signature;
+              if (createArg && apiSign) apiWorked = true;
+            }
+          }
+        } catch (e) {
+          console.warn('Four.meme prepare API (CORS expected):', e.message);
+        }
+
+        if (apiWorked) {
+          // ═══ API path: call contract with createArg + sign ═══
+          setStep(2, 'done', '✓');
+          setStep(3, 'active', 'sign in wallet...');
+
+          const totalValue = ethers.utils.parseEther(
+            String(parseFloat(FOURMEME_CREATE_FEE) + (initialBuy || 0))
+          );
+
+          // Encode createToken(createArg, sign) call
+          const iface = new ethers.utils.Interface([
+            'function createToken(tuple(string,string,string,string,string,uint256,bool,string,string,string) createArg, bytes sign) payable',
+          ]);
+          const txData = iface.encodeFunctionData('createToken', [createArg, apiSign]);
+
+          const txResponse = await evmSigner.sendTransaction({
+            to: FOURMEME_CONTRACT, data: txData,
+            value: totalValue, gasLimit: 3000000,
+          });
+          setStep(3, 'done', '✓');
+
+          setStep(4, 'active', 'confirming on BSC...');
+          const receipt = await txResponse.wait();
+          
+          // Parse TokenCreate event for new token address
+          let tokenAddress = null;
+          for (const log of receipt.logs) {
+            if (log.address && log.address.toLowerCase() === FOURMEME_CONTRACT.toLowerCase() && log.topics.length >= 2) {
+              try { tokenAddress = ethers.utils.getAddress('0x' + log.topics[1].slice(26)); } catch (e) {}
+            }
+            if (!tokenAddress && log.address && log.address.toLowerCase() !== FOURMEME_CONTRACT.toLowerCase() && log.topics.length >= 1) {
+              try { tokenAddress = ethers.utils.getAddress(log.address); } catch (e) {}
+            }
+          }
+          setStep(4, 'done', '✓');
+          setStep(5, 'done', '🎉 LIVE!');
+
+          const txHash = receipt.transactionHash;
+          if ($('empty-state')) $('empty-state').style.display = 'none';
+          addMsg('success',
+            `🎉 TOKEN LAUNCHED ON FOUR.MEME!\n\nName: ${name}\nTicker: $${ticker}\n${tokenAddress ? 'Token: ' + tokenAddress + '\n' : ''}${initialBuy > 0 ? 'Initial Buy: ' + initialBuy + ' BNB\n' : ''}Tx: ${txHash.slice(0, 20)}...\n\n🔗 View: https://four.meme/token/${tokenAddress || ''}\n🔍 BscScan: https://bscscan.com/tx/${txHash}`
+          );
+          toast('🎉 $' + ticker + ' is live on Four.meme!');
+
+        } else {
+          // ═══ Fallback: CORS blocked API — open Four.meme directly ═══
+          setStep(2, 'done', '↗ redirect');
+          setStep(3, 'active', 'opening Four.meme...');
+
+          window.open('https://four.meme/create-token', '_blank');
+
+          setStep(3, 'done', '✓');
+          setStep(4, 'done', '↗');
+          setStep(5, 'done', '🔗');
+
+          if ($('empty-state')) $('empty-state').style.display = 'none';
+          addMsg('system',
+            `🟡 **Redirected to Four.meme**\n\nFour.meme\'s API blocks direct browser calls (CORS). We opened **four.meme/create-token** in a new tab.\n\n**Your token details to paste there:**\n• Name: ${name}\n• Ticker: $${ticker}\n• Description: ${desc || '—'}\n• Initial Buy: ${initialBuy || 0} BNB\n\nThe token launches on a bonding curve and auto-lists on PancakeSwap when filled (~18 BNB).\nCreation fee: 0.01 BNB.`
+          );
+          toast('🟡 Four.meme opened in new tab');
+        }
+
+        setTimeout(() => {
+          $('launch-steps').style.display = 'none';
+          [1,2,3,4,5].forEach(n => setStep(n, 'pending', ''));
+          $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN';
+        }, 6000);
+
+      } catch (err) {
+        console.error('Four.meme launch error:', err);
+        for (let i = 1; i <= 5; i++) {
+          if ($('step-' + i) && $('step-' + i).classList.contains('active')) {
+            setStep(i, 'error', '✗ ' + (err.message || 'failed').slice(0, 40)); break;
+          }
+        }
+        if ($('empty-state')) $('empty-state').style.display = 'none';
+
+        const errMsg = err.message || 'Unknown error';
+        let helpText = '';
+        if (errMsg.includes('user rejected') || errMsg.includes('ACTION_REJECTED')) {
+          helpText = 'You rejected the transaction in your wallet.';
+        } else if (errMsg.includes('insufficient funds')) {
+          helpText = 'Not enough BNB. Need 0.01 BNB (creation fee) + gas + initial buy.';
+        } else {
+          helpText = errMsg + '\n\nYou can also launch at https://four.meme/create-token';
+        }
+        addMsg('system', '❌ Four.meme launch failed\n\n' + helpText);
+        $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 RETRY LAUNCH';
+        setTimeout(() => { $('launch-steps').style.display = 'none'; [1,2,3,4,5].forEach(n => setStep(n, 'pending', '')); }, 8000);
+      }
+    }
+
 
     // ═══════ TOOL ACTIONS ═══════
     function toolOpen(mode) {
@@ -2893,7 +4350,7 @@
               <span class="tx-time">${dateStr} · ${timeStr}</span>
             </div>
             <div class="tx-detail"><strong>${t.symbol || 'Unknown'}</strong> · ${t.amountIn} → ${t.amountOut}</div>
-            ${t.sig ? `<a class="tx-sig" href="https://solscan.io/tx/${t.sig}" target="_blank">🔗 ${t.sig.slice(0,8)}...${t.sig.slice(-6)}</a>` : ''}
+            ${t.sig ? `<a class="tx-sig" href="${(t.chain && CHAINS[t.chain]) ? CHAINS[t.chain].explorerTx : 'https://solscan.io/tx/'}${t.sig}" target="_blank">🔗 ${t.sig.slice(0,8)}...${t.sig.slice(-6)}</a>` : ''}
           </div>`;
       }
       el.innerHTML = html;
@@ -3025,7 +4482,7 @@
 
     function updateSniperAmount(idx, val) {
       if (sniperWallets[idx]) {
-        sniperWallets[idx].amount = parseFloat(val) || 0;
+        sniperWallets[idx].amount = Math.max(0.001, parseFloat(val) || 0.01);
         saveSniperWallets();
       }
     }
@@ -3265,47 +4722,18 @@
     }
 
     async function connectWallet() {
-      toast('🔍 Looking for Phantom...');
-      let phantom = await waitForPhantom(5000);
-
-      if (!phantom) {
-        const inIframe = window.self !== window.top;
-        if (inIframe) {
-          toast('⚠️ Download this file and open it directly in Chrome to use Phantom.');
-          addMsg('system', '👻 **Phantom can\'t connect inside this preview.**\n\nChrome extensions don\'t work inside embedded frames. To use Phantom:\n\n1. Download this HTML file\n2. Open it directly in Chrome\n3. If needed: chrome://extensions → Phantom → "Allow access to file URLs"\n\nThen Connect Phantom will work.');
-        } else {
-          toast('Phantom not found — check the instructions below.');
-          addMsg('system', '👻 **Phantom not detected after 5 seconds.**\n\nTry these steps:\n• Make sure Phantom is installed and enabled in Chrome\n• Go to chrome://extensions → Phantom → Details → enable **"Allow access to file URLs"**\n• **Close this tab completely** and reopen the file (the permission needs a fresh page load)\n• Try clicking Connect Phantom again after the page fully loads\n\nIf you just enabled "Allow access to file URLs", you **must** close and reopen this tab for it to take effect.');
-        }
-        return;
-      }
-
-      try {
-        const resp = await phantom.connect();
-        walletPubkey = resp.publicKey;
-        walletAddress = resp.publicKey.toString();
-        $('wbtn').className = 'wallet-btn on';
-        $('wbtn-t').textContent = walletAddress.slice(0, 4) + '...' + walletAddress.slice(-4);
-        $('lbtn').className = 'lbtn ready'; $('lbtn').textContent = '🚀 LAUNCH TOKEN';
-        $('ph-stat').style.background = 'var(--green-dim)'; $('ph-stat').style.color = 'var(--green)'; $('ph-stat').textContent = 'CONNECTED';
-        try {
-          const connection = await getWorkingConnection();
-          walletBalance = (await connection.getBalance(resp.publicKey)) / 1e9;
-        } catch(e) { walletBalance = '—'; }
-        updateWalletPanel();
-        toast('✅ Wallet connected: ' + walletAddress.slice(0, 8) + '...');
-        $('tr-buy-btn').disabled = false;
-        $('tr-sell-btn').disabled = false;
-        setTimeout(refreshPositions, 500);
-      } catch (err) { toast('Connection rejected'); }
+      openWalletModal();
     }
 
     function updateWalletPanel() {
       if (!walletAddress) return;
+      if (isEVM()) { updateEVMWalletPanel(); return; }
+      const wp = activeWalletId ? WALLET_PROVIDERS[activeWalletId] : null;
+      const walletIcon = wp ? wp.icon : '👻';
       const shortAddr = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
       $('wallet-content').innerHTML = `
         <div class="wp-header">
-          <div class="wp-avatar">👻</div>
+          <div class="wp-avatar">${walletIcon}</div>
           <div class="wp-balance">${typeof walletBalance === 'number' ? walletBalance.toFixed(4) : '—'}</div>
           <div class="wp-balance-label">SOL BALANCE</div>
           <div class="wp-addr">
@@ -3428,12 +4856,23 @@
     }
 
     async function disconnectWallet() {
-      const phantom = getPhantom(); if (phantom) await phantom.disconnect();
+      // EVM cleanup
+      evmProvider = null;
+      evmSigner = null;
+      // Disconnect Solana wallet if applicable
+      if (activeWalletId === 'phantom') {
+        const phantom = getPhantom(); if (phantom) try { await phantom.disconnect(); } catch(e) {}
+      } else if (activeWalletId === 'trustwallet') {
+        const tw = WALLET_PROVIDERS.trustwallet.getSolana?.();
+        if (tw) try { await tw.disconnect(); } catch(e) {}
+      }
+      activeWalletId = null;
+      localStorage.removeItem('ghost-wallet-provider');
       walletPubkey = null; walletAddress = null; walletBalance = null;
-      $('wbtn').className = 'wallet-btn off'; $('wbtn-t').textContent = 'Connect Phantom';
+      $('wbtn').className = 'wallet-btn off'; $('wbtn-icon').textContent = '🔗'; $('wbtn-t').textContent = 'Connect Wallet';
       $('lbtn').className = 'lbtn dis'; $('lbtn').textContent = 'CONNECT WALLET TO LAUNCH';
       $('ph-stat').style.background = 'var(--red-dim)'; $('ph-stat').style.color = 'var(--red)'; $('ph-stat').textContent = 'DISCONNECTED';
-      $('wallet-content').innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-muted);"><div style="font-size:40px;margin-bottom:14px;">👻</div><div style="font-size:14px;margin-bottom:6px;color:var(--text);font-weight:600;">Not Connected</div><div style="font-size:12px;margin-bottom:20px;">Connect your Phantom wallet to view holdings</div><button class="wallet-btn off" onclick="connectWallet()">Connect Phantom</button></div>`;
+      $('wallet-content').innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-muted);"><div style="font-size:40px;margin-bottom:14px;">🔗</div><div style="font-size:14px;margin-bottom:6px;color:var(--text);font-weight:600;">Not Connected</div><div style="font-size:12px;margin-bottom:20px;">Connect a wallet to start trading on ${getChain().name}</div><button class="wallet-btn off" onclick="connectWallet()">Connect Wallet</button></div>`;
       $('tr-buy-btn').disabled = true;
       $('tr-sell-btn').disabled = true;
       $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
@@ -3447,7 +4886,11 @@
     }
 
     async function launchToken() {
-      if (!walletAddress) { toast('Connect Phantom first!'); return; }
+      // Dispatch to Four.meme launcher if on BNB chain
+      if (selectedPlatform === 'fourmeme' || activeChain === 'bsc') {
+        return launchTokenFourMeme();
+      }
+      if (!walletAddress) { toast('Connect a wallet first!'); return; }
       const name = $('t-name').value.trim();
       const ticker = $('t-ticker').value.trim().replace('$', '');
       const desc = $('t-desc').value.trim();
@@ -3492,11 +4935,11 @@
         if (!txRes.ok) throw new Error('Transaction build failed: ' + await txRes.text());
         setStep(2, 'done', '✓');
 
-        setStep(3, 'active', 'sign in Phantom...');
+        setStep(3, 'active', 'sign in wallet...');
         const txData = await txRes.arrayBuffer();
         const tx = solanaWeb3.VersionedTransaction.deserialize(new Uint8Array(txData));
         tx.sign([mintKeypair]);
-        const signedTx = await getPhantom().signTransaction(tx);
+        const signedTx = await getSolanaSigner().signTransaction(tx);
         setStep(3, 'done', '✓');
 
         setStep(4, 'active', 'submitting...');
@@ -3543,8 +4986,88 @@
       getQuote();
     }
 
+    function setSellPct(pct) {
+      sellPct = pct;
+      [25, 50, 75, 100].forEach(p => {
+        const btn = $('sell-pct-' + p);
+        if (btn) btn.classList.toggle('active', p === pct);
+      });
+      $('tr-sell-btn').textContent = '🔴 SELL ' + pct + '%';
+    }
+
+    function toggleSltp() {
+      sltpEnabled = !sltpEnabled;
+      localStorage.setItem('ghost-sltp', sltpEnabled);
+      if ($('sltp-toggle')) $('sltp-toggle').classList.toggle('on', sltpEnabled);
+      toast(sltpEnabled ? '🎯 Auto SL/TP ON' : 'Auto SL/TP OFF');
+      if (sltpEnabled && !manualSltpTimer) startManualSltpMonitor();
+      if (!sltpEnabled && manualSltpTimer) { clearInterval(manualSltpTimer); manualSltpTimer = null; }
+    }
+
+    function saveManualPositions() {
+      localStorage.setItem('ghost-manual-positions', JSON.stringify(manualPositions));
+    }
+
+    function registerManualPosition(mint, symbol, entrySOL) {
+      if (!sltpEnabled) return;
+      const sl = Math.max(5, Math.min(80, parseFloat($('manual-sl')?.value) || 30));
+      const tp = Math.max(10, Math.min(500, parseFloat($('manual-tp')?.value) || 100));
+      manualPositions[mint] = { symbol, entrySOL, entryTime: Date.now(), sl, tp, status: 'active' };
+      saveManualPositions();
+      toast('🎯 Monitoring ' + symbol + ' — SL: -' + sl + '% / TP: +' + tp + '%');
+      if (!manualSltpTimer) startManualSltpMonitor();
+    }
+
+    function startManualSltpMonitor() {
+      if (manualSltpTimer) return;
+      manualSltpTimer = setInterval(() => checkManualSltpPositions(), 15000);
+    }
+
+    async function checkManualSltpPositions() {
+      if (!sltpEnabled || !walletAddress) return;
+      const mints = Object.keys(manualPositions).filter(m => manualPositions[m].status === 'active');
+      if (mints.length === 0) return;
+
+      for (const mint of mints) {
+        const pos = manualPositions[mint];
+        try {
+          const bal = await getTokenBalance(mint);
+          if (!bal || bal <= 0) { pos.status = 'closed'; saveManualPositions(); continue; }
+          const tokenDecimals = await getTokenDecimals(mint);
+          const tokenLamports = Math.round(bal * Math.pow(10, tokenDecimals));
+          const jupResult = await jupQuote(mint, SOL_MINT, tokenLamports, 1500);
+          if (!jupResult) continue;
+          const currentSOL = parseInt(jupResult.quote.outAmount || '0') / 1e9;
+          const pnlPct = ((currentSOL - pos.entrySOL) / pos.entrySOL) * 100;
+
+          if (pnlPct <= -pos.sl) {
+            toast('🛑 SL triggered for ' + pos.symbol + ': ' + pnlPct.toFixed(1) + '%');
+            addMsg('system', '🛑 STOP-LOSS triggered for ' + pos.symbol + ': ' + pnlPct.toFixed(1) + '% — auto-selling...');
+            pos.status = 'sl_triggered'; saveManualPositions();
+            $('tr-mint').value = mint; sellPct = 100; await executeTrade('sell');
+          } else if (pnlPct >= pos.tp) {
+            toast('🎯 TP triggered for ' + pos.symbol + ': +' + pnlPct.toFixed(1) + '%');
+            addMsg('system', '🎯 TAKE-PROFIT triggered for ' + pos.symbol + ': +' + pnlPct.toFixed(1) + '% — auto-selling...');
+            pos.status = 'tp_triggered'; saveManualPositions();
+            $('tr-mint').value = mint; sellPct = 100; await executeTrade('sell');
+          }
+        } catch (e) { /* skip this position */ }
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
     function onMintInput(val) {
       const clean = val.trim();
+      if (isEVM()) {
+        if (/^0x[a-fA-F0-9]{40}$/.test(clean)) {
+          lookupEVMToken(clean);
+        } else {
+          $('tr-token-info').style.display = 'none';
+          currentQuote = null;
+          $('tr-quote').style.display = 'none';
+        }
+        return;
+      }
       if (clean.length >= 32 && clean.length <= 50) {
         lookupToken(clean);
       } else {
@@ -3580,6 +5103,7 @@
     }
 
     async function getQuote() {
+      if (isEVM()) { getEVMQuote(); return; }
       const mint = $('tr-mint').value.trim();
       const amount = parseFloat($('tr-amount').value);
       const slippage = parseFloat($('tr-slippage').value) || 1;
@@ -3615,6 +5139,7 @@
     }
 
     async function getTokenDecimals(mint) {
+      if (isEVM()) return getEVMTokenDecimals(mint);
       try {
         const conn = await getWorkingConnection();
         const info = await conn.getParsedAccountInfo(new solanaWeb3.PublicKey(mint));
@@ -3630,9 +5155,14 @@
       return n.toFixed(8);
     }
 
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     async function executeTrade(side) {
       if (!walletAddress) { toast('Connect wallet first!'); return; }
       if (isTrading) return;
+      if (isEVM()) { executeEVMTrade(side); return; }
 
       const mint = $('tr-mint').value.trim();
       const amount = parseFloat($('tr-amount').value);
@@ -3666,8 +5196,9 @@
             throw new Error('No token balance to sell');
           }
           const tokenDecimals = await getTokenDecimals(mint);
-          // Sell all if amount >= token value, otherwise sell proportional
-          lamports = Math.round(tokenBalance * Math.pow(10, tokenDecimals));
+          // Apply sell percentage (25%, 50%, 75%, 100%)
+          const sellAmount = tokenBalance * (sellPct / 100);
+          lamports = Math.round(sellAmount * Math.pow(10, tokenDecimals));
         }
 
         btn.textContent = 'FETCHING ROUTE...';
@@ -3679,15 +5210,30 @@
         btn.textContent = 'BUILDING TX...';
         const swapData = await jupSwap(jupResult.endpoint, quote, walletAddress, Math.round(priority * 1e9));
 
-        // Step 3: Sign with Phantom
-        btn.textContent = 'SIGN IN PHANTOM...';
+        // Step 3: Simulate transaction to catch errors early
+        btn.textContent = 'SIMULATING...';
         const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
         const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
-        const phantom = getPhantom();
-        if (!phantom) throw new Error('Phantom not found');
-        const signed = await phantom.signTransaction(tx);
+        try {
+          const simConn = await getWorkingConnection();
+          const simResult = await simConn.simulateTransaction(tx, { sigVerify: false });
+          if (simResult.value.err) {
+            const simErr = typeof simResult.value.err === 'object' ? JSON.stringify(simResult.value.err) : String(simResult.value.err);
+            throw new Error('Simulation failed: ' + simErr + '. Trade would fail on-chain — saving your gas fees.');
+          }
+        } catch (simErr) {
+          if (simErr.message.includes('Simulation failed:')) throw simErr;
+          console.warn('Simulation skipped (RPC issue):', simErr.message);
+        }
 
-        // Step 4: Send to Solana (via Jito if MEV protection is on)
+        // Step 4: Sign with wallet
+        const walletLabel = activeWalletId ? WALLET_PROVIDERS[activeWalletId].name.toUpperCase() : 'WALLET';
+        btn.textContent = 'SIGN IN ' + walletLabel + '...';
+        const solSigner = getSolanaSigner();
+        if (!solSigner) throw new Error('Wallet signer not found — reconnect your wallet');
+        const signed = await solSigner.signTransaction(tx);
+
+        // Step 5: Send to Solana (via Jito if MEV protection is on)
         btn.textContent = mevEnabled ? 'JITO BUNDLE...' : 'SUBMITTING...';
         const rawTx = signed.serialize();
         let sig;
@@ -3739,9 +5285,13 @@
 
         // Refresh balance
         try {
-          walletBalance = (await conn.getBalance(walletPubkey)) / 1e9;
+          const refreshConn = await getWorkingConnection();
+          walletBalance = (await refreshConn.getBalance(walletPubkey)) / 1e9;
           updateWalletPanel();
         } catch(e) {}
+
+        // Register for SL/TP monitoring if enabled
+        if (side === 'buy') registerManualPosition(mint, symbol, amount);
 
         // Refresh positions
         setTimeout(refreshPositions, 2000);
@@ -3765,6 +5315,7 @@
     }
 
     async function getTokenBalance(mint) {
+      if (isEVM()) return getEVMTokenBalance(mint);
       try {
         const conn = await getWorkingConnection();
         const tokenAccounts = await conn.getParsedTokenAccountsByOwner(
@@ -3780,6 +5331,7 @@
 
     // ═══════ POSITIONS ═══════
     async function refreshPositions() {
+      if (isEVM()) { refreshEVMPositions(); return; }
       if (!walletAddress) {
         $('positions-list').innerHTML = '<div class="pos-empty">Connect wallet to see positions</div>';
         return;
@@ -3853,20 +5405,43 @@
     function renderTradeHistory() {
       if (tradeHistory.length === 0) {
         $('trade-history').innerHTML = '<div class="pos-empty" style="padding:16px;">No trades yet</div>';
+        updateSessionStats();
         return;
       }
       let html = '';
       for (const t of tradeHistory.slice(0, 20)) {
         const time = new Date(t.time);
         const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const chainBadge = t.chain && t.chain !== 'solana' && CHAINS[t.chain] ? ` <span style="font-size:9px;color:${CHAINS[t.chain].color};font-weight:700;">${CHAINS[t.chain].name.toUpperCase()}</span>` : '';
         html += `
           <div class="th-item">
             <span class="th-action ${t.side === 'buy' ? 'th-buy' : 'th-sell'}">${t.side.toUpperCase()}</span>
-            <span class="th-details">${t.symbol} · ${t.amountIn} → ${t.amountOut}</span>
+            <span class="th-details">${t.symbol}${chainBadge} · ${t.amountIn} → ${t.amountOut}</span>
             <span class="th-time">${timeStr}</span>
           </div>`;
       }
       $('trade-history').innerHTML = html;
+      updateSessionStats();
+    }
+
+    function updateSessionStats() {
+      const el = $('session-stats');
+      if (!el || tradeHistory.length === 0) { if (el) el.style.display = 'none'; return; }
+      const today = new Date(); today.setHours(0,0,0,0);
+      const todayTrades = tradeHistory.filter(t => t.time >= today.getTime());
+      const buys = todayTrades.filter(t => t.side === 'buy').length;
+      const sells = todayTrades.filter(t => t.side === 'sell').length;
+      let buyVol = 0, sellVol = 0;
+      for (const t of todayTrades) {
+        if (t.side === 'buy' && t.amountIn?.includes('SOL')) buyVol += parseFloat(t.amountIn?.replace(/[^0-9.]/g,'') || 0);
+        else if (t.side === 'sell' && t.amountOut?.includes('SOL')) sellVol += parseFloat(t.amountOut?.replace(/[^0-9.]/g,'') || 0);
+      }
+      const pnl = sellVol - buyVol;
+      const pnlStr = pnl >= 0 ? '+' + pnl.toFixed(3) : pnl.toFixed(3);
+      const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+      const alphaActive = typeof alphaPositions !== 'undefined' ? Object.keys(alphaPositions).length : 0;
+      el.style.display = 'flex';
+      el.innerHTML = '<span>📊 Today: ' + (buys+sells) + ' trades</span><span>' + buys + 'B/' + sells + 'S</span><span style="color:' + pnlColor + '">' + pnlStr + ' SOL</span>' + (alphaActive > 0 ? '<span>🧠 ' + alphaActive + ' alpha</span>' : '') + (sltpEnabled ? '<span>🎯 SL/TP</span>' : '');
     }
 
     function clearTradeHistory() {
@@ -3874,6 +5449,23 @@
       localStorage.removeItem('ghost-trades');
       renderTradeHistory();
       toast('Trade history cleared');
+    }
+
+    function exportTradesCsv() {
+      if (tradeHistory.length === 0) { toast('No trades to export'); return; }
+      const headers = 'Date,Time,Side,Symbol,Mint,Amount In,Amount Out,Tx Signature\n';
+      const rows = tradeHistory.map(t => {
+        const d = new Date(t.time);
+        return d.toLocaleDateString() + ',' + d.toLocaleTimeString() + ',' + t.side + ',' +
+          (t.symbol||'').replace(/,/g,' ') + ',' + t.mint + ',' +
+          (t.amountIn||'').replace(/,/g,' ') + ',' + (t.amountOut||'').replace(/,/g,' ') + ',' + (t.sig||'');
+      }).join('\n');
+      const blob = new Blob([headers + rows], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url;
+      a.download = 'ghost-trades-' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click(); URL.revokeObjectURL(url);
+      toast('📥 Trades exported');
     }
 
     // ═══════ TOKEN INTEL ═══════
@@ -3896,7 +5488,7 @@
           // Search by ticker
           const res = await fetch(`${DEXSCREENER_API}/search/?q=${encodeURIComponent(input)}`);
           const data = await res.json();
-          pairs = (data.pairs || []).filter(p => p.chainId === 'solana');
+          pairs = (data.pairs || []).filter(p => p.chainId === getChain().dexScreenerChain);
         }
 
         if (pairs.length === 0) {
@@ -4034,10 +5626,10 @@
           <div class="intel-card">
             <div class="intel-card-title">Quick Actions</div>
             <div class="intel-links">
-              <a class="intel-link" href="https://dexscreener.com/solana/${mint}" target="_blank">📊 DexScreener</a>
-              <a class="intel-link" href="https://birdeye.so/token/${mint}?chain=solana" target="_blank">🦅 Birdeye</a>
-              <a class="intel-link" href="https://solscan.io/token/${mint}" target="_blank">🔍 Solscan</a>
-              <a class="intel-link" href="https://rugcheck.xyz/tokens/${mint}" target="_blank">🛡 RugCheck</a>
+              <a class="intel-link" href="https://dexscreener.com/${getChain().dexScreenerChain}/${mint}" target="_blank">📊 DexScreener</a>
+              ${activeChain === 'solana' ? `<a class="intel-link" href="https://birdeye.so/token/${mint}?chain=solana" target="_blank">🦅 Birdeye</a>` : ''}
+              <a class="intel-link" href="${getChain().explorerAddr}${mint}" target="_blank">🔍 ${activeChain === 'solana' ? 'Solscan' : getChain().name + ' Explorer'}</a>
+              ${activeChain === 'solana' ? `<a class="intel-link" href="https://rugcheck.xyz/tokens/${mint}" target="_blank">🛡 RugCheck</a>` : ''}
               <span class="intel-link" onclick="$('tr-mint').value='${mint}';onMintInput('${mint}');setMode('trade');">⟡ Trade</span>
             </div>
           </div>`;
@@ -4488,12 +6080,12 @@
       if (!wasOpen) {
         const holdEl = $(`alpha-holdings-${idx}`);
         if (holdEl && holdEl.dataset.loaded !== 'true') {
-          fetchWalletHoldings(alphaWallets[idx].address, idx);
+          fetchAlphaWalletHoldings(alphaWallets[idx].address, idx);
         }
       }
     }
 
-    async function fetchWalletHoldings(address, idx) {
+    async function fetchAlphaWalletHoldings(address, idx) {
       const holdEl = $(`alpha-holdings-${idx}`);
       if (!holdEl) return;
       holdEl.innerHTML = '<div style="font-size:9px;color:var(--text-faint);">Loading holdings...</div>';
@@ -5173,6 +6765,9 @@ Be concise, use numbers. Output as plain text, not markdown.`;
         return;
       }
 
+      // Lock mint immediately to prevent race condition double-buys
+      alphaRecentBuys[mint] = Date.now();
+
       // ── 2. GLOBAL COOLDOWN: Min 30s between buys ──
       const cooldownMs = 30 * 1000;
       if (Date.now() - alphaLastBuyTime < cooldownMs) {
@@ -5216,7 +6811,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
       try {
         const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/tokens/${mint}`);
         const dsData = await dsRes.json();
-        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+        const pairs = (dsData.pairs || []).filter(p => p.chainId === getChain().dexScreenerChain);
         if (pairs.length > 0) {
           const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
           const liq = best.liquidity?.usd || 0;
@@ -5720,7 +7315,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           try {
             const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/tokens/${mint}`, {}, 8000);
             const dsData = await dsRes.json();
-            const pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+            const pairs = (dsData.pairs || []).filter(p => p.chainId === getChain().dexScreenerChain);
             if (pairs.length > 0) {
               const best = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
               const priceNative = parseFloat(best.priceNative) || 0; // Price per token in SOL
@@ -6202,7 +7797,7 @@ Your response (one line only):`;
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 250x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n🎯 Auto SL/TP — set stop-loss & take-profit in trade panel\n📊 Partial sells — 25% / 50% / 75% / 100% sell buttons\n📥 CSV export — download trade history\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 250x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\n⌨️ **Keyboard Shortcuts:**\nCtrl+T — Trade · Ctrl+L — Launch · Ctrl+P — Perps\nCtrl+B — Alpha Bot · Ctrl+K — Focus chat · Esc — Back\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -6284,7 +7879,7 @@ Your response (one line only):`;
 
         const res = await fetch(url);
         const data = await res.json();
-        let pairs = (data.pairs || []).filter(p => p.chainId === 'solana');
+        let pairs = (data.pairs || []).filter(p => p.chainId === getChain().dexScreenerChain);
 
         if (pairs.length === 0) {
           addMsg('system', `⬡ No Solana token found for "${query}"`);
@@ -6342,19 +7937,29 @@ Your response (one line only):`;
     }
 
     // ── Rick-style Token Card ──
+    let _lastDexScreenerCall = 0;
+    const DEXSCREENER_MIN_INTERVAL = 500; // ms between calls
+
     async function quickTokenCard(mint) {
+      // Rate limit DexScreener calls
+      const now = Date.now();
+      if (now - _lastDexScreenerCall < DEXSCREENER_MIN_INTERVAL) {
+        await new Promise(r => setTimeout(r, DEXSCREENER_MIN_INTERVAL - (now - _lastDexScreenerCall)));
+      }
+      _lastDexScreenerCall = Date.now();
+
       if ($('empty-state')) $('empty-state').style.display = 'none';
       addHtmlMsg('assistant', '<div class="tk-card" style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">Scanning token...</div>');
 
       try {
         const dsRes = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
         const dsData = await dsRes.json();
-        let pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+        let pairs = (dsData.pairs || []).filter(p => p.chainId === getChain().dexScreenerChain);
 
         if (pairs.length === 0) {
           // Try pump.fun / new token — might not be on DEX yet
           const lastMsg = $('messages').lastElementChild;
-          if (lastMsg) lastMsg.querySelector('.mc').innerHTML = `<div class="tk-card" style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">⚠️ No Solana DEX data found for this token.<br>It may be too new or not yet listed.</div>`;
+          if (lastMsg) lastMsg.querySelector('.mc').innerHTML = `<div class="tk-card" style="padding:14px;text-align:center;color:var(--text-muted);font-size:12px;">⚠️ No ${getChain().name} DEX data found for this token.<br>It may be too new or not yet listed.</div>`;
           return;
         }
 
@@ -6415,8 +8020,8 @@ Your response (one line only):`;
           <div class="tk-head">
             ${imgUrl ? `<img src="${imgUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="tk-icon" style="background:${color};display:none;">${initial}</div>` : `<div class="tk-icon" style="background:${color};">${initial}</div>`}
             <div class="tk-title">
-              <div class="tk-name">${name}</div>
-              <div class="tk-ticker">$${symbol} · ${dexId.toUpperCase()} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
+              <div class="tk-name">${escapeHtml(name)}</div>
+              <div class="tk-ticker">$${escapeHtml(symbol)} · ${escapeHtml(dexId.toUpperCase())} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
             </div>
             <div class="tk-price-big">${fP(price)}</div>
             <button onclick="quickTokenCardRefresh('${mint}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;" title="Refresh">↻</button>
@@ -6476,7 +8081,7 @@ Your response (one line only):`;
       try {
         const dsRes = await fetch(`${DEXSCREENER_API}/tokens/${mint}`);
         const dsData = await dsRes.json();
-        let pairs = (dsData.pairs || []).filter(p => p.chainId === 'solana');
+        let pairs = (dsData.pairs || []).filter(p => p.chainId === getChain().dexScreenerChain);
         if (pairs.length === 0) { toast('No data found'); return; }
 
         const pair = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
@@ -6514,8 +8119,8 @@ Your response (one line only):`;
           <div class="tk-head">
             ${imgUrl ? `<img src="${imgUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="tk-icon" style="background:${color};display:none;">${initial}</div>` : `<div class="tk-icon" style="background:${color};">${initial}</div>`}
             <div class="tk-title">
-              <div class="tk-name">${name}</div>
-              <div class="tk-ticker">$${symbol} · ${dexId.toUpperCase()} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
+              <div class="tk-name">${escapeHtml(name)}</div>
+              <div class="tk-ticker">$${escapeHtml(symbol)} · ${escapeHtml(dexId.toUpperCase())} · <span style="color:${safetyColor};font-size:10px;">${safetyLabel}</span></div>
             </div>
             <div class="tk-price-big">${fP(price)}</div>
             <button onclick="quickTokenCardRefresh('${mint}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0;" title="Refresh">↻</button>
@@ -6561,6 +8166,8 @@ Your response (one line only):`;
 
     function timeSince(timestamp) {
       const ms = Date.now() - timestamp;
+      const s = Math.floor(ms / 1000);
+      if (s < 60) return s + 's';
       const m = Math.floor(ms / 60000);
       if (m < 60) return m + 'm';
       const h = Math.floor(m / 60);
@@ -6751,7 +8358,7 @@ AVAILABLE ACTIONS (include these in your response to trigger them):
 {{ACTION:open_sniper}} - Open the sniper bot settings
 {{ACTION:open_history}} - Open history panel
 {{ACTION:new_chat}} - Start a new chat
-{{ACTION:connect_wallet}} - Connect Phantom wallet
+{{ACTION:connect_wallet}} - Connect wallet (Phantom, MetaMask, or Trust Wallet)
 {{ACTION:sniper_on}} / {{ACTION:sniper_off}} - Toggle sniper
 {{ACTION:web_search_on}} / {{ACTION:web_search_off}} - Toggle web search
 {{ACTION:setup_buy|MINT_ADDRESS|AMOUNT}} - Open trade and prefill a buy
@@ -7075,12 +8682,12 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
 
     // ═══════ EMBEDDED CHART ═══════
     function openChart(mint, symbol) {
-      $('chart-embed').src = `https://dexscreener.com/solana/${mint}?embed=1&theme=dark&trades=0&info=0`;
+      $('chart-embed').src = `https://dexscreener.com/${getChain().dexScreenerChain}/${mint}?embed=1&theme=dark&trades=0&info=0`;
       $('chart-token-label').textContent = symbol ? `$${symbol}` : mint.slice(0, 8);
       // Wire up action buttons
       $('chart-buy-btn').onclick = () => { setMode('trade'); $('tr-mint').value = mint; onMintInput(mint); };
       $('chart-scan-btn').onclick = () => { $('intel-mint').value = mint; setMode('intel'); fetchTokenIntel(); };
-      $('chart-solscan-btn').onclick = () => window.open('https://solscan.io/token/' + mint, '_blank');
+      $('chart-solscan-btn').onclick = () => window.open(getChain().explorerAddr + mint, '_blank');
       $('chart-watch-btn').onclick = () => addToWatchlist(mint);
       setMode('chart');
     }
@@ -7617,7 +9224,13 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       if (perpsPnlInterval) clearInterval(perpsPnlInterval);
       perpsPnlInterval = setInterval(() => {
         const open = perpsPositions.filter(p => p.status === 'open' || p.status === 'keeper_pending');
-        if (open.length > 0) renderPerpsPositions();
+        if (open.length > 0) {
+          renderPerpsPositions();
+          // Periodic liquidation check independent of WebSocket
+          for (const key of Object.keys(PERPS_SYMBOLS)) {
+            if (perpsPrices[key]) checkPerpsLiquidations(key);
+          }
+        }
       }, 2000);
     }
 
@@ -7635,6 +9248,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       function tryConnect(idx) {
         if (idx >= wsEndpoints.length) {
           console.warn('All WS endpoints failed, using REST polling');
+          toast('⚠️ Live prices degraded — using 5s polling', 5000);
           startPerpsPolling();
           return;
         }
@@ -8404,22 +10018,39 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       toast('Positions refreshed');
     }
 
-    function timeSince(ts) {
-      const seconds = Math.floor((Date.now() - ts) / 1000);
-      if (seconds < 60) return seconds + 's';
-      if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
-      if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
-      return Math.floor(seconds / 86400) + 'd';
-    }
+    // ═══════ KEYBOARD SHORTCUTS ═══════
+    document.addEventListener('keydown', (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 't': e.preventDefault(); setMode('trade'); break;
+          case 'l': e.preventDefault(); setMode('launch'); break;
+          case 'k': e.preventDefault(); $('input').focus(); break;
+          case 'p': e.preventDefault(); setMode('perps'); break;
+          case 'b': e.preventDefault(); setMode('alpha'); break;
+        }
+      } else if (e.key === 'Escape') {
+        if (currentMode !== 'chat') { goBack(); e.preventDefault(); }
+      }
+    });
 
     // ═══════ INIT ═══════
     $('theme-btn').textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
     $('model-sel').value = currentModel;
     checkApiKey();
+    if (!apiKey) setTimeout(promptApiKey, 600);
     renderTradeHistory();
     updateWsBtn();
     updateSniperSwitch();
     setChatMode(chatMode);
+    if ($('sltp-toggle')) $('sltp-toggle').classList.toggle('on', sltpEnabled);
+    if (sltpEnabled && Object.keys(manualPositions).length > 0) startManualSltpMonitor();
+
+    // Restore chain state on init
+    if (activeChain !== 'solana') {
+      switchChain(activeChain);
+    }
 
     // Restore last chat session
     if (currentSessionId) {
