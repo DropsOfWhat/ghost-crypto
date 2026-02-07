@@ -2209,6 +2209,55 @@
       width: 100%; height: 350px; border: none; border-radius: 0;
       background: var(--bg-surface);
     }
+
+    /* ═══════ INLINE CHART CARD ═══════ */
+    .fc-card {
+      background: var(--bg-glass); border: 1px solid var(--border-primary);
+      border-radius: 14px; overflow: hidden; max-width: 520px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .fc-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border-bottom: 1px solid var(--border-secondary);
+    }
+    .fc-pair { font-size: 15px; font-weight: 800; color: var(--text-primary); }
+    .fc-tf { font-size: 10px; font-weight: 700; color: var(--text-muted);
+      background: var(--bg-elevated); padding: 3px 8px; border-radius: 6px;
+      letter-spacing: 0.08em; }
+    .fc-price-row { display: flex; align-items: baseline; gap: 8px; }
+    .fc-price { font-size: 18px; font-weight: 900; color: var(--text-primary);
+      font-family: 'Fira Code', monospace; }
+    .fc-change { font-size: 12px; font-weight: 800; font-family: 'Fira Code', monospace; }
+    .fc-change.up { color: var(--green); }
+    .fc-change.down { color: var(--red); }
+    .fc-canvas-wrap { padding: 4px; position: relative; }
+    .fc-canvas-wrap canvas { width: 100%; display: block; border-radius: 8px; }
+    .fc-stats {
+      display: flex; gap: 0; border-top: 1px solid var(--border-secondary);
+    }
+    .fc-stat {
+      flex: 1; padding: 8px 10px; text-align: center;
+      border-right: 1px solid var(--border-secondary);
+    }
+    .fc-stat:last-child { border-right: none; }
+    .fc-stat-label { font-size: 8px; font-weight: 700; color: var(--text-faint);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px; }
+    .fc-stat-val { font-size: 11px; font-weight: 800; color: var(--text-secondary);
+      font-family: 'Fira Code', monospace; }
+    .fc-actions { display: flex; gap: 6px; padding: 8px 12px;
+      border-top: 1px solid var(--border-secondary); }
+    .fc-btn {
+      flex: 1; padding: 7px 0; border-radius: 8px; border: 1px solid var(--border-primary);
+      background: var(--bg-glass); color: var(--text-muted); font-size: 10px;
+      font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.04em;
+    }
+    .fc-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .fc-btn.buy { background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05));
+      color: var(--green); border-color: rgba(34,197,94,0.3); }
+    .fc-btn.buy:hover { background: rgba(34,197,94,0.25); }
+    .fc-loading { padding: 40px 14px; text-align: center; color: var(--text-muted); font-size: 12px; }
+    .fc-error { padding: 20px 14px; text-align: center; color: var(--red); font-size: 12px; }
+    .fc-embed-chart { width: 100%; height: 320px; border: none; }
   </style>
 </head>
 <body>
@@ -2662,7 +2711,7 @@
           <div class="empty-state" id="empty-state">
             <div class="eicon">◬</div>
             <div class="etitle">Ghost Crypto</div>
-            <div class="edesc">AI-powered crypto command center. Multi-chain trading (Solana, Ethereum, Base, BNB Chain). Trade via Jupiter/OpenOcean, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.</div>
+            <div class="edesc">AI-powered crypto command center. Multi-chain trading (Solana, Ethereum, Base, BNB Chain). Trade via Jupiter/OpenOcean, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.<br><br><span style="color:var(--accent);font-weight:700;font-size:11px;">💡 Quick: type <code style="background:var(--bg-elevated);padding:1px 6px;border-radius:4px;">fc sol 5m</code> for instant charts</span></div>
           </div>
         </div>
       </div>
@@ -7936,6 +7985,326 @@ Your response (one line only):`;
       return c;
     }
 
+    // ═══════ FC — INLINE CHART COMMAND ═══════
+    const FC_BINANCE_MAP = {
+      sol:'SOLUSDT', btc:'BTCUSDT', eth:'ETHUSDT', bnb:'BNBUSDT', doge:'DOGEUSDT',
+      xrp:'XRPUSDT', ada:'ADAUSDT', avax:'AVAXUSDT', dot:'DOTUSDT', matic:'MATICUSDT',
+      link:'LINKUSDT', uni:'UNIUSDT', atom:'ATOMUSDT', near:'NEARUSDT', arb:'ARBUSDT',
+      op:'OPUSDT', sui:'SUIUSDT', apt:'APTUSDT', sei:'SEIUSDT', inj:'INJUSDT',
+      fil:'FILUSDT', ltc:'LTCUSDT', bch:'BCHUSDT', etc:'ETCUSDT', icp:'ICPUSDT',
+      render:'RENDERUSDT', fet:'FETUSDT', wif:'WIFUSDT', pepe:'PEPEUSDT', bonk:'BONKUSDT',
+      shib:'SHIBUSDT', floki:'FLOKIUSDT', jup:'JUPUSDT', pyth:'PYTHUSDT', jto:'JTOUSDT',
+      ray:'RAYUSDT', ondo:'ONDOUSDT', pendle:'PENDLEUSDT', tia:'TIAUSDT', aave:'AAVEUSDT',
+      mkr:'MKRUSDT', crv:'CRVUSDT', ldo:'LDOUSDT', snx:'SNXUSDT', trx:'TRXUSDT',
+      ton:'TONUSDT', pol:'POLUSDT', hbar:'HBARUSDT', algo:'ALGOUSDT', xlm:'XLMUSDT',
+      vet:'VETUSDT', ftm:'FTMUSDT', sand:'SANDUSDT', mana:'MANAUSDT', gala:'GALAUSDT',
+      trump:'TRUMPUSDT', fartcoin:'FARTCOINUSDT', ai16z:'AI16ZUSDT', virtual:'VIRTUALUSDT',
+      bitcoin:'BTCUSDT', solana:'SOLUSDT', ethereum:'ETHUSDT', binance:'BNBUSDT',
+    };
+    const FC_VALID_TF = ['1m','3m','5m','15m','30m','1h','2h','4h','6h','8h','12h','1d','3d','1w'];
+
+    function isChartCommand(text) {
+      const t = text.trim().toLowerCase();
+      return t.startsWith('fc ') || t === 'fc';
+    }
+
+    async function handleChartCommand(text) {
+      const parts = text.trim().toLowerCase().split(/\s+/);
+      // fc <symbol> [timeframe]
+      const symbol = parts[1] || '';
+      let tf = parts[2] || '5m';
+      if (!FC_VALID_TF.includes(tf)) tf = '5m';
+      if (!symbol) {
+        addHtmlMsg('assistant', '<div class="fc-card"><div class="fc-error">Usage: <b>fc &lt;symbol&gt; [timeframe]</b><br>Examples: fc sol 5m • fc btc 1h • fc eth 4h • fc pepe 15m<br>Timeframes: 1m 3m 5m 15m 30m 1h 2h 4h 6h 12h 1d 3d 1w<br><br>Also works with token addresses:<br>fc &lt;mint_address&gt; [timeframe]</div></div>');
+        return;
+      }
+
+      // If symbol looks like a token address, go straight to DexScreener
+      const isAddress = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(symbol) || /^0x[a-fA-F0-9]{40}$/.test(symbol);
+
+      const chartId = 'fc-' + Date.now();
+      const mc = addHtmlMsg('assistant', `<div class="fc-card" id="${chartId}"><div class="fc-loading">📊 Loading ${symbol.toUpperCase()} ${tf} chart...</div></div>`);
+
+      // Try Binance first for known symbols (not addresses)
+      const binancePair = !isAddress && FC_BINANCE_MAP[symbol];
+      if (binancePair) {
+        try {
+          const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binancePair}&interval=${tf}&limit=120`);
+          if (!res.ok) throw new Error('Binance API error');
+          const candles = await res.json();
+          if (!candles.length) throw new Error('No data');
+          renderFcChart(chartId, symbol.toUpperCase(), tf, candles, binancePair);
+          return;
+        } catch(e) { console.warn('Binance failed for', symbol, e); }
+      }
+
+      // Fallback: try DexScreener search → embed chart
+      try {
+        const searchQ = isAddress ? symbol : symbol;
+        const dsEndpoint = isAddress
+          ? `https://api.dexscreener.com/latest/dex/tokens/${symbol}`
+          : `https://api.dexscreener.com/latest/dex/search?q=${symbol}`;
+        const dsRes = await fetch(dsEndpoint);
+        const dsData = await dsRes.json();
+        const pairs = (dsData.pairs || []).slice(0, 1);
+        if (pairs.length > 0) {
+          const pair = pairs[0];
+          const chain = pair.chainId || 'solana';
+          const pAddr = pair.pairAddress;
+          const price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+          const chg = pair.priceChange?.h24 || 0;
+          const vol = pair.volume?.h24 || 0;
+          const liq = pair.liquidity?.usd || 0;
+          const name = pair.baseToken?.symbol || symbol.toUpperCase();
+          const chgClass = chg >= 0 ? 'up' : 'down';
+          const chgSign = chg >= 0 ? '+' : '';
+          const fP = price < 0.001 ? price.toFixed(8) : price < 1 ? price.toFixed(5) : price < 1000 ? price.toFixed(2) : price.toLocaleString('en-US', {maximumFractionDigits:2});
+          const fV = vol >= 1e6 ? (vol/1e6).toFixed(1)+'M' : vol >= 1e3 ? (vol/1e3).toFixed(1)+'K' : vol.toFixed(0);
+          const fL = liq >= 1e6 ? (liq/1e6).toFixed(1)+'M' : liq >= 1e3 ? (liq/1e3).toFixed(1)+'K' : liq.toFixed(0);
+
+          document.getElementById(chartId).innerHTML = `
+            <div class="fc-header">
+              <div>
+                <div class="fc-pair">${name}/USD</div>
+                <div class="fc-price-row">
+                  <span class="fc-price">$${fP}</span>
+                  <span class="fc-change ${chgClass}">${chgSign}${chg.toFixed(2)}%</span>
+                </div>
+              </div>
+              <span class="fc-tf">${tf.toUpperCase()} • DEX</span>
+            </div>
+            <div class="fc-canvas-wrap">
+              <iframe class="fc-embed-chart" src="https://dexscreener.com/${chain}/${pAddr}?embed=1&theme=dark&trades=0&info=0" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+            </div>
+            <div class="fc-stats">
+              <div class="fc-stat"><div class="fc-stat-label">VOL 24H</div><div class="fc-stat-val">$${fV}</div></div>
+              <div class="fc-stat"><div class="fc-stat-label">LIQ</div><div class="fc-stat-val">$${fL}</div></div>
+              <div class="fc-stat"><div class="fc-stat-label">DEX</div><div class="fc-stat-val">${pair.dexId || '?'}</div></div>
+              <div class="fc-stat"><div class="fc-stat-label">CHAIN</div><div class="fc-stat-val">${chain.toUpperCase()}</div></div>
+            </div>
+            <div class="fc-actions">
+              <button class="fc-btn buy" onclick="setInput('/buy ${pair.baseToken?.address || pAddr}')">⟡ BUY</button>
+              <button class="fc-btn" onclick="window.open('https://dexscreener.com/${chain}/${pAddr}','_blank')">📊 FULL</button>
+              <button class="fc-btn" onclick="quickTokenCard('${pair.baseToken?.address || pAddr}')">🔍 SCAN</button>
+            </div>`;
+          return;
+        }
+        throw new Error('No pairs found');
+      } catch(e) {
+        // Final fallback: direct DexScreener embed for known symbols (no API needed)
+        const FC_DS_EMBEDS = {
+          sol: {chain:'solana',pair:'So11111111111111111111111111111111111111112',name:'SOL'},
+          btc: {chain:'solana',pair:'3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',name:'BTC'},
+          eth: {chain:'ethereum',pair:'0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640',name:'ETH'},
+          bnb: {chain:'bsc',pair:'0x16b9a82891338f9bA80E2D6970FddA79D1eb0daE',name:'BNB'},
+          doge: {chain:'solana',pair:'BPDShvpWtdWgUBfcjBTRfSGEWn2FRbmzR31NQHP1r3jv',name:'DOGE'},
+          xrp: {chain:'solana',pair:'FfKR5GtTkCS5VBpEnRDcmiSRxeg8GRDqnByqJahKcbPg',name:'XRP'},
+          pepe: {chain:'ethereum',pair:'0xa43fe16908251ee70ef74718545e4fe6c5ccec9f',name:'PEPE'},
+          wif: {chain:'solana',pair:'EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx',name:'WIF'},
+          bonk: {chain:'solana',pair:'BjZKz1z4UMjGPGRbGnSm7tX4DCbMTQGnhKKo2epump',name:'BONK'},
+          jup: {chain:'solana',pair:'C1MgLojNMsi1r3pkU2cEaGFgRMA1gLDRd559JH7ePump',name:'JUP'},
+          trump: {chain:'solana',pair:'HnMYFWMusiqKamPXNFkajLMaGHajpJWqRWfWnzNyBCAa',name:'TRUMP'},
+          ai16z: {chain:'solana',pair:'HB97VsfGNKMBjcT3BmBBxiNkQF2aUDmLTpS3mDmepump',name:'AI16Z'},
+          fartcoin: {chain:'solana',pair:'9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM',name:'FARTCOIN'},
+          render: {chain:'solana',pair:'8tFuPAxFbUDqLsZBcoPnQvF8P7RU2oYoBaHqFxTPpump',name:'RENDER'},
+          virtual: {chain:'base',pair:'0xb0b0c05b9dd18fb94e3f0f5e4eab10a7c8c1a0ef',name:'VIRTUAL'},
+          ray: {chain:'solana',pair:'AVs9TA4nWDzfPJE9IeHUJJT6w66pmHt5TNhEB7hhsVcx',name:'RAY'},
+          pyth: {chain:'solana',pair:'H3kVpGRzMBrEcCaeFuXHMbT8G55E4U1Sf5ZsAZbBpump',name:'PYTH'},
+        };
+        const embed = FC_DS_EMBEDS[symbol];
+        if (embed) {
+          const darkMode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+          document.getElementById(chartId).innerHTML = `
+            <div class="fc-header">
+              <div><div class="fc-pair">${embed.name}/USD</div></div>
+              <span class="fc-tf">${tf.toUpperCase()} • DEXSCREENER</span>
+            </div>
+            <div class="fc-canvas-wrap" style="padding:0;">
+              <iframe class="fc-embed-chart" src="https://dexscreener.com/${embed.chain}/${embed.pair}?embed=1&theme=${darkMode}&trades=0&info=0" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+            </div>
+            <div class="fc-actions">
+              <button class="fc-btn" onclick="window.open('https://dexscreener.com/${embed.chain}/${embed.pair}','_blank')">📊 FULL CHART</button>
+              <button class="fc-btn" onclick="window.open('https://www.binance.com/en/trade/${(FC_BINANCE_MAP[symbol]||'').replace('USDT','_USDT')}','_blank')">🅱 BINANCE</button>
+            </div>`;
+          return;
+        }
+        // If also an address, try direct embed
+        if (isAddress) {
+          const addrChain = /^0x/.test(symbol) ? 'ethereum' : 'solana';
+          const darkMode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+          document.getElementById(chartId).innerHTML = `
+            <div class="fc-header">
+              <div><div class="fc-pair">${symbol.slice(0,6)}...${symbol.slice(-4)}</div></div>
+              <span class="fc-tf">${tf.toUpperCase()} • DEXSCREENER</span>
+            </div>
+            <div class="fc-canvas-wrap" style="padding:0;">
+              <iframe class="fc-embed-chart" src="https://dexscreener.com/${addrChain}/${symbol}?embed=1&theme=${darkMode}&trades=0&info=0" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+            </div>
+            <div class="fc-actions">
+              <button class="fc-btn" onclick="window.open('https://dexscreener.com/${addrChain}/${symbol}','_blank')">📊 FULL CHART</button>
+            </div>`;
+          return;
+        }
+        document.getElementById(chartId).innerHTML = `<div class="fc-error">❌ Could not find chart for "${symbol}"<br><span style="font-size:10px;color:var(--text-faint);">Try: fc sol 5m • fc btc 1h • fc pepe 15m • or paste a token address</span></div>`;
+      }
+    }
+
+    function renderFcChart(chartId, symbol, tf, candles, binancePair) {
+      // candles = [[openTime, open, high, low, close, volume, ...], ...]
+      const opens = candles.map(c => parseFloat(c[1]));
+      const highs = candles.map(c => parseFloat(c[2]));
+      const lows = candles.map(c => parseFloat(c[3]));
+      const closes = candles.map(c => parseFloat(c[4]));
+      const vols = candles.map(c => parseFloat(c[5]));
+      const times = candles.map(c => c[0]);
+
+      const curPrice = closes[closes.length - 1];
+      const openPrice = opens[0];
+      const change = ((curPrice - openPrice) / openPrice * 100);
+      const hi = Math.max(...highs);
+      const lo = Math.min(...lows);
+      const totalVol = vols.reduce((a,b) => a+b, 0);
+      const chgClass = change >= 0 ? 'up' : 'down';
+      const chgSign = change >= 0 ? '+' : '';
+      const fP = curPrice < 0.001 ? curPrice.toFixed(8) : curPrice < 1 ? curPrice.toFixed(5) : curPrice < 1000 ? curPrice.toFixed(2) : curPrice.toLocaleString('en-US',{maximumFractionDigits:2});
+      const fH = hi < 1 ? hi.toFixed(5) : hi.toFixed(2);
+      const fL = lo < 1 ? lo.toFixed(5) : lo.toFixed(2);
+      const fV = totalVol >= 1e9 ? (totalVol/1e9).toFixed(1)+'B' : totalVol >= 1e6 ? (totalVol/1e6).toFixed(1)+'M' : totalVol >= 1e3 ? (totalVol/1e3).toFixed(1)+'K' : totalVol.toFixed(0);
+
+      const canvasId = 'cv-' + Date.now();
+      const el = document.getElementById(chartId);
+      el.innerHTML = `
+        <div class="fc-header">
+          <div>
+            <div class="fc-pair">${symbol}/USDT</div>
+            <div class="fc-price-row">
+              <span class="fc-price">$${fP}</span>
+              <span class="fc-change ${chgClass}">${chgSign}${change.toFixed(2)}%</span>
+            </div>
+          </div>
+          <span class="fc-tf">${tf.toUpperCase()} • BINANCE</span>
+        </div>
+        <div class="fc-canvas-wrap">
+          <canvas id="${canvasId}" width="980" height="380"></canvas>
+        </div>
+        <div class="fc-stats">
+          <div class="fc-stat"><div class="fc-stat-label">HIGH</div><div class="fc-stat-val">$${fH}</div></div>
+          <div class="fc-stat"><div class="fc-stat-label">LOW</div><div class="fc-stat-val">$${fL}</div></div>
+          <div class="fc-stat"><div class="fc-stat-label">VOL</div><div class="fc-stat-val">${fV}</div></div>
+          <div class="fc-stat"><div class="fc-stat-label">CANDLES</div><div class="fc-stat-val">${candles.length}</div></div>
+        </div>
+        <div class="fc-actions">
+          <button class="fc-btn" onclick="handleChartCommand('fc ${symbol.toLowerCase()} 1m')">1M</button>
+          <button class="fc-btn" onclick="handleChartCommand('fc ${symbol.toLowerCase()} 5m')">5M</button>
+          <button class="fc-btn" onclick="handleChartCommand('fc ${symbol.toLowerCase()} 15m')">15M</button>
+          <button class="fc-btn" onclick="handleChartCommand('fc ${symbol.toLowerCase()} 1h')">1H</button>
+          <button class="fc-btn" onclick="handleChartCommand('fc ${symbol.toLowerCase()} 4h')">4H</button>
+          <button class="fc-btn" onclick="handleChartCommand('fc ${symbol.toLowerCase()} 1d')">1D</button>
+          <button class="fc-btn" onclick="window.open('https://www.binance.com/en/trade/${binancePair}','_blank')">📊 FULL</button>
+        </div>`;
+
+      // Draw candlestick chart
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      const padL = 10, padR = 70, padT = 10, padB = 50;
+      const chartW = W - padL - padR, chartH = H - padT - padB;
+      const volH = chartH * 0.18;
+
+      // Background
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      ctx.fillStyle = isDark ? '#0a0f1a' : '#f0f2f5';
+      ctx.fillRect(0, 0, W, H);
+
+      const priceMin = lo * 0.9995;
+      const priceMax = hi * 1.0005;
+      const priceRange = priceMax - priceMin || 1;
+      const volMax = Math.max(...vols) || 1;
+
+      const toY = (p) => padT + chartH - volH - ((p - priceMin) / priceRange) * (chartH - volH);
+      const n = candles.length;
+      const candleW = Math.max(1, (chartW / n) * 0.7);
+      const gap = chartW / n;
+
+      // Grid lines
+      ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        const y = padT + (chartH - volH) * i / 4;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+        const pLabel = priceMax - (priceRange * i / 4);
+        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.4)';
+        ctx.font = '10px "Fira Code", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(pLabel < 1 ? pLabel.toFixed(5) : pLabel.toFixed(2), W - padR + 6, y + 4);
+      }
+
+      // Time labels
+      const labelEvery = Math.max(1, Math.floor(n / 6));
+      ctx.fillStyle = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.35)';
+      ctx.font = '9px "Fira Code", monospace';
+      ctx.textAlign = 'center';
+      for (let i = 0; i < n; i += labelEvery) {
+        const x = padL + i * gap + gap / 2;
+        const d = new Date(times[i]);
+        const label = tf.includes('d') || tf.includes('w')
+          ? `${d.getMonth()+1}/${d.getDate()}`
+          : `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        ctx.fillText(label, x, H - padB + 16);
+      }
+
+      // Volume bars
+      for (let i = 0; i < n; i++) {
+        const x = padL + i * gap + (gap - candleW) / 2;
+        const vH = (vols[i] / volMax) * volH;
+        const bull = closes[i] >= opens[i];
+        ctx.fillStyle = bull ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.18)';
+        ctx.fillRect(x, padT + chartH - vH, candleW, vH);
+      }
+
+      // Candles
+      for (let i = 0; i < n; i++) {
+        const x = padL + i * gap + gap / 2;
+        const bull = closes[i] >= opens[i];
+        const color = bull ? '#22c55e' : '#ef4444';
+
+        // Wick
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, toY(highs[i]));
+        ctx.lineTo(x, toY(lows[i]));
+        ctx.stroke();
+
+        // Body
+        const bodyTop = toY(Math.max(opens[i], closes[i]));
+        const bodyBot = toY(Math.min(opens[i], closes[i]));
+        const bodyH = Math.max(1, bodyBot - bodyTop);
+        ctx.fillStyle = color;
+        ctx.fillRect(x - candleW/2, bodyTop, candleW, bodyH);
+      }
+
+      // Current price line
+      const curY = toY(curPrice);
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = change >= 0 ? '#22c55e' : '#ef4444';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, curY); ctx.lineTo(W - padR, curY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Price label badge
+      ctx.fillStyle = change >= 0 ? '#22c55e' : '#ef4444';
+      const badgeW = 62, badgeH = 18;
+      ctx.beginPath();
+      ctx.roundRect(W - padR + 2, curY - badgeH/2, badgeW, badgeH, 4);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px "Fira Code", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('$' + fP, W - padR + 2 + badgeW/2, curY + 4);
+    }
+
     // ── Rick-style Token Card ──
     let _lastDexScreenerCall = 0;
     const DEXSCREENER_MIN_INTERVAL = 500; // ms between calls
@@ -8315,6 +8684,16 @@ Your response (one line only):`;
         chatMessages.push({ role: 'user', content: text });
         saveCurrentSession();
         quickTokenCard(trimmed);
+        $('input').focus();
+        return;
+      }
+
+      // ── FC CHART COMMAND ──
+      if (isChartCommand(trimmed)) {
+        addMsg('user', text); $('input').value = '';
+        chatMessages.push({ role: 'user', content: text });
+        saveCurrentSession();
+        handleChartCommand(trimmed);
         $('input').focus();
         return;
       }
