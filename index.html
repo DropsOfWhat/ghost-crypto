@@ -2303,6 +2303,117 @@
     .fc-loading { padding: 40px 14px; text-align: center; color: var(--text-muted); font-size: 12px; }
     .fc-error { padding: 20px 14px; text-align: center; color: var(--red); font-size: 12px; }
     .fc-embed-chart { width: 100%; height: 320px; border: none; }
+
+    /* ═══════ DISCOVER DASHBOARD ═══════ */
+    .disc-toolbar {
+      padding: 10px 14px; display: flex; gap: 6px; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border-secondary); align-items: center;
+    }
+    .disc-filter-btn {
+      padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border-primary);
+      background: var(--bg-glass); color: var(--text-muted); font-size: 10px;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+      letter-spacing: 0.04em; transition: all 0.15s;
+    }
+    .disc-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .disc-filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .disc-refresh-btn {
+      margin-left: auto; padding: 5px 10px; border-radius: 6px;
+      border: 1px solid var(--border-primary); background: var(--bg-glass);
+      color: var(--text-muted); font-size: 10px; font-weight: 700; cursor: pointer;
+      font-family: inherit;
+    }
+    .disc-refresh-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .disc-list { overflow-y: auto; max-height: calc(100vh - 200px); }
+    .disc-row {
+      display: flex; align-items: center; padding: 10px 14px; gap: 10px;
+      border-bottom: 1px solid var(--border-secondary); cursor: pointer;
+      transition: background 0.1s;
+    }
+    .disc-row:hover { background: var(--bg-glass); }
+    .disc-rank {
+      font-size: 10px; font-weight: 900; color: var(--text-faint);
+      min-width: 18px; text-align: center; font-family: 'Fira Code', monospace;
+    }
+    .disc-icon {
+      width: 32px; height: 32px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 12px;
+      font-weight: 900; flex-shrink: 0; color: #fff;
+    }
+    .disc-icon img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .disc-info { flex: 1; min-width: 0; }
+    .disc-name { font-size: 12px; font-weight: 800; color: var(--text-primary); }
+    .disc-ticker { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .disc-right { text-align: right; flex-shrink: 0; }
+    .disc-price { font-size: 12px; font-weight: 800; color: var(--text-primary); font-family: 'Fira Code', monospace; }
+    .disc-change { font-size: 10px; font-weight: 800; font-family: 'Fira Code', monospace; }
+    .disc-change.up { color: var(--green); }
+    .disc-change.down { color: var(--red); }
+    .disc-meta { font-size: 9px; color: var(--text-faint); margin-top: 2px; }
+    .disc-loading, .disc-empty {
+      text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 12px;
+    }
+    .disc-qbuy {
+      display: flex; gap: 3px; flex-shrink: 0;
+    }
+    .disc-qbuy-btn {
+      padding: 4px 6px; border-radius: 5px; border: 1px solid rgba(34,197,94,0.3);
+      background: rgba(34,197,94,0.08); color: #22c55e; font-size: 9px;
+      font-weight: 800; cursor: pointer; font-family: 'Fira Code', monospace;
+    }
+    .disc-qbuy-btn:hover { background: rgba(34,197,94,0.2); }
+
+    /* ═══════ PULSE MIGRATION TRACKER ═══════ */
+    .pulse-toolbar {
+      padding: 10px 14px; display: flex; gap: 6px; align-items: center;
+      border-bottom: 1px solid var(--border-secondary);
+    }
+    .pulse-status {
+      display: flex; align-items: center; gap: 6px; font-size: 10px;
+      font-weight: 700; color: var(--text-muted);
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--red);
+    }
+    .pulse-dot.live { background: #22c55e; animation: breathe 2s ease-in-out infinite; }
+    .pulse-count { font-size: 10px; color: var(--text-faint); margin-left: auto; font-family: 'Fira Code', monospace; }
+    .pulse-list { overflow-y: auto; max-height: calc(100vh - 200px); }
+    .pulse-card {
+      padding: 12px 14px; border-bottom: 1px solid var(--border-secondary);
+      transition: background 0.1s;
+    }
+    .pulse-card:hover { background: var(--bg-glass); }
+    .pulse-card.fresh { animation: pulseFresh 1.5s ease-out; }
+    @keyframes pulseFresh {
+      0% { background: rgba(34,197,94,0.15); }
+      100% { background: transparent; }
+    }
+    .pulse-top {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    }
+    .pulse-badge {
+      font-size: 8px; font-weight: 800; padding: 2px 6px; border-radius: 4px;
+      letter-spacing: 0.1em;
+    }
+    .pulse-badge.graduated { background: rgba(34,197,94,0.15); color: #22c55e; }
+    .pulse-badge.new { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .pulse-name { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+    .pulse-ticker { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .pulse-time { font-size: 9px; color: var(--text-faint); margin-left: auto; font-family: 'Fira Code', monospace; }
+    .pulse-stats {
+      display: flex; gap: 12px; margin-bottom: 6px;
+    }
+    .pulse-stat { font-size: 10px; color: var(--text-muted); }
+    .pulse-stat-val { font-weight: 800; color: var(--text-secondary); font-family: 'Fira Code', monospace; }
+    .pulse-actions { display: flex; gap: 4px; }
+    .pulse-btn {
+      padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border-primary);
+      background: var(--bg-glass); color: var(--text-muted); font-size: 9px;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .pulse-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .pulse-btn.buy { border-color: rgba(34,197,94,0.3); color: #22c55e; background: rgba(34,197,94,0.06); }
+    .pulse-btn.buy:hover { background: rgba(34,197,94,0.18); }
   </style>
 </head>
 <body>
@@ -2327,6 +2438,8 @@
         <button class="mode-btn" data-mode="trade" onclick="setMode('trade')"><span class="ic">⟡</span> TRADE</button>
         <button class="mode-btn" data-mode="launch" onclick="setMode('launch')"><span class="ic">◆</span> LAUNCH</button>
         <button class="mode-btn" data-mode="tools" onclick="setMode('tools')"><span class="ic">◈</span> TOOLS</button>
+        <button class="mode-btn" data-mode="discover" onclick="setMode('discover')"><span class="ic">🔥</span> DISCOVER</button>
+        <button class="mode-btn" data-mode="pulse" onclick="setMode('pulse')"><span class="ic">💫</span> PULSE</button>
         <button class="mode-btn" data-mode="wallet" onclick="setMode('wallet')"><span class="ic">◎</span> WALLET</button>
       </div>
 
@@ -2519,6 +2632,8 @@
             <div class="tcard" onclick="setMode('alpha')"><div class="tcard-h"><span class="tcard-n">🧠 Alpha Bot</span><span class="tcard-s" id="alpha-tool-stat" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">AI copy-trader — study wallets, learn patterns, auto-trade</div></div>
             <div class="tcard" onclick="setMode('watchlist')"><div class="tcard-h"><span class="tcard-n">⭐ Watchlist</span><span class="tcard-s" style="background:var(--green-dim);color:var(--green);">ACTIVE</span></div><div class="tcard-d">Track tokens you're eyeing — live prices & 24h change</div></div>
             <div class="tcard" onclick="setMode('bundle')"><div class="tcard-h"><span class="tcard-n">🔍 Bundle Checker</span><span class="tcard-s" style="background:rgba(239,68,68,0.12);color:#f87171;">ACTIVE</span></div><div class="tcard-d">Detect bundled launches — find if dev used multiple wallets to fake volume</div></div>
+            <div class="tcard" onclick="setMode('discover')"><div class="tcard-h"><span class="tcard-n">🔥 Discover</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">NEW</span></div><div class="tcard-d">Token discovery dashboard — trending, boosted, new pairs, and top gainers</div></div>
+            <div class="tcard" onclick="setMode('pulse')"><div class="tcard-h"><span class="tcard-n">💫 Pulse Tracker</span><span class="tcard-s" style="background:rgba(251,191,36,0.12);color:#fbbf24;">NEW</span></div><div class="tcard-d">Real-time Pump.fun → Raydium migration feed — catch graduated tokens early</div></div>
           </div>
 
           <!-- WALLET -->
@@ -2745,6 +2860,41 @@
             </div>
           </div>
 
+          <!-- DISCOVER DASHBOARD -->
+          <div id="p-discover" style="display:none">
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>🔥 DISCOVER <span style="font-size:9px;font-weight:600;color:var(--accent);margin-left:6px;">TRENDING TOKENS</span></div>
+            <div class="disc-toolbar">
+              <button class="disc-filter-btn active" data-filter="trending" onclick="discSetFilter('trending')">🔥 Trending</button>
+              <button class="disc-filter-btn" data-filter="boosted" onclick="discSetFilter('boosted')">⚡ Boosted</button>
+              <button class="disc-filter-btn" data-filter="newpairs" onclick="discSetFilter('newpairs')">🆕 New Pairs</button>
+              <button class="disc-filter-btn" data-filter="gainers" onclick="discSetFilter('gainers')">📈 Gainers</button>
+              <button class="disc-refresh-btn" onclick="discRefresh()">↻ Refresh</button>
+            </div>
+            <div id="disc-list" class="disc-list">
+              <div class="disc-loading">Loading trending tokens...</div>
+            </div>
+          </div>
+
+          <!-- PULSE MIGRATION TRACKER -->
+          <div id="p-pulse" style="display:none">
+            <div class="ph"><button class="ph-back" onclick="goBack()">←</button>💫 PULSE <span style="font-size:9px;font-weight:600;color:#fbbf24;margin-left:6px;">MIGRATION TRACKER</span></div>
+            <div class="pulse-toolbar">
+              <div class="pulse-status">
+                <div class="pulse-dot" id="pulse-dot"></div>
+                <span id="pulse-status-text">Paused</span>
+              </div>
+              <button class="disc-filter-btn" id="pulse-toggle-btn" onclick="pulseToggle()">▶ Start</button>
+              <button class="disc-filter-btn" onclick="pulseRefresh()">↻ Manual Scan</button>
+              <span class="pulse-count" id="pulse-count">0 migrations</span>
+            </div>
+            <div id="pulse-list" class="pulse-list">
+              <div class="disc-empty">
+                <div style="font-size:32px;margin-bottom:10px;opacity:0.4;">💫</div>
+                <div>Track tokens graduating from Pump.fun to Raydium in real-time.</div>
+                <div style="margin-top:6px;font-size:10px;color:var(--text-faint);">Click <b>Start</b> to begin monitoring, or <b>Manual Scan</b> for a one-time check.</div>
+              </div>
+            </div>
+          </div>
 
 
         </div>
@@ -2756,7 +2906,7 @@
           <div class="empty-state" id="empty-state">
             <div class="eicon">◬</div>
             <div class="etitle">Ghost Crypto</div>
-            <div class="edesc">AI-powered crypto command center. Multi-chain trading (Solana, Ethereum, Base, BNB Chain). Trade via Jupiter/OpenOcean, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.<br><br><span style="color:var(--accent);font-weight:700;font-size:11px;">💡 Quick: type <code style="background:var(--bg-elevated);padding:1px 6px;border-radius:4px;">fc sol 5m</code> for instant charts</span></div>
+            <div class="edesc">AI-powered crypto command center. Multi-chain trading (Solana, Ethereum, Base, BNB Chain). Trade via Jupiter/OpenOcean, launch tokens, copy-trade smart wallets with Alpha Bot, and manage your portfolio.<br><br><span style="color:var(--accent);font-weight:700;font-size:11px;">💡 Quick: type <code style="background:var(--bg-elevated);padding:1px 6px;border-radius:4px;">fc sol 5m</code> for instant charts · <code style="background:var(--bg-elevated);padding:1px 6px;border-radius:4px;">trending</code> for discovery · <code style="background:var(--bg-elevated);padding:1px 6px;border-radius:4px;">pulse</code> for migrations</span></div>
           </div>
         </div>
       </div>
@@ -4055,6 +4205,9 @@
       $('p-watchlist').style.display = mode === 'watchlist' ? 'block' : 'none';
       $('p-chart').style.display = mode === 'chart' ? 'block' : 'none';
       $('p-bundle').style.display = mode === 'bundle' ? 'block' : 'none';
+      $('p-discover').style.display = mode === 'discover' ? 'block' : 'none';
+      $('p-pulse').style.display = mode === 'pulse' ? 'block' : 'none';
+      if (mode === 'discover') discRefresh();
 
       // Perps takes over the full screen
       const isPerps = mode === 'perps';
@@ -8098,6 +8251,11 @@ Your response (one line only):`;
       { patterns: [/^open\s+perps/i, /^perps$/i, /^leverage$/i, /^lev$/i, /^futures$/i], action: () => { setMode('perps'); return '⚡ Opened leverage terminal.'; } },
       { patterns: [/^open\s+bundle/i, /^bundle$/i, /^bundle\s+check$/i, /^bundlecheck$/i, /^check\s+bundle$/i], action: () => { setMode('bundle'); return '🔍 Opened bundle checker.'; } },
       { patterns: [/^bundle\s+([1-9A-HJ-NP-Za-km-z]{32,44})$/i], action: (m) => { setMode('bundle'); setTimeout(() => { $('bundle-mint').value = m[1]; runBundleCheck(); }, 100); return '🔍 Scanning for bundle...'; } },
+      { patterns: [/^discover$/i, /^trending$/i, /^explore$/i, /^hot$/i, /^open\s+discover/i], action: () => { setMode('discover'); return '🔥 Opened token discovery dashboard.'; } },
+      { patterns: [/^discover\s+(trending|boosted|newpairs|gainers)$/i], action: (m) => { setMode('discover'); setTimeout(() => discSetFilter(m[1].toLowerCase()), 100); return `🔥 Discover: ${m[1]} filter.`; } },
+      { patterns: [/^pulse$/i, /^migrations?$/i, /^graduated$/i, /^open\s+pulse/i], action: () => { setMode('pulse'); return '💫 Opened Pulse migration tracker.'; } },
+      { patterns: [/^pulse\s+start$/i, /^pulse\s+on$/i], action: () => { setMode('pulse'); setTimeout(() => { if (!pulseRunning) pulseToggle(); }, 100); return '💫 Pulse monitoring started.'; } },
+      { patterns: [/^pulse\s+(stop|off)$/i], action: () => { if (pulseRunning) pulseToggle(); return '💫 Pulse monitoring stopped.'; } },
       { patterns: [/^start\s+alpha/i, /^start\s+bot$/i], action: () => { setMode('alpha'); setTimeout(startAlphaBot, 100); return '🧠 Starting Alpha Bot...'; } },
       { patterns: [/^stop\s+alpha/i, /^stop\s+bot$/i], action: () => { stopAlphaBot(); return '🧠 Alpha Bot stopped.'; } },
       { patterns: [/^study\s+wallets$/i, /^study$/i], action: () => { setMode('alpha'); setTimeout(alphaStudy, 100); return '📚 Studying tracked wallets...'; } },
@@ -8114,7 +8272,7 @@ Your response (one line only):`;
       { patterns: [/^dark\s+mode$/i, /^dark$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'dark') toggleTheme(); return '🌙 Dark mode.'; } },
       { patterns: [/^light\s+mode$/i, /^light$/i], action: () => { if (document.documentElement.getAttribute('data-theme') !== 'light') toggleTheme(); return '☀️ Light mode.'; } },
       { patterns: [/^help$/i, /^commands$/i], action: () => {
-        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n🎯 Auto SL/TP — set stop-loss & take-profit in trade panel\n📊 Partial sells — 25% / 50% / 75% / 100% sell buttons\n📥 CSV export — download trade history\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 250x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\n⌨️ **Keyboard Shortcuts:**\nCtrl+T — Trade · Ctrl+L — Launch · Ctrl+P — Perps\nCtrl+B — Alpha Bot · Ctrl+K — Focus chat · Esc — Back\n\nOr just describe what you want — Ghost will figure it out.`;
+        return `⚡ **Agent Commands:**\n\nopen trade / launch / wallet / tools / sniper / history / intel / portfolio / pnl / alpha / watchlist / perps / bundle\nnew chat · connect wallet · disconnect wallet\nsniper on / off · web search on / off\ndark mode / light mode\n\n⟡ **Trading:**\nbuy [amount] [mint] · sell [mint]\nset slippage [%] · set priority [SOL]\n🛡️ MEV Protection via Jito (toggle in trade panel)\n🎯 Auto SL/TP — set stop-loss & take-profit in trade panel\n📊 Partial sells — 25% / 50% / 75% / 100% sell buttons\n📥 CSV export — download trade history\n\n⚡ **Leverage:**\nperps / leverage / futures — open leverage terminal\nSOL, BTC, ETH up to 250x via Jupiter Perps\n\n🔍 **Quick Lookup:**\nPaste any contract address — instant token card\n/p [ticker] or price [ticker] — price check\nscan [mint] — full token intel\nbundle [mint] — check for bundled launch\n\n🔥 **Discovery:**\nwatchlist — your saved tokens\ndiscover / trending / explore — token discovery dashboard\ndiscover boosted / gainers / newpairs — filtered views\npulse / migrations — Pump.fun → Raydium tracker\npulse start / pulse stop — toggle live monitoring\n\n🧠 **Alpha Bot:**\nalpha / bot / copytrade — open Alpha Bot\nstudy — analyze tracked wallets\nlearn — bot studies its own trades\nstart bot / stop bot — toggle auto-trading\n\n⌨️ **Keyboard Shortcuts:**\nCtrl+T — Trade · Ctrl+L — Launch · Ctrl+P — Perps\nCtrl+B — Alpha Bot · Ctrl+K — Focus chat · Esc — Back\n\nOr just describe what you want — Ghost will figure it out.`;
       }},
     ];
 
@@ -8251,6 +8409,333 @@ Your response (one line only):`;
       div.appendChild(c);
       $('messages').appendChild(div); $('messages').scrollTop = $('messages').scrollHeight;
       return c;
+    }
+
+    // ═══════ DISCOVER DASHBOARD ═══════
+    let discFilter = 'trending';
+    let discData = [];
+    let discLastFetch = 0;
+
+    function discSetFilter(filter) {
+      discFilter = filter;
+      document.querySelectorAll('.disc-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+      discRefresh();
+    }
+
+    async function discRefresh() {
+      const list = $('disc-list');
+      if (!list) return;
+      list.innerHTML = '<div class="disc-loading">🔄 Loading...</div>';
+
+      try {
+        if (discFilter === 'trending' || discFilter === 'gainers') {
+          // Use token-profiles + boosts combined with DexScreener pair data
+          const profRes = await fetchWithTimeout('https://api.dexscreener.com/token-profiles/latest/v1', {}, 8000);
+          const profiles = await profRes.json();
+          // Get Solana tokens only
+          let solTokens = (Array.isArray(profiles) ? profiles : []).filter(p => p.chainId === 'solana').slice(0, 40);
+          if (solTokens.length === 0) { list.innerHTML = '<div class="disc-empty">No trending tokens found</div>'; return; }
+
+          // Batch fetch pair data
+          const addresses = solTokens.map(t => t.tokenAddress);
+          const batches = [];
+          for (let i = 0; i < addresses.length; i += 30) batches.push(addresses.slice(i, i + 30));
+          let allPairs = [];
+          for (const batch of batches) {
+            try {
+              const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/tokens/${batch.join(',')}`, {}, 10000);
+              const dsData = await dsRes.json();
+              if (dsData.pairs) allPairs.push(...dsData.pairs);
+            } catch(e) {}
+          }
+
+          // Build lookup
+          const pairMap = {};
+          for (const p of allPairs) {
+            const addr = p.baseToken?.address;
+            if (addr && (!pairMap[addr] || (p.liquidity?.usd || 0) > (pairMap[addr].liquidity?.usd || 0))) {
+              pairMap[addr] = p;
+            }
+          }
+
+          // Merge profiles with pair data
+          discData = solTokens.map(t => {
+            const pair = pairMap[t.tokenAddress];
+            return {
+              address: t.tokenAddress,
+              name: pair?.baseToken?.name || t.tokenAddress.slice(0,8),
+              symbol: pair?.baseToken?.symbol || '???',
+              icon: t.icon || pair?.info?.imageUrl || '',
+              price: pair?.priceUsd ? parseFloat(pair.priceUsd) : 0,
+              chg24h: pair?.priceChange?.h24 || 0,
+              chg6h: pair?.priceChange?.h6 || 0,
+              chg1h: pair?.priceChange?.h1 || 0,
+              vol24h: pair?.volume?.h24 || 0,
+              liq: pair?.liquidity?.usd || 0,
+              mcap: pair?.marketCap || pair?.fdv || 0,
+              age: pair?.pairCreatedAt ? timeSince(pair.pairCreatedAt) : '?',
+              description: t.description || '',
+            };
+          }).filter(t => t.price > 0);
+
+          if (discFilter === 'gainers') {
+            discData.sort((a, b) => b.chg24h - a.chg24h);
+          }
+
+        } else if (discFilter === 'boosted') {
+          const boostRes = await fetchWithTimeout('https://api.dexscreener.com/token-boosts/top/v1', {}, 8000);
+          const boosts = await boostRes.json();
+          let solBoosts = (Array.isArray(boosts) ? boosts : []).filter(b => b.chainId === 'solana').slice(0, 30);
+
+          const addresses = solBoosts.map(b => b.tokenAddress);
+          const batches = [];
+          for (let i = 0; i < addresses.length; i += 30) batches.push(addresses.slice(i, i + 30));
+          let allPairs = [];
+          for (const batch of batches) {
+            try {
+              const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/tokens/${batch.join(',')}`, {}, 10000);
+              const dsData = await dsRes.json();
+              if (dsData.pairs) allPairs.push(...dsData.pairs);
+            } catch(e) {}
+          }
+          const pairMap = {};
+          for (const p of allPairs) {
+            const addr = p.baseToken?.address;
+            if (addr && (!pairMap[addr] || (p.liquidity?.usd||0) > (pairMap[addr].liquidity?.usd||0))) pairMap[addr] = p;
+          }
+
+          discData = solBoosts.map(b => {
+            const pair = pairMap[b.tokenAddress];
+            return {
+              address: b.tokenAddress,
+              name: pair?.baseToken?.name || b.tokenAddress.slice(0,8),
+              symbol: pair?.baseToken?.symbol || '???',
+              icon: b.icon || pair?.info?.imageUrl || '',
+              price: pair?.priceUsd ? parseFloat(pair.priceUsd) : 0,
+              chg24h: pair?.priceChange?.h24 || 0,
+              chg6h: pair?.priceChange?.h6 || 0,
+              chg1h: pair?.priceChange?.h1 || 0,
+              vol24h: pair?.volume?.h24 || 0,
+              liq: pair?.liquidity?.usd || 0,
+              mcap: pair?.marketCap || pair?.fdv || 0,
+              age: pair?.pairCreatedAt ? timeSince(pair.pairCreatedAt) : '?',
+              boostAmount: b.totalAmount || b.amount || 0,
+            };
+          }).filter(t => t.price > 0);
+
+        } else if (discFilter === 'newpairs') {
+          // Search for recent Solana pairs
+          const dsRes = await fetchWithTimeout(`${DEXSCREENER_API}/pairs/solana?sort=pairAge&order=asc`, {}, 10000);
+          let pairsData;
+          try { pairsData = await dsRes.json(); } catch(e) { pairsData = {}; }
+          let pairs = pairsData.pairs || [];
+          // Fallback: search for pump.fun tokens
+          if (pairs.length === 0) {
+            const searchRes = await fetchWithTimeout(`${DEXSCREENER_API}/search?q=pump.fun`, {}, 8000);
+            const searchData = await searchRes.json();
+            pairs = (searchData.pairs || []).filter(p => p.chainId === 'solana').slice(0, 30);
+          }
+          discData = pairs.slice(0, 30).map(p => ({
+            address: p.baseToken?.address || p.pairAddress,
+            name: p.baseToken?.name || '???',
+            symbol: p.baseToken?.symbol || '???',
+            icon: p.info?.imageUrl || '',
+            price: p.priceUsd ? parseFloat(p.priceUsd) : 0,
+            chg24h: p.priceChange?.h24 || 0,
+            chg6h: p.priceChange?.h6 || 0,
+            chg1h: p.priceChange?.h1 || 0,
+            vol24h: p.volume?.h24 || 0,
+            liq: p.liquidity?.usd || 0,
+            mcap: p.marketCap || p.fdv || 0,
+            age: p.pairCreatedAt ? timeSince(p.pairCreatedAt) : '?',
+          })).filter(t => t.price > 0);
+        }
+
+        discRender();
+      } catch(e) {
+        list.innerHTML = `<div class="disc-empty">❌ Failed to load: ${e.message}<br><span style="font-size:10px;">Try again or check connection</span></div>`;
+      }
+    }
+
+    function discRender() {
+      const list = $('disc-list');
+      if (!discData.length) { list.innerHTML = '<div class="disc-empty">No tokens found for this filter</div>'; return; }
+
+      const fP = p => p===0?'$0':p<0.0001?'$'+p.toExponential(2):p<0.01?'$'+p.toFixed(6):p<1?'$'+p.toFixed(4):'$'+p.toFixed(2);
+      const fV = n => n>=1e9?'$'+(n/1e9).toFixed(1)+'B':n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(0)+'K':'$'+n.toFixed(0);
+      const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c'];
+
+      list.innerHTML = discData.map((t, i) => {
+        const chg = t.chg24h;
+        const chgClass = chg >= 0 ? 'up' : 'down';
+        const chgSign = chg >= 0 ? '+' : '';
+        const color = colors[Math.abs((t.symbol||'X').charCodeAt(0)) % colors.length];
+        const initial = (t.symbol||'??').slice(0,2).toUpperCase();
+        return `<div class="disc-row" onclick="quickTokenCard('${t.address}');setMode('chat')">
+          <span class="disc-rank">${i+1}</span>
+          <div class="disc-icon" style="background:${color}">${t.icon ? `<img src="${t.icon}" onerror="this.parentElement.textContent='${initial}'">` : initial}</div>
+          <div class="disc-info">
+            <div class="disc-name">${escapeHtml(t.name)}</div>
+            <div class="disc-ticker">$${escapeHtml(t.symbol)} · ${t.age} · Vol ${fV(t.vol24h)}</div>
+          </div>
+          <div class="disc-right">
+            <div class="disc-price">${fP(t.price)}</div>
+            <div class="disc-change ${chgClass}">${chgSign}${chg.toFixed(1)}%</div>
+            <div class="disc-meta">MCap ${fV(t.mcap)}</div>
+          </div>
+          <div class="disc-qbuy" onclick="event.stopPropagation()">
+            <button class="disc-qbuy-btn" onclick="event.stopPropagation();quickBuy('${t.address}',0.1,'${escapeHtml(t.symbol)}',this)">0.1</button>
+            <button class="disc-qbuy-btn" onclick="event.stopPropagation();quickBuy('${t.address}',0.5,'${escapeHtml(t.symbol)}',this)">0.5</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ═══════ PULSE MIGRATION TRACKER ═══════
+    let pulseRunning = false;
+    let pulseInterval = null;
+    let pulseMigrations = lsGetJSON('ghost-pulse-data', []);
+    let pulseLastCheck = 0;
+
+    function pulseToggle() {
+      if (pulseRunning) {
+        pulseRunning = false;
+        clearInterval(pulseInterval);
+        pulseInterval = null;
+        $('pulse-dot').classList.remove('live');
+        $('pulse-status-text').textContent = 'Paused';
+        $('pulse-toggle-btn').textContent = '▶ Start';
+      } else {
+        pulseRunning = true;
+        $('pulse-dot').classList.add('live');
+        $('pulse-status-text').textContent = 'Monitoring...';
+        $('pulse-toggle-btn').textContent = '⏸ Stop';
+        pulseScan();
+        pulseInterval = setInterval(pulseScan, 30000); // Every 30s
+      }
+    }
+
+    async function pulseRefresh() {
+      await pulseScan();
+    }
+
+    async function pulseScan() {
+      try {
+        // Fetch recently graduated tokens from Pump.fun
+        const res = await fetchWithTimeout('https://client-api-2-74b1891ee9f9.herokuapp.com/coins?offset=0&limit=30&sort=last_trade_timestamp&order=DESC&includeNsfw=false&complete=true', {}, 10000);
+        const coins = await res.json();
+
+        if (!Array.isArray(coins)) return;
+
+        const existingMints = new Set(pulseMigrations.map(m => m.mint));
+        let newCount = 0;
+
+        for (const coin of coins) {
+          if (existingMints.has(coin.mint)) continue;
+
+          // This is a newly graduated token
+          const migration = {
+            mint: coin.mint,
+            name: coin.name || '???',
+            symbol: coin.symbol || '???',
+            image: coin.image_uri || coin.profile_image || '',
+            description: (coin.description || '').slice(0, 100),
+            creator: coin.creator || '',
+            marketCap: coin.usd_market_cap || coin.market_cap || 0,
+            time: coin.complete_timestamp || coin.created_timestamp || Date.now(),
+            raydiumPool: coin.raydium_pool || '',
+            kingOfTheHill: coin.king_of_the_hill_timestamp || 0,
+          };
+
+          pulseMigrations.unshift(migration);
+          newCount++;
+        }
+
+        // Keep last 100
+        if (pulseMigrations.length > 100) pulseMigrations = pulseMigrations.slice(0, 100);
+        lsSetJSON('ghost-pulse-data', pulseMigrations);
+
+        if (newCount > 0 && pulseRunning) {
+          toast(`💫 ${newCount} new migration${newCount > 1 ? 's' : ''} detected!`);
+        }
+
+        pulseRender();
+      } catch(e) {
+        console.warn('Pulse scan error:', e);
+        // Fallback: use DexScreener for recently listed Solana tokens
+        try {
+          const profRes = await fetchWithTimeout('https://api.dexscreener.com/token-profiles/latest/v1', {}, 8000);
+          const profiles = await profRes.json();
+          const solProfiles = (Array.isArray(profiles) ? profiles : []).filter(p => p.chainId === 'solana').slice(0, 20);
+
+          const existingMints = new Set(pulseMigrations.map(m => m.mint));
+          let newCount = 0;
+
+          for (const prof of solProfiles) {
+            if (existingMints.has(prof.tokenAddress)) continue;
+            pulseMigrations.unshift({
+              mint: prof.tokenAddress,
+              name: prof.description?.split(' ')[0] || prof.tokenAddress.slice(0,8),
+              symbol: '???',
+              image: prof.icon || '',
+              description: (prof.description || '').slice(0, 100),
+              creator: '',
+              marketCap: 0,
+              time: Date.now(),
+              raydiumPool: '',
+            });
+            newCount++;
+          }
+          if (pulseMigrations.length > 100) pulseMigrations = pulseMigrations.slice(0, 100);
+          lsSetJSON('ghost-pulse-data', pulseMigrations);
+          pulseRender();
+        } catch(e2) {
+          $('pulse-list').innerHTML = '<div class="disc-empty">❌ Failed to fetch migrations. Check connection.</div>';
+        }
+      }
+    }
+
+    function pulseRender() {
+      const list = $('pulse-list');
+      $('pulse-count').textContent = pulseMigrations.length + ' migrations';
+
+      if (!pulseMigrations.length) {
+        list.innerHTML = '<div class="disc-empty">No migrations detected yet. Start monitoring or run a manual scan.</div>';
+        return;
+      }
+
+      const fV = n => n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(0)+'K':n>0?'$'+n.toFixed(0):'—';
+      const colors = ['#9b8ce8','#00ffc8','#ff6b6b','#ffd93d','#6bcbff','#ff8f5c'];
+      const now = Date.now();
+
+      list.innerHTML = pulseMigrations.slice(0, 50).map((m, i) => {
+        const color = colors[Math.abs((m.symbol||'X').charCodeAt(0)) % colors.length];
+        const initial = (m.symbol||'??').slice(0,2).toUpperCase();
+        const age = m.time ? timeSince(m.time) : '?';
+        const isFresh = (now - m.time) < 120000;
+        return `<div class="pulse-card${isFresh ? ' fresh' : ''}">
+          <div class="pulse-top">
+            <div class="disc-icon" style="background:${color};width:28px;height:28px;font-size:10px;">${m.image ? `<img src="${m.image}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">` : initial}</div>
+            <div>
+              <span class="pulse-name">${escapeHtml(m.name)}</span>
+              <span class="pulse-ticker">$${escapeHtml(m.symbol)}</span>
+            </div>
+            <span class="pulse-badge graduated">GRADUATED</span>
+            <span class="pulse-time">${age}</span>
+          </div>
+          <div class="pulse-stats">
+            <div class="pulse-stat">MCap: <span class="pulse-stat-val">${fV(m.marketCap)}</span></div>
+            ${m.description ? `<div class="pulse-stat" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(m.description)}</div>` : ''}
+          </div>
+          <div class="pulse-actions">
+            <button class="pulse-btn buy" onclick="quickBuy('${m.mint}',0.1,'${escapeHtml(m.symbol)}',this)">⚡ 0.1 SOL</button>
+            <button class="pulse-btn buy" onclick="quickBuy('${m.mint}',0.5,'${escapeHtml(m.symbol)}',this)">⚡ 0.5 SOL</button>
+            <button class="pulse-btn" onclick="quickTokenCard('${m.mint}');setMode('chat')">🔍 Scan</button>
+            <button class="pulse-btn" onclick="handleChartCommand('fc ${m.mint}');setMode('chat')">📊 Chart</button>
+            <button class="pulse-btn" onclick="navigator.clipboard.writeText('${m.mint}');toast('📋 Copied!')">📋</button>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     // ═══════ FC — INLINE CHART COMMAND ═══════
