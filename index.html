@@ -6,7 +6,7 @@
   <title>Ghost — Crypto AI Command Center</title>
   <script>
     // Restore theme instantly to prevent flash
-    (function(){var t=localStorage.getItem('ghost-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
+    (function(){try{var t=localStorage.getItem('ghost-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
   </script>
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
   <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
@@ -451,6 +451,46 @@
     .tk-btn:hover { border-color: var(--accent); color: var(--accent); }
     .tk-btn.buy { background: rgba(0,255,204,0.08); border-color: rgba(0,255,204,0.3); color: var(--green); }
     .tk-btn.buy:hover { background: rgba(0,255,204,0.15); }
+
+    /* ═══════ QUICK-TRADE (Axiom-style) ═══════ */
+    .qt-section {
+      border-top: 1px solid var(--border-secondary); padding: 10px 14px;
+    }
+    .qt-label {
+      font-size: 8px; font-weight: 800; color: var(--text-faint);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .qt-row { display: flex; gap: 5px; }
+    .qt-buy-btn {
+      flex: 1; padding: 8px 2px; border-radius: 8px; border: 1px solid rgba(34,197,94,0.3);
+      background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04));
+      color: #22c55e; font-size: 11px; font-weight: 800; cursor: pointer;
+      font-family: 'Fira Code', monospace; letter-spacing: 0.02em;
+      transition: all 0.15s;
+    }
+    .qt-buy-btn:hover { background: rgba(34,197,94,0.22); border-color: #22c55e; box-shadow: 0 2px 10px rgba(34,197,94,0.15); }
+    .qt-buy-btn:active { transform: scale(0.96); }
+    .qt-buy-btn.loading { opacity: 0.5; pointer-events: none; }
+    .qt-sell-btn {
+      flex: 1; padding: 8px 2px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.3);
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04));
+      color: #ef4444; font-size: 11px; font-weight: 800; cursor: pointer;
+      font-family: 'Fira Code', monospace; letter-spacing: 0.02em;
+      transition: all 0.15s;
+    }
+    .qt-sell-btn:hover { background: rgba(239,68,68,0.22); border-color: #ef4444; box-shadow: 0 2px 10px rgba(239,68,68,0.15); }
+    .qt-sell-btn:active { transform: scale(0.96); }
+    .qt-sell-btn.loading { opacity: 0.5; pointer-events: none; }
+    .qt-divider { width: 1px; background: var(--border-secondary); margin: 0 2px; }
+    .qt-status {
+      margin-top: 6px; font-size: 10px; font-weight: 600; text-align: center;
+      padding: 6px 8px; border-radius: 6px; display: none;
+    }
+    .qt-status.active { display: block; }
+    .qt-status.pending { background: rgba(251,191,36,0.1); color: #fbbf24; }
+    .qt-status.success { background: rgba(34,197,94,0.1); color: #22c55e; }
+    .qt-status.error { background: rgba(239,68,68,0.1); color: #ef4444; }
     .tk-addr {
       padding: 0 14px 10px; font-size: 10px; color: var(--text-faint);
       font-family: 'SF Mono', 'Fira Code', monospace; word-break: break-all;
@@ -1236,6 +1276,11 @@
       /* ═══ MOBILE: CHAT AREA ═══ */
       .messages { padding: 12px 10px; }
       .message { max-width: 95%; padding: 10px 12px; font-size: 13px; }
+
+      /* ═══ MOBILE: QUICK TRADE ═══ */
+      .qt-section { padding: 8px 10px; }
+      .qt-buy-btn, .qt-sell-btn { font-size: 9px; padding: 7px 1px; }
+      .qt-label { font-size: 7px; }
       .mh { margin-bottom: 4px; }
       .mr { font-size: 9px; }
       .mt { font-size: 8px; }
@@ -2936,7 +2981,7 @@
     ];
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
-    let heliusKey = localStorage.getItem('ghost-helius-key') || '';
+    let heliusKey = lsGet('ghost-helius-key', '');
 
     // Backup RPCs for avoiding 403 on public RPC
     const BACKUP_RPCS = [
@@ -2969,9 +3014,15 @@
       return new solanaWeb3.Connection(BACKUP_RPCS[0]);
     }
 
-    let currentModel = localStorage.getItem('ghost-model') || 'claude-sonnet-4-20250514';
-    let apiKey = localStorage.getItem('ghost-claude-key') || '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';
-    if (!localStorage.getItem('ghost-claude-key')) localStorage.setItem('ghost-claude-key', apiKey);
+    let currentModel = lsGet('ghost-model', 'claude-sonnet-4-20250514');
+    const GHOST_DEFAULT_KEY = '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';
+    function lsGet(k, fallback) { try { return localStorage.getItem(k) || fallback; } catch(e) { return fallback; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+    function lsGetJSON(k, fallback) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
+    function lsSetJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
+    function lsRemove(k) { try { localStorage.removeItem(k); } catch(e) {} }
+    let apiKey = lsGet('ghost-claude-key', GHOST_DEFAULT_KEY);
+    lsSet('ghost-claude-key', apiKey);
     let isGenerating = false;
     let chatMessages = [];
     let walletPubkey = null;
@@ -2979,23 +3030,23 @@
     let walletBalance = null;
     let selectedPlatform = 'pumpfun';
     let currentMode = 'chat';
-    let chatMode = localStorage.getItem('ghost-chat-mode') || 'agent'; // 'agent' or 'chat'
+    let chatMode = lsGet('ghost-chat-mode', 'agent'); // 'agent' or 'chat'
     let tokenImageFile = null;
 
     // Chat session management
-    let chatSessions = JSON.parse(localStorage.getItem('ghost-chat-sessions') || '[]');
-    let currentSessionId = localStorage.getItem('ghost-current-session') || null;
+    let chatSessions = lsGetJSON('ghost-chat-sessions', []);
+    let currentSessionId = lsGet('ghost-current-session', '') || null;
 
     // Trade state
     let currentQuote = null;
-    let tradeHistory = JSON.parse(localStorage.getItem('ghost-trades') || '[]');
+    let tradeHistory = lsGetJSON('ghost-trades', []);
     let quoteTimer = null;
     let isTrading = false;
     let sellPct = 100; // Sell percentage (25, 50, 75, 100)
-    let sltpEnabled = localStorage.getItem('ghost-sltp') === 'true';
-    let manualPositions = JSON.parse(localStorage.getItem('ghost-manual-positions') || '{}');
+    let sltpEnabled = lsGet('ghost-sltp', '') === 'true';
+    let manualPositions = lsGetJSON('ghost-manual-positions', {});
     let manualSltpTimer = null;
-    let webSearchEnabled = localStorage.getItem('ghost-websearch') === 'true';
+    let webSearchEnabled = lsGet('ghost-websearch', '') === 'true';
 
     // ═══════ MULTI-CHAIN CONFIG ═══════
     const CHAINS = {
@@ -3049,7 +3100,7 @@
       },
     };
 
-    let activeChain = localStorage.getItem('ghost-chain') || 'solana';
+    let activeChain = lsGet('ghost-chain', 'solana');
     let evmProvider = null; // ethers.js provider for EVM chains
     let evmSigner = null;   // ethers.js signer for EVM chains
 
@@ -3066,7 +3117,7 @@
       }
       
       activeChain = chain;
-      localStorage.setItem('ghost-chain', chain);
+      lsSet('ghost-chain', chain);
       
       // Update chain selector UI
       document.querySelectorAll('.chain-btn').forEach(btn => {
@@ -3268,7 +3319,7 @@
 
     async function connectWithProvider(providerId) {
       activeWalletId = providerId;
-      localStorage.setItem('ghost-wallet-provider', providerId);
+      lsSet('ghost-wallet-provider', providerId);
       const wp = WALLET_PROVIDERS[providerId];
       
       if (isEVM()) {
@@ -3643,7 +3694,7 @@
         };
         tradeHistory.unshift(trade);
         if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
-        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        lsSetJSON('ghost-trades', tradeHistory);
         renderTradeHistory();
         
         if ($('empty-state')) $('empty-state').style.display = 'none';
@@ -3941,12 +3992,12 @@
       const next = current === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
       $('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
-      localStorage.setItem('ghost-theme', next);
+      lsSet('ghost-theme', next);
     }
 
     // Restore saved theme on load
     (function initTheme() {
-      const saved = localStorage.getItem('ghost-theme');
+      const saved = lsGet('ghost-theme', '');
       if (saved) {
         document.documentElement.setAttribute('data-theme', saved);
       }
@@ -3963,7 +4014,7 @@
     // ═══════ WEB SEARCH ═══════
     function toggleWebSearch() {
       webSearchEnabled = !webSearchEnabled;
-      localStorage.setItem('ghost-websearch', webSearchEnabled);
+      lsSet('ghost-websearch', webSearchEnabled);
       updateWsBtn();
       toast(webSearchEnabled ? '🔍 Web search enabled' : 'Web search disabled');
     }
@@ -3990,7 +4041,7 @@
       if (currentMode && currentMode !== mode) modeHistory.push(currentMode);
       if (modeHistory.length > 10) modeHistory = modeHistory.slice(-10);
       currentMode = mode;
-      localStorage.setItem('ghost-mode', mode);
+      lsSet('ghost-mode', mode);
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
       $('p-trade').style.display = mode === 'trade' ? 'block' : 'none';
       $('p-launch').style.display = mode === 'launch' ? 'block' : 'none';
@@ -4288,15 +4339,15 @@
       }
       // Keep max 50 sessions
       if (chatSessions.length > 50) chatSessions = chatSessions.slice(0, 50);
-      localStorage.setItem('ghost-chat-sessions', JSON.stringify(chatSessions));
-      localStorage.setItem('ghost-current-session', currentSessionId);
+      lsSetJSON('ghost-chat-sessions', chatSessions);
+      lsSet('ghost-current-session', currentSessionId);
     }
 
     function newChat() {
       saveCurrentSession();
       chatMessages = [];
       currentSessionId = generateId();
-      localStorage.setItem('ghost-current-session', currentSessionId);
+      lsSet('ghost-current-session', currentSessionId);
       $('messages').innerHTML = '';
       const es = $('empty-state');
       if (es) es.style.display = 'flex';
@@ -4316,7 +4367,7 @@
       const session = chatSessions.find(s => s.id === id);
       if (!session) return;
       currentSessionId = session.id;
-      localStorage.setItem('ghost-current-session', currentSessionId);
+      lsSet('ghost-current-session', currentSessionId);
       chatMessages = [...session.messages];
       $('messages').innerHTML = '';
       if ($('empty-state')) $('empty-state').style.display = 'none';
@@ -4332,10 +4383,10 @@
     function deleteSession(id, evt) {
       evt.stopPropagation();
       chatSessions = chatSessions.filter(s => s.id !== id);
-      localStorage.setItem('ghost-chat-sessions', JSON.stringify(chatSessions));
+      lsSetJSON('ghost-chat-sessions', chatSessions);
       if (currentSessionId === id) {
         currentSessionId = null;
-        localStorage.removeItem('ghost-current-session');
+        lsRemove('ghost-current-session');
         chatMessages = [];
         $('messages').innerHTML = '';
         const div = document.createElement('div');
@@ -4438,13 +4489,13 @@
     }
 
     // ═══════ SNIPER BOT ═══════
-    let sniperEnabled = localStorage.getItem('ghost-sniper-enabled') === 'true';
-    let sniperWallets = JSON.parse(localStorage.getItem('ghost-sniper-wallets') || '[]');
+    let sniperEnabled = lsGet('ghost-sniper-enabled', '') === 'true';
+    let sniperWallets = lsGetJSON('ghost-sniper-wallets', []);
     const MAX_SNIPER_WALLETS = 3;
 
     function toggleSniper() {
       sniperEnabled = !sniperEnabled;
-      localStorage.setItem('ghost-sniper-enabled', sniperEnabled);
+      lsSet('ghost-sniper-enabled', sniperEnabled);
       $('sniper-sw').classList.toggle('on', sniperEnabled);
       toast(sniperEnabled ? '⚡ Sniper enabled' : 'Sniper disabled');
     }
@@ -4527,7 +4578,7 @@
     }
 
     function saveSniperWallets() {
-      localStorage.setItem('ghost-sniper-wallets', JSON.stringify(sniperWallets));
+      lsSetJSON('ghost-sniper-wallets', sniperWallets);
       $('sniper-add-btn').disabled = sniperWallets.length >= MAX_SNIPER_WALLETS;
     }
 
@@ -4675,7 +4726,7 @@
             amountIn: w.amount + ' SOL', amountOut: 'snipe', sig, time: Date.now()
           });
           if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
-          localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+          lsSetJSON('ghost-trades', tradeHistory);
 
         } catch (e) {
           const errMsg = e.message || 'Unknown error';
@@ -4918,7 +4969,7 @@
         if (tw) try { await tw.disconnect(); } catch(e) {}
       }
       activeWalletId = null;
-      localStorage.removeItem('ghost-wallet-provider');
+      lsRemove('ghost-wallet-provider');
       walletPubkey = null; walletAddress = null; walletBalance = null;
       $('wbtn').className = 'wallet-btn off'; $('wbtn-icon').textContent = '🔗'; $('wbtn-t').textContent = 'Connect Wallet';
       $('lbtn').className = 'lbtn dis'; $('lbtn').textContent = 'CONNECT WALLET TO LAUNCH';
@@ -5048,7 +5099,7 @@
 
     function toggleSltp() {
       sltpEnabled = !sltpEnabled;
-      localStorage.setItem('ghost-sltp', sltpEnabled);
+      lsSet('ghost-sltp', sltpEnabled);
       if ($('sltp-toggle')) $('sltp-toggle').classList.toggle('on', sltpEnabled);
       toast(sltpEnabled ? '🎯 Auto SL/TP ON' : 'Auto SL/TP OFF');
       if (sltpEnabled && !manualSltpTimer) startManualSltpMonitor();
@@ -5056,7 +5107,7 @@
     }
 
     function saveManualPositions() {
-      localStorage.setItem('ghost-manual-positions', JSON.stringify(manualPositions));
+      lsSetJSON('ghost-manual-positions', manualPositions);
     }
 
     function registerManualPosition(mint, symbol, entrySOL) {
@@ -5210,6 +5261,221 @@
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
+    // ═══════ AXIOM-STYLE QUICK TRADE ═══════
+    async function quickBuy(mint, solAmount, symbol, btnEl) {
+      if (!walletAddress) { toast('Connect wallet first!'); return; }
+      if (isTrading) { toast('Trade already in progress...'); return; }
+      if (isEVM()) { toast('Quick-buy is Solana only for now'); return; }
+      
+      const statusEl = btnEl?.closest('.qt-section')?.querySelector('.qt-status');
+      const allBtns = btnEl?.closest('.qt-section')?.querySelectorAll('.qt-buy-btn, .qt-sell-btn');
+      const setStatus = (cls, text) => {
+        if (statusEl) { statusEl.className = 'qt-status active ' + cls; statusEl.textContent = text; }
+      };
+      const clearStatus = () => { if (statusEl) setTimeout(() => statusEl.className = 'qt-status', 4000); };
+      
+      isTrading = true;
+      if (allBtns) allBtns.forEach(b => b.classList.add('loading'));
+      if (btnEl) btnEl.textContent = '...';
+      const origText = solAmount + ' SOL';
+      
+      const slippage = parseFloat($('tr-slippage')?.value) || 15;
+      const priority = parseFloat($('tr-priority')?.value) || 0.0005;
+
+      try {
+        setStatus('pending', '⏳ Getting quote...');
+        const lamports = Math.round(solAmount * 1e9);
+        const jupResult = await jupQuote(SOL_MINT, mint, lamports, Math.round(slippage * 100));
+        if (!jupResult) throw new Error('Jupiter quote failed');
+        
+        setStatus('pending', '⏳ Building transaction...');
+        const swapData = await jupSwap(jupResult.endpoint, jupResult.quote, walletAddress, Math.round(priority * 1e9));
+        
+        setStatus('pending', '⏳ Simulating...');
+        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+        const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        try {
+          const simConn = await getWorkingConnection();
+          const simResult = await simConn.simulateTransaction(tx, { sigVerify: false });
+          if (simResult.value.err) throw new Error('Simulation failed: trade would fail on-chain');
+        } catch (simErr) {
+          if (simErr.message.includes('Simulation failed:')) throw simErr;
+        }
+        
+        setStatus('pending', '✍️ Sign in wallet...');
+        const solSigner = getSolanaSigner();
+        if (!solSigner) throw new Error('Wallet signer not found');
+        const signed = await solSigner.signTransaction(tx);
+        
+        setStatus('pending', mevEnabled ? '🛡️ Sending via Jito...' : '📡 Submitting...');
+        const rawTx = signed.serialize();
+        let sig;
+        if (mevEnabled) {
+          try { sig = await sendViaJito(rawTx); }
+          catch (e) {
+            const conn = await getWorkingConnection();
+            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+          }
+        } else {
+          const conn = await getWorkingConnection();
+          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+        }
+        
+        setStatus('pending', '⏳ Confirming...');
+        const confirmConn = await getWorkingConnection();
+        await confirmConn.confirmTransaction(sig, 'confirmed');
+        
+        const tokenDecimals = await getTokenDecimals(mint);
+        const outAmt = parseInt(jupResult.quote.outAmount) / Math.pow(10, tokenDecimals);
+        
+        setStatus('success', `✅ Bought ${formatNum(outAmt)} ${symbol || ''}!`);
+        toast(`✅ Bought ${formatNum(outAmt)} ${symbol || ''} for ${solAmount} SOL`, 5000);
+        
+        tradeHistory.unshift({
+          side: 'buy', symbol: symbol || mint.slice(0,6), mint,
+          amountIn: solAmount + ' SOL',
+          amountOut: formatNum(outAmt) + ' ' + (symbol || ''),
+          sig, time: Date.now(),
+        });
+        if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
+        lsSetJSON('ghost-trades', tradeHistory);
+        renderTradeHistory();
+        
+        // Auto SL/TP if enabled
+        if (sltpEnabled) {
+          const slPct = parseFloat($('manual-sl')?.value) || 30;
+          const tpPct = parseFloat($('manual-tp')?.value) || 100;
+          const pricePerToken = solAmount / outAmt;
+          manualPositions[mint] = {
+            symbol: symbol || mint.slice(0,6), mint, entryPrice: pricePerToken,
+            sl: slPct, tp: tpPct, amount: outAmt, time: Date.now()
+          };
+          lsSetJSON('ghost-manual-positions', manualPositions);
+          startManualSltpMonitor();
+        }
+        
+      } catch (e) {
+        const msg = e.message || 'Trade failed';
+        if (msg.includes('User rejected')) {
+          setStatus('error', '❌ Rejected in wallet');
+        } else {
+          setStatus('error', '❌ ' + msg.slice(0, 60));
+        }
+        toast('❌ ' + msg.slice(0, 80));
+      } finally {
+        isTrading = false;
+        if (allBtns) allBtns.forEach(b => b.classList.remove('loading'));
+        if (btnEl) btnEl.textContent = origText;
+        clearStatus();
+      }
+    }
+
+    async function quickSell(mint, pct, symbol, btnEl) {
+      if (!walletAddress) { toast('Connect wallet first!'); return; }
+      if (isTrading) { toast('Trade already in progress...'); return; }
+      if (isEVM()) { toast('Quick-sell is Solana only for now'); return; }
+      
+      const statusEl = btnEl?.closest('.qt-section')?.querySelector('.qt-status');
+      const allBtns = btnEl?.closest('.qt-section')?.querySelectorAll('.qt-buy-btn, .qt-sell-btn');
+      const setStatus = (cls, text) => {
+        if (statusEl) { statusEl.className = 'qt-status active ' + cls; statusEl.textContent = text; }
+      };
+      const clearStatus = () => { if (statusEl) setTimeout(() => statusEl.className = 'qt-status', 4000); };
+      
+      isTrading = true;
+      if (allBtns) allBtns.forEach(b => b.classList.add('loading'));
+      const origText = btnEl?.textContent || '';
+      if (btnEl) btnEl.textContent = '...';
+      
+      const slippage = parseFloat($('tr-slippage')?.value) || 15;
+      const priority = parseFloat($('tr-priority')?.value) || 0.0005;
+
+      try {
+        setStatus('pending', '⏳ Checking balance...');
+        const tokenBalance = await getTokenBalance(mint);
+        if (!tokenBalance || tokenBalance <= 0) throw new Error('No token balance found');
+        const tokenDecimals = await getTokenDecimals(mint);
+        const sellAmount = tokenBalance * (pct / 100);
+        const lamports = Math.round(sellAmount * Math.pow(10, tokenDecimals));
+        
+        setStatus('pending', '⏳ Getting sell quote...');
+        const jupResult = await jupQuote(mint, SOL_MINT, lamports, Math.round(slippage * 100));
+        if (!jupResult) throw new Error('Jupiter quote failed');
+        
+        setStatus('pending', '⏳ Building transaction...');
+        const swapData = await jupSwap(jupResult.endpoint, jupResult.quote, walletAddress, Math.round(priority * 1e9));
+        
+        setStatus('pending', '⏳ Simulating...');
+        const txBuf = Uint8Array.from(atob(swapData.swapTransaction), c => c.charCodeAt(0));
+        const tx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        try {
+          const simConn = await getWorkingConnection();
+          const simResult = await simConn.simulateTransaction(tx, { sigVerify: false });
+          if (simResult.value.err) throw new Error('Simulation failed: trade would fail on-chain');
+        } catch (simErr) {
+          if (simErr.message.includes('Simulation failed:')) throw simErr;
+        }
+        
+        setStatus('pending', '✍️ Sign in wallet...');
+        const solSigner = getSolanaSigner();
+        if (!solSigner) throw new Error('Wallet signer not found');
+        const signed = await solSigner.signTransaction(tx);
+        
+        setStatus('pending', mevEnabled ? '🛡️ Sending via Jito...' : '📡 Submitting...');
+        const rawTx = signed.serialize();
+        let sig;
+        if (mevEnabled) {
+          try { sig = await sendViaJito(rawTx); }
+          catch (e) {
+            const conn = await getWorkingConnection();
+            sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+          }
+        } else {
+          const conn = await getWorkingConnection();
+          sig = await conn.sendRawTransaction(rawTx, { skipPreflight: true, maxRetries: 3 });
+        }
+        
+        setStatus('pending', '⏳ Confirming...');
+        const confirmConn = await getWorkingConnection();
+        await confirmConn.confirmTransaction(sig, 'confirmed');
+        
+        const solOut = parseInt(jupResult.quote.outAmount) / 1e9;
+        
+        setStatus('success', `✅ Sold ${pct}% for ${solOut.toFixed(4)} SOL!`);
+        toast(`✅ Sold ${pct}% of ${symbol || ''} for ${solOut.toFixed(4)} SOL`, 5000);
+        
+        tradeHistory.unshift({
+          side: 'sell', symbol: symbol || mint.slice(0,6), mint,
+          amountIn: formatNum(sellAmount) + ' ' + (symbol || ''),
+          amountOut: solOut.toFixed(4) + ' SOL',
+          sig, time: Date.now(),
+        });
+        if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
+        lsSetJSON('ghost-trades', tradeHistory);
+        renderTradeHistory();
+        
+        // Remove SL/TP position if sold 100%
+        if (pct >= 100 && manualPositions[mint]) {
+          delete manualPositions[mint];
+          lsSetJSON('ghost-manual-positions', manualPositions);
+        }
+        
+      } catch (e) {
+        const msg = e.message || 'Sell failed';
+        if (msg.includes('User rejected')) {
+          setStatus('error', '❌ Rejected in wallet');
+        } else {
+          setStatus('error', '❌ ' + msg.slice(0, 60));
+        }
+        toast('❌ ' + msg.slice(0, 80));
+      } finally {
+        isTrading = false;
+        if (allBtns) allBtns.forEach(b => b.classList.remove('loading'));
+        if (btnEl) btnEl.textContent = origText;
+        clearStatus();
+      }
+    }
+
     async function executeTrade(side) {
       if (!walletAddress) { toast('Connect wallet first!'); return; }
       if (isTrading) return;
@@ -5325,7 +5591,7 @@
         };
         tradeHistory.unshift(trade);
         if (tradeHistory.length > 50) tradeHistory = tradeHistory.slice(0, 50);
-        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        lsSetJSON('ghost-trades', tradeHistory);
         renderTradeHistory();
 
         // Log to chat
@@ -5497,7 +5763,7 @@
 
     function clearTradeHistory() {
       tradeHistory = [];
-      localStorage.removeItem('ghost-trades');
+      lsRemove('ghost-trades');
       renderTradeHistory();
       toast('Trade history cleared');
     }
@@ -5973,7 +6239,7 @@
     // ═══════ CHAT MODE (AGENT / CHAT) ═══════
     function setChatMode(mode) {
       chatMode = mode;
-      localStorage.setItem('ghost-chat-mode', mode);
+      lsSet('ghost-chat-mode', mode);
       $('cmt-agent').classList.toggle('active', mode === 'agent');
       $('cmt-chat').classList.toggle('active', mode === 'chat');
       $('input').placeholder = mode === 'agent'
@@ -5984,16 +6250,16 @@
     // ═══════ ALPHA BOT — AI COPY TRADER ═══════
     const JUPITER_V6_PROGRAM = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4';
     const RAYDIUM_AMM_PROGRAM = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8';
-    let alphaWallets = JSON.parse(localStorage.getItem('ghost-alpha-wallets') || '[]');
-    let alphaStrategy = localStorage.getItem('ghost-alpha-strategy') || '';
+    let alphaWallets = lsGetJSON('ghost-alpha-wallets', []);
+    let alphaStrategy = lsGet('ghost-alpha-strategy', '');
     let alphaBotRunning = false;
     let alphaPollTimer = null;
-    let alphaLastSigs = JSON.parse(localStorage.getItem('ghost-alpha-lastsigs') || '{}');
-    let alphaBotLog = JSON.parse(localStorage.getItem('ghost-alpha-log') || '[]');
-    let alphaBotTrades = JSON.parse(localStorage.getItem('ghost-alpha-trades') || '[]');
+    let alphaLastSigs = lsGetJSON('ghost-alpha-lastsigs', {});
+    let alphaBotLog = lsGetJSON('ghost-alpha-log', []);
+    let alphaBotTrades = lsGetJSON('ghost-alpha-trades', []);
     let alphaDailyCount = 0;
     let alphaPositions = {}; // mint -> { symbol, entrySOL, amount, entryTime, sig, copiedFrom }
-    let alphaClosedCount = parseInt(localStorage.getItem('ghost-alpha-closed-count') || '0');
+    let alphaClosedCount = parseInt(lsGet('ghost-alpha-closed-count', '0'));
 
     // ── Smart Trading Systems ──
     let alphaLastBuyTime = 0;          // Global cooldown tracker
@@ -6011,12 +6277,12 @@
       const walletsForSave = alphaWallets.map(w => ({
         address: w.address, label: w.label, stats: w.stats, addedAt: w.addedAt,
       }));
-      localStorage.setItem('ghost-alpha-wallets', JSON.stringify(walletsForSave));
-      localStorage.setItem('ghost-alpha-lastsigs', JSON.stringify(alphaLastSigs));
-      localStorage.setItem('ghost-alpha-log', JSON.stringify(alphaBotLog.slice(-50)));
-      localStorage.setItem('ghost-alpha-trades', JSON.stringify(alphaBotTrades.slice(-100)));
-      localStorage.setItem('ghost-alpha-strategy', alphaStrategy);
-      localStorage.setItem('ghost-alpha-closed-count', alphaClosedCount.toString());
+      lsSetJSON('ghost-alpha-wallets', walletsForSave);
+      lsSetJSON('ghost-alpha-lastsigs', alphaLastSigs);
+      lsSetJSON('ghost-alpha-log', alphaBotLog.slice(-50));
+      lsSetJSON('ghost-alpha-trades', alphaBotTrades.slice(-100));
+      lsSet('ghost-alpha-strategy', alphaStrategy);
+      lsSet('ghost-alpha-closed-count', alphaClosedCount.toString());
     }
 
     function alphaLog(msg, type = 'info') {
@@ -6240,7 +6506,7 @@
     }
 
     // ── Alpha Bot Dedicated Wallet ──
-    let alphaBotWallet = JSON.parse(localStorage.getItem('ghost-alpha-bot-wallet') || 'null');
+    let alphaBotWallet = lsGetJSON('ghost-alpha-bot-wallet', null);
 
     function saveAlphaBotWallet() {
       const label = $('alpha-bot-label').value.trim() || 'Alpha Wallet';
@@ -6253,7 +6519,7 @@
         const publicKey = keypair.publicKey.toString();
 
         alphaBotWallet = { label, publicKey, secretKey: privkey };
-        localStorage.setItem('ghost-alpha-bot-wallet', JSON.stringify(alphaBotWallet));
+        lsSetJSON('ghost-alpha-bot-wallet', alphaBotWallet);
 
         $('alpha-bot-label').value = '';
         $('alpha-bot-privkey').value = '';
@@ -6267,7 +6533,7 @@
 
     function removeAlphaBotWallet() {
       alphaBotWallet = null;
-      localStorage.removeItem('ghost-alpha-bot-wallet');
+      lsRemove('ghost-alpha-bot-wallet');
       renderAlphaBotWallet();
       toast('Wallet removed');
     }
@@ -6305,7 +6571,7 @@
     // heliusKey defined at top with globals
     function saveHeliusKey() {
       heliusKey = $('alpha-helius-key').value.trim();
-      localStorage.setItem('ghost-helius-key', heliusKey);
+      lsSet('ghost-helius-key', heliusKey);
       toast(heliusKey ? '🔑 Helius key saved' : 'Helius key cleared');
     }
 
@@ -7145,7 +7411,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           amountIn: buyAmt + ' SOL', amountOut: symbol,
           sig, time: Date.now(),
         });
-        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        lsSetJSON('ghost-trades', tradeHistory);
         saveAlphaState();
 
         alphaLog(`🟢 BOUGHT ${symbol} — ${buyAmt} SOL via ${method}${balanceConfirmed ? ' (balance ✓)' : ''} — tx: ${sig.slice(0, 8)}...`, 'trade');
@@ -7289,7 +7555,7 @@ Be concise, use numbers. Output as plain text, not markdown.`;
           amountOut: solReceived.toFixed(4) + ' SOL',
           sig, time: Date.now(),
         });
-        localStorage.setItem('ghost-trades', JSON.stringify(tradeHistory));
+        lsSetJSON('ghost-trades', tradeHistory);
 
         alphaClosedCount++;
         saveAlphaState();
@@ -8418,8 +8684,27 @@ Your response (one line only):`;
 
           <div class="tk-addr" onclick="navigator.clipboard.writeText('${mint}');toast('📋 Copied!')" title="Click to copy">${mint}</div>
 
+          <div class="qt-section">
+            <div class="qt-label">⚡ QUICK BUY</div>
+            <div class="qt-row">
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.01,'${escapeHtml(symbol)}',this)">0.01 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.05,'${escapeHtml(symbol)}',this)">0.05 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.1,'${escapeHtml(symbol)}',this)">0.1 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.5,'${escapeHtml(symbol)}',this)">0.5 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',1,'${escapeHtml(symbol)}',this)">1 SOL</button>
+            </div>
+            <div class="qt-label" style="margin-top:8px;">⚡ QUICK SELL</div>
+            <div class="qt-row">
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',25,'${escapeHtml(symbol)}',this)">25%</button>
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',50,'${escapeHtml(symbol)}',this)">50%</button>
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',75,'${escapeHtml(symbol)}',this)">75%</button>
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',100,'${escapeHtml(symbol)}',this)">100%</button>
+            </div>
+            <div class="qt-status"></div>
+          </div>
+
           <div class="tk-actions">
-            <button class="tk-btn buy" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ BUY</button>
+            <button class="tk-btn" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ ADVANCED</button>
             <button class="tk-btn" onclick="$('intel-mint').value='${mint}';setMode('intel');fetchTokenIntel();">⬡ SCAN</button>
             <button class="tk-btn" onclick="openChart('${mint}','${symbol}')">📊 CHART</button>
             <button class="tk-btn" onclick="addToWatchlist('${mint}')">⭐ WATCH</button>
@@ -8513,8 +8798,26 @@ Your response (one line only):`;
             <div class="tk-cell"><div class="tk-label">Sells 24h</div><div class="tk-val red">${sells24}</div></div>
           </div>
           <div class="tk-addr" onclick="navigator.clipboard.writeText('${mint}');toast('📋 Copied!')" title="Click to copy">${mint}</div>
+          <div class="qt-section">
+            <div class="qt-label">⚡ QUICK BUY</div>
+            <div class="qt-row">
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.01,'${escapeHtml(symbol)}',this)">0.01 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.05,'${escapeHtml(symbol)}',this)">0.05 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.1,'${escapeHtml(symbol)}',this)">0.1 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',0.5,'${escapeHtml(symbol)}',this)">0.5 SOL</button>
+              <button class="qt-buy-btn" onclick="quickBuy('${mint}',1,'${escapeHtml(symbol)}',this)">1 SOL</button>
+            </div>
+            <div class="qt-label" style="margin-top:8px;">⚡ QUICK SELL</div>
+            <div class="qt-row">
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',25,'${escapeHtml(symbol)}',this)">25%</button>
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',50,'${escapeHtml(symbol)}',this)">50%</button>
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',75,'${escapeHtml(symbol)}',this)">75%</button>
+              <button class="qt-sell-btn" onclick="quickSell('${mint}',100,'${escapeHtml(symbol)}',this)">100%</button>
+            </div>
+            <div class="qt-status"></div>
+          </div>
           <div class="tk-actions">
-            <button class="tk-btn buy" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ BUY</button>
+            <button class="tk-btn" onclick="setMode('trade');$('tr-mint').value='${mint}';onMintInput('${mint}');">⟡ ADVANCED</button>
             <button class="tk-btn" onclick="$('intel-mint').value='${mint}';setMode('intel');fetchTokenIntel();">⬡ SCAN</button>
             <button class="tk-btn" onclick="openChart('${mint}','${symbol}')">📊 CHART</button>
             <button class="tk-btn" onclick="addToWatchlist('${mint}')">⭐ WATCH</button>
@@ -8659,7 +8962,7 @@ Your response (one line only):`;
       if (!val) { toast('Please enter an API key'); return; }
       if (!val.startsWith('sk-ant-')) { toast('Key should start with sk-ant-...'); return; }
       apiKey = val;
-      localStorage.setItem('ghost-claude-key', apiKey);
+      lsSet('ghost-claude-key', apiKey);
       document.querySelector('.key-overlay')?.remove();
       checkApiKey();
       toast('API key saved ✓');
@@ -8667,7 +8970,7 @@ Your response (one line only):`;
 
     $('model-sel').addEventListener('change', e => {
       currentModel = e.target.value;
-      localStorage.setItem('ghost-model', currentModel);
+      lsSet('ghost-model', currentModel);
       checkApiKey();
     });
 
@@ -8901,12 +9204,12 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     $('watch-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addToWatchlist($('watch-input').value.trim()); } });
 
     // ═══════ MEV PROTECTION (JITO) ═══════
-    let mevEnabled = localStorage.getItem('ghost-mev') !== 'false'; // default on
+    let mevEnabled = lsGet('ghost-mev', '') !== 'false'; // default on
     if ($('mev-toggle')) $('mev-toggle').classList.toggle('on', mevEnabled);
 
     function toggleMev() {
       mevEnabled = !mevEnabled;
-      localStorage.setItem('ghost-mev', mevEnabled);
+      lsSet('ghost-mev', mevEnabled);
       $('mev-toggle').classList.toggle('on', mevEnabled);
       toast(mevEnabled ? '🛡️ MEV Protection ON — Jito bundles' : '⚠️ MEV Protection OFF');
     }
@@ -8937,10 +9240,10 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     }
 
     // ═══════ WATCHLIST ═══════
-    let watchlist = JSON.parse(localStorage.getItem('ghost-watchlist') || '[]');
+    let watchlist = lsGetJSON('ghost-watchlist', []);
 
     function saveWatchlist() {
-      localStorage.setItem('ghost-watchlist', JSON.stringify(watchlist));
+      lsSetJSON('ghost-watchlist', watchlist);
     }
 
     async function addToWatchlist(mint) {
@@ -9546,7 +9849,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     let perpsPrev = { SOL: 0, BTC: 0, ETH: 0 };
     let perps24h = { SOL: {}, BTC: {}, ETH: {} };
     let perpsWs = null;
-    let perpsPositions = JSON.parse(localStorage.getItem('ghost-perps-positions') || '[]');
+    let perpsPositions = lsGetJSON('ghost-perps-positions', []);
     let perpsWsRetries = 0;
 
     // ═══════ JUPITER PERPS ON-CHAIN CONSTANTS ═══════
@@ -10171,7 +10474,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
         };
 
         perpsPositions.unshift(pos);
-        localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+        lsSetJSON('ghost-perps-positions', perpsPositions);
         renderPerpsPositions();
 
         // Show the order briefing modal
@@ -10350,7 +10653,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       pos.closePrice = currentPrice;
       pos.closeTime = Date.now();
 
-      localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+      lsSetJSON('ghost-perps-positions', perpsPositions);
       renderPerpsPositions();
 
       const isProfit = pnlPct >= 0;
@@ -10388,7 +10691,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
       });
 
       if (changed) {
-        localStorage.setItem('ghost-perps-positions', JSON.stringify(perpsPositions));
+        lsSetJSON('ghost-perps-positions', perpsPositions);
         renderPerpsPositions();
       }
     }
@@ -10433,7 +10736,7 @@ ${webSearchEnabled ? 'You have web search enabled — use it aggressively for re
     }
 
     // Restore last mode
-    const savedMode = localStorage.getItem('ghost-mode');
+    const savedMode = lsGet('ghost-mode', '');
     if (savedMode && savedMode !== 'chat') {
       setTimeout(() => setMode(savedMode), 100);
     }
