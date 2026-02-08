@@ -457,19 +457,31 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 .lp-launch-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,0.3)}
 .lp-hot{position:absolute;top:12px;right:12px;padding:3px 8px;border-radius:8px;font-size:.55rem;font-weight:800;font-family:var(--font-mono);z-index:2}
 
-/* Launchpad iframe overlay */
-.lp-iframe-overlay{position:fixed;inset:0;z-index:2500;background:var(--bg-deep);display:none;flex-direction:column}
-.lp-iframe-overlay.active{display:flex}
-.lp-iframe-bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg-primary);border-bottom:1px solid var(--border-default);flex-shrink:0}
-.lp-iframe-bar .lp-iframe-title{flex:1;font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:8px}
-.lp-iframe-bar .lp-iframe-url{font-family:var(--font-mono);font-size:.65rem;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border-default);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lp-iframe-bar button{padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-card);color:var(--text-secondary);font-family:var(--font-body);font-size:.75rem;font-weight:600;cursor:pointer;transition:all var(--transition)}
-.lp-iframe-bar button:hover{border-color:var(--text-tertiary);color:var(--text-primary)}
-.lp-iframe-bar .lp-close-btn:hover{border-color:var(--red);color:var(--red)}
-.lp-iframe-container{flex:1;position:relative}
-.lp-iframe-container iframe{width:100%;height:100%;border:none}
-.lp-iframe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--bg-deep);z-index:1}
-.lp-iframe-loading .spinner{width:32px;height:32px}
+/* Launchpad expanded form */
+.lp-card.expanded{grid-column:1/-1}
+.lp-card.expanded .lp-banner{height:80px}
+.lp-card.expanded .lp-banner-logo{font-size:2rem}
+.lp-form{padding:0 18px 18px;display:none}
+.lp-card.expanded .lp-form{display:block}
+.lp-card.expanded .lp-launch-btn.initial{display:none}
+.lp-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.lp-form-group{margin-bottom:0}
+.lp-form-group.full{grid-column:1/-1}
+.lp-form-label{font-size:.62rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-mono)}
+.lp-form-input{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-deep);color:var(--text-primary);font-family:var(--font-body);font-size:.82rem;outline:none;transition:border var(--transition);box-sizing:border-box}
+.lp-form-input:focus{border-color:rgba(0,219,164,0.3);box-shadow:0 0 0 3px rgba(0,219,164,0.06)}
+.lp-form-input::placeholder{color:var(--text-tertiary)}
+textarea.lp-form-input{resize:vertical;min-height:60px;font-family:var(--font-body)}
+.lp-form-hint{font-size:.58rem;color:var(--text-tertiary);margin-top:3px;font-family:var(--font-mono)}
+.lp-form-actions{display:flex;gap:10px;margin-top:16px}
+.lp-form-actions button{flex:1;padding:14px;border-radius:var(--radius-sm);border:none;font-family:var(--font-body);font-size:.9rem;font-weight:800;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+.lp-form-cancel{background:var(--bg-card)!important;border:1px solid var(--border-default)!important;color:var(--text-tertiary)!important}
+.lp-form-cancel:hover{border-color:var(--red)!important;color:var(--red)!important}
+.lp-form-submit:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,0.3)}
+.lp-img-upload{display:flex;align-items:center;gap:12px}
+.lp-img-preview{width:56px;height:56px;border-radius:var(--radius-sm);border:2px dashed var(--border-default);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--text-tertiary);overflow:hidden;flex-shrink:0;background:var(--bg-deep)}
+.lp-img-preview img{width:100%;height:100%;object-fit:cover}
+.lp-sep{height:1px;background:var(--border-subtle);margin:16px 0}
 
 /* ---- Desktop sidebar ---- */
 @media(max-width:1200px){.sidebar{width:300px}}
@@ -705,6 +717,10 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
   .lp-stat{padding:6px 2px}
   .lp-stat-val{font-size:.72rem}
   .lp-launch-btn{padding:10px;font-size:.8rem}
+  .lp-form-row{grid-template-columns:1fr}
+  .lp-form-actions{flex-direction:column}
+  .lp-img-upload{flex-direction:column;align-items:stretch}
+  .lp-img-preview{width:100%;height:60px}
   .trader-card{padding:12px}
   .trader-header{gap:10px;margin-bottom:10px}
   .trader-avi{width:38px;height:38px;font-size:1rem}
@@ -1195,20 +1211,6 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 </div>
 
 
-
-<!-- LAUNCHPAD IFRAME OVERLAY -->
-<div class="lp-iframe-overlay" id="lpOverlay">
-  <div class="lp-iframe-bar">
-    <div class="lp-iframe-title" id="lpTitle">🚀 Launchpad</div>
-    <div class="lp-iframe-url" id="lpUrl"></div>
-    <button onclick="window.open(document.getElementById('lpFrame').src,'_blank')">↗ Open in Tab</button>
-    <button class="lp-close-btn" onclick="closeLaunchpad()">✕ Close</button>
-  </div>
-  <div class="lp-iframe-container">
-    <div class="lp-iframe-loading" id="lpLoader"><div class="spinner"></div><div style="color:var(--text-muted);font-size:.85rem">Loading launchpad...</div></div>
-    <iframe id="lpFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals" allow="clipboard-write" onload="document.getElementById('lpLoader').style.display='none'"></iframe>
-  </div>
-</div>
 
 <!-- WALLET PANEL -->
 <div class="panel-overlay" id="walletPanel" onclick="if(event.target===this)closeWalletPanel()">
@@ -2569,8 +2571,8 @@ function searchResultHTML(r, isLocal) {
   const chgColor = r.priceChange >= 0 ? 'var(--accent)' : 'var(--red)';
   
   // Store data as attributes — no inline JS to break
-  const dataAttrs = isLocal && r.localIndex !== undefined
-    ? `data-action="local" data-idx="${r.localIndex}"`
+  const dataAttrs = isLocal
+    ? `data-action="local" data-pool="${r.poolAddress || ''}" data-addr="${r.address || ''}"`
     : `data-action="remote" data-net="${r.network || ''}" data-pool="${r.poolAddress || ''}" data-addr="${r.address || ''}"`;
   
   return `
@@ -2597,10 +2599,18 @@ searchDropdown.addEventListener('click', function(e) {
   searchDropdown.classList.remove('active');
   searchInput.value = '';
   
+  const pool = row.dataset.pool;
+  const addr = row.dataset.addr;
+  const net = row.dataset.net;
+  
   if (row.dataset.action === 'local') {
-    openModal(parseInt(row.dataset.idx));
+    // Look up fresh index by poolAddress (stale index fix)
+    let idx = tokens.findIndex(t => t.poolAddress === pool);
+    if (idx === -1 && addr) idx = tokens.findIndex(t => t.baseAddr === addr);
+    if (idx === -1) idx = 0;
+    openModal(idx);
   } else if (row.dataset.action === 'remote') {
-    loadSearchedToken(row.dataset.net, row.dataset.pool, row.dataset.addr);
+    loadSearchedToken(net, pool, addr);
   }
 });
 
@@ -2608,75 +2618,73 @@ function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5
 
 // Load a token found via search into the table view
 async function loadSearchedToken(network, poolAddress, tokenAddress) {
-  // Switch to that chain
-  if (network && CHAIN_CONFIG[network]) {
-    currentNetwork = network;
+  const net = network || 'solana';
+  const geckoNet = CHAIN_CONFIG[net]?.gecko || net;
+  
+  // Switch chain UI
+  if (CHAIN_CONFIG[net]) {
+    currentNetwork = net;
     document.querySelectorAll('.chip[data-chain]').forEach(c => c.classList.remove('active'));
-    const matchChip = document.querySelector(`.chip[data-chain="${network}"]`);
+    const matchChip = document.querySelector(`.chip[data-chain="${net}"]`);
     if (matchChip) matchChip.classList.add('active');
-    else document.querySelector('.chip[data-chain="all"]').classList.add('active');
+    else document.querySelector('.chip[data-chain="all"]')?.classList.add('active');
   }
   
-  const geckoNet = CHAIN_CONFIG[network]?.gecko || network || 'solana';
-  
-  // If no pool address, find one from the token address
+  // Resolve pool address if missing
   if (!poolAddress && tokenAddress) {
     try {
-      const url = `${GT_BASE}/networks/${geckoNet}/tokens/${tokenAddress}/pools?page=1`;
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const res = await fetch(`${GT_BASE}/networks/${geckoNet}/tokens/${tokenAddress}/pools?page=1`, { headers: { 'Accept': 'application/json' } });
       const json = await res.json();
       if (json?.data?.[0]) {
-        poolAddress = json.data[0].attributes?.address || json.data[0].id?.split('_')[1] || '';
+        poolAddress = json.data[0].attributes?.address || '';
       }
-    } catch (e) { console.warn('Token pools lookup failed:', e); }
+    } catch (e) { console.warn('Pool lookup failed:', e); }
   }
   
-  // Fetch the pool data
-  if (poolAddress) {
-    try {
-      const url = `${GT_BASE}/networks/${geckoNet}/pools/${poolAddress}?include=base_token,quote_token`;
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      const json = await res.json();
-      if (json?.data) {
-        const poolData = { data: [json.data], included: json.included || [] };
-        const parsed = parsePools(poolData, network);
-        if (parsed.length) {
-          // Show token immediately, load trending in background
-          tokens = parsed;
-          rankTokens(tokens);
-          isLoading = false;
-          
-          // Ensure we're on a table view
-          activeView = 'trending';
-          document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-          const navEl = document.querySelector('.nav-item[data-view="trending"]');
-          if (navEl) navEl.classList.add('active');
-          const c = contentEl();
-          if (c) c.innerHTML = TABLE_HTML;
-          render();
-          
-          // Open modal immediately
-          setTimeout(() => openModal(0), 200);
-          
-          // Load rest of trending in background
-          fetchTrending(network).then(trending => {
-            if (trending?.length) {
-              const filtered = trending.filter(t => t.poolAddress !== parsed[0].poolAddress);
-              tokens = [...parsed, ...filtered];
-              rankTokens(tokens);
-              render();
-              renderHeat(); renderDynamicFeed(); renderWallets();
-            }
-          });
-          return;
-        }
-      }
-    } catch (e) { console.error('Pool fetch failed:', e); }
+  if (!poolAddress) {
+    showPaymentToast('⚠️ Token Not Found', 'Could not find a pool for this token.');
+    return;
   }
   
-  // Fallback — load the chain's trending
-  isLoading = true;
-  switchView('trending');
+  // Fetch full pool data
+  try {
+    const res = await fetch(`${GT_BASE}/networks/${geckoNet}/pools/${poolAddress}?include=base_token,quote_token`, { headers: { 'Accept': 'application/json' } });
+    const json = await res.json();
+    if (!json?.data) throw new Error('No pool data');
+    
+    const poolData = { data: [json.data], included: json.included || [] };
+    const parsed = parsePools(poolData, net);
+    if (!parsed.length) throw new Error('Parse returned empty');
+    
+    // Inject into tokens and open modal immediately
+    // Check if already exists in tokens
+    const existingIdx = tokens.findIndex(t => t.poolAddress === parsed[0].poolAddress || t.baseAddr === parsed[0].baseAddr);
+    if (existingIdx >= 0) {
+      // Token already loaded — just open it
+      openModal(existingIdx);
+      return;
+    }
+    
+    // Prepend to tokens array
+    tokens = [parsed[0], ...tokens];
+    rankTokens(tokens);
+    isLoading = false;
+    
+    // Ensure table view
+    if (!['trending','new','gainers','losers'].includes(activeView)) {
+      activeView = 'trending';
+      document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+      document.querySelector('.nav-item[data-view="trending"]')?.classList.add('active');
+      contentEl().innerHTML = TABLE_HTML;
+    }
+    render();
+    openModal(0);
+    
+  } catch (e) {
+    console.error('loadSearchedToken failed:', e);
+    showPaymentToast('⚠️ Failed to Load', 'Could not load token data. Try again.');
+    switchView('trending');
+  }
 }
 
 // =============================================
@@ -2934,12 +2942,12 @@ function renderLaunchpadView(c) {
     <div class="view-header">
       <div>
         <div class="view-header-title">🚀 Launchpad — Deploy a Token</div>
-        <div class="view-header-sub">Launch your token directly from RADAR · No need to leave the terminal</div>
+        <div class="view-header-sub">Launch your token directly from RADAR · Fill in the details, connect wallet, deploy on-chain</div>
       </div>
     </div>
-    <div class="launchpad-grid">
+    <div class="launchpad-grid" id="lpGrid">
       ${LAUNCHPADS.map(lp => `
-        <div class="lp-card" onclick="openLaunchpad('${lp.id}')">
+        <div class="lp-card" id="lp-${lp.id}" onclick="expandLaunchpad('${lp.id}')">
           ${lp.hot ? '<div class="lp-hot" style="background:var(--red-dim);color:var(--red)">🔥 HOT</div>' : ''}
           <div class="lp-banner" style="background:${lp.gradient}">
             <div class="lp-banner-logo">${lp.icon}</div>
@@ -2951,22 +2959,95 @@ function renderLaunchpadView(c) {
             </div>
             <div class="lp-desc">${lp.desc}</div>
             <div class="lp-stats">
-              <div class="lp-stat">
-                <div class="lp-stat-val">${lp.stats.launched}</div>
-                <div class="lp-stat-label">Tokens</div>
-              </div>
-              <div class="lp-stat">
-                <div class="lp-stat-val">${lp.stats.cost}</div>
-                <div class="lp-stat-label">Cost</div>
-              </div>
-              <div class="lp-stat">
-                <div class="lp-stat-val">${lp.stats.time}</div>
-                <div class="lp-stat-label">Deploy</div>
-              </div>
+              <div class="lp-stat"><div class="lp-stat-val">${lp.stats.launched}</div><div class="lp-stat-label">Tokens</div></div>
+              <div class="lp-stat"><div class="lp-stat-val">${lp.stats.cost}</div><div class="lp-stat-label">Cost</div></div>
+              <div class="lp-stat"><div class="lp-stat-val">${lp.stats.time}</div><div class="lp-stat-label">Deploy</div></div>
             </div>
-            <button class="lp-launch-btn" style="background:${lp.btnColor};color:${lp.btnText}" onclick="event.stopPropagation();openLaunchpad('${lp.id}')">
+            <button class="lp-launch-btn initial" style="background:${lp.btnColor};color:${lp.btnText}" onclick="event.stopPropagation();expandLaunchpad('${lp.id}')">
               🚀 Launch on ${lp.name}
             </button>
+            <!-- INLINE LAUNCH FORM -->
+            <div class="lp-form" id="lpForm-${lp.id}">
+              <div class="lp-sep"></div>
+              <div style="font-weight:800;font-size:.9rem;margin-bottom:14px;display:flex;align-items:center;gap:8px">${lp.icon} Create Token on ${lp.name}</div>
+              <div class="lp-form-row">
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Token Name *</div>
+                  <input class="lp-form-input" id="${lp.id}-name" placeholder="e.g. Moon Dog" maxlength="32">
+                </div>
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Ticker / Symbol *</div>
+                  <input class="lp-form-input" id="${lp.id}-symbol" placeholder="e.g. MDOG" maxlength="10" style="text-transform:uppercase">
+                </div>
+              </div>
+              <div class="lp-form-row">
+                <div class="lp-form-group full">
+                  <div class="lp-form-label">Description</div>
+                  <textarea class="lp-form-input" id="${lp.id}-desc" placeholder="What's your token about? Tell the community..." maxlength="500" rows="3"></textarea>
+                </div>
+              </div>
+              <div class="lp-form-row">
+                <div class="lp-form-group full">
+                  <div class="lp-form-label">Token Image</div>
+                  <div class="lp-img-upload">
+                    <div class="lp-img-preview" id="${lp.id}-preview">🖼️</div>
+                    <div style="flex:1">
+                      <input class="lp-form-input" id="${lp.id}-img" placeholder="Paste image URL..." type="url" oninput="previewLpImg('${lp.id}')">
+                      <div class="lp-form-hint">PNG, JPG, GIF · Square recommended</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="lp-form-row">
+                <div class="lp-form-group">
+                  <div class="lp-form-label">X (Twitter)</div>
+                  <input class="lp-form-input" id="${lp.id}-twitter" placeholder="https://x.com/..." type="url">
+                </div>
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Telegram</div>
+                  <input class="lp-form-input" id="${lp.id}-telegram" placeholder="https://t.me/..." type="url">
+                </div>
+              </div>
+              <div class="lp-form-row">
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Website</div>
+                  <input class="lp-form-input" id="${lp.id}-website" placeholder="https://yourtoken.com" type="url">
+                </div>
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Discord</div>
+                  <input class="lp-form-input" id="${lp.id}-discord" placeholder="https://discord.gg/..." type="url">
+                </div>
+              </div>
+              ${lp.id === 'pump' ? `
+              <div class="lp-form-row">
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Initial Buy (Optional)</div>
+                  <input class="lp-form-input" id="${lp.id}-initbuy" placeholder="0.0" type="number" step="0.01" min="0">
+                  <div class="lp-form-hint">SOL to buy on launch (dev buy)</div>
+                </div>
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Deploy Cost</div>
+                  <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg-deep);border:1px solid var(--border-default);font-family:var(--font-mono);font-size:.82rem;color:var(--accent)">~0.02 SOL</div>
+                  <div class="lp-form-hint">Platform fee (non-refundable)</div>
+                </div>
+              </div>` : ''}
+              ${lp.id === 'fourmeme' ? `
+              <div class="lp-form-row">
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Deploy Cost</div>
+                  <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg-deep);border:1px solid var(--border-default);font-family:var(--font-mono);font-size:.82rem;color:${lp.chainColor}">~0.01 BNB</div>
+                  <div class="lp-form-hint">Platform fee</div>
+                </div>
+                <div class="lp-form-group">
+                  <div class="lp-form-label">Network</div>
+                  <div style="padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg-deep);border:1px solid var(--border-default);font-size:.82rem;color:${lp.chainColor};font-weight:700">🔶 BNB Smart Chain</div>
+                </div>
+              </div>` : ''}
+              <div class="lp-form-actions">
+                <button class="lp-form-cancel" onclick="event.stopPropagation();collapseLaunchpad('${lp.id}')">Cancel</button>
+                <button class="lp-form-submit" style="background:${lp.btnColor};color:${lp.btnText}" onclick="event.stopPropagation();submitLaunchpad('${lp.id}')">🚀 Deploy Token</button>
+              </div>
+            </div>
           </div>
         </div>
       `).join('')}
@@ -2974,70 +3055,107 @@ function renderLaunchpadView(c) {
   `;
 }
 
-function openLaunchpad(id) {
+function expandLaunchpad(id) {
+  // Collapse any other expanded cards
+  document.querySelectorAll('.lp-card.expanded').forEach(card => {
+    if (card.id !== 'lp-' + id) card.classList.remove('expanded');
+  });
+  const card = document.getElementById('lp-' + id);
+  if (card) {
+    card.classList.toggle('expanded');
+    if (card.classList.contains('expanded')) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+
+function collapseLaunchpad(id) {
+  const card = document.getElementById('lp-' + id);
+  if (card) card.classList.remove('expanded');
+}
+
+function previewLpImg(id) {
+  const url = document.getElementById(id + '-img')?.value;
+  const preview = document.getElementById(id + '-preview');
+  if (url && preview) {
+    preview.innerHTML = `<img src="${url}" onerror="this.parentNode.innerHTML='🖼️'">`;
+  } else if (preview) {
+    preview.innerHTML = '🖼️';
+  }
+}
+
+async function submitLaunchpad(id) {
   const lp = LAUNCHPADS.find(l => l.id === id);
   if (!lp) return;
   
-  const overlay = document.getElementById('lpOverlay');
-  const frame = document.getElementById('lpFrame');
-  const loader = document.getElementById('lpLoader');
+  const name = document.getElementById(id + '-name')?.value?.trim();
+  const symbol = document.getElementById(id + '-symbol')?.value?.trim()?.toUpperCase();
+  const desc = document.getElementById(id + '-desc')?.value?.trim();
+  const img = document.getElementById(id + '-img')?.value?.trim();
+  const twitter = document.getElementById(id + '-twitter')?.value?.trim();
+  const telegram = document.getElementById(id + '-telegram')?.value?.trim();
+  const website = document.getElementById(id + '-website')?.value?.trim();
   
-  document.getElementById('lpTitle').innerHTML = `${lp.icon} ${lp.name} <span class="lp-chain-tag" style="background:${lp.chainColor}22;color:${lp.chainColor};font-size:.6rem">${lp.chain}</span>`;
-  document.getElementById('lpUrl').textContent = lp.url;
+  // Validate required fields
+  if (!name) { showPaymentToast('⚠️ Token Name Required', 'Enter a name for your token.'); return; }
+  if (!symbol) { showPaymentToast('⚠️ Ticker Required', 'Enter a ticker symbol (e.g. MDOG).'); return; }
   
-  loader.style.display = 'flex';
-  frame.src = '';
-  overlay.classList.add('active');
-  
-  // Try iframe embed — if blocked, offer to open in new tab
-  frame.src = lp.url;
-  
-  // Fallback timer — if iframe doesn't load in 5s, show open-in-tab option
-  const fallbackTimer = setTimeout(() => {
-    if (loader.style.display !== 'none') {
-      loader.innerHTML = `
-        <div style="font-size:2.5rem;margin-bottom:12px">${lp.icon}</div>
-        <div style="font-weight:700;font-size:1rem;margin-bottom:6px">${lp.name} Blocked Embedding</div>
-        <div style="color:var(--text-tertiary);font-size:.82rem;margin-bottom:20px;text-align:center;max-width:340px;line-height:1.5">
-          This launchpad doesn't allow embedding. Click below to open it in a new tab — your RADAR session stays active here.
-        </div>
-        <button class="lp-launch-btn" style="background:${lp.btnColor};color:${lp.btnText};width:auto;padding:12px 32px" onclick="window.open('${lp.url}','_blank');closeLaunchpad()">
-          ↗ Open ${lp.name} in New Tab
-        </button>
-      `;
-    }
-  }, 5000);
-  
-  frame.onload = () => {
-    clearTimeout(fallbackTimer);
-    loader.style.display = 'none';
-  };
-  
-  frame.onerror = () => {
-    clearTimeout(fallbackTimer);
-    loader.innerHTML = `
-      <div style="font-size:2.5rem;margin-bottom:12px">${lp.icon}</div>
-      <div style="font-weight:700;font-size:1rem;margin-bottom:6px">Opening ${lp.name}...</div>
-      <button class="lp-launch-btn" style="background:${lp.btnColor};color:${lp.btnText};width:auto;padding:12px 32px" onclick="window.open('${lp.url}','_blank');closeLaunchpad()">
-        ↗ Open in New Tab
-      </button>
-    `;
-  };
-}
-
-function closeLaunchpad() {
-  const overlay = document.getElementById('lpOverlay');
-  const frame = document.getElementById('lpFrame');
-  overlay.classList.remove('active');
-  frame.src = '';
-}
-
-// Keyboard escape for launchpad overlay
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && document.getElementById('lpOverlay').classList.contains('active')) {
-    closeLaunchpad();
+  // Check wallet
+  if (!connectedWallet || !walletPublicKey) {
+    showPaymentToast('🔗 Connect Wallet First', `Connect your ${lp.chain === 'BNB' ? 'BNB' : 'Solana'} wallet to deploy.`);
+    connectWallet();
+    return;
   }
-});
+  
+  // Build launch URL with pre-filled params where supported
+  const btn = document.querySelector(`#lpForm-${id} .lp-form-submit`);
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;display:inline-block;vertical-align:middle;margin-right:8px"></div> Preparing...';
+  btn.disabled = true;
+  
+  // Save token data locally
+  const tokenData = { name, symbol, desc, img, twitter, telegram, website, platform: lp.name, chain: lp.chain, timestamp: Date.now() };
+  const launches = JSON.parse(localStorage.getItem('radar_launches') || '[]');
+  launches.unshift(tokenData);
+  localStorage.setItem('radar_launches', JSON.stringify(launches.slice(0, 50)));
+  
+  // Build platform-specific create URL
+  let createUrl = lp.url;
+  if (id === 'pump') {
+    const params = new URLSearchParams();
+    if (name) params.set('name', name);
+    if (symbol) params.set('ticker', symbol);
+    if (desc) params.set('description', desc);
+    createUrl = `https://pump.fun/create?${params.toString()}`;
+  } else if (id === 'bonk') {
+    createUrl = 'https://letsbonk.fun/create';
+  } else if (id === 'bags') {
+    createUrl = 'https://bags.fm/create';
+  } else if (id === 'fourmeme') {
+    createUrl = 'https://four.meme/create';
+  }
+  
+  // Small delay for UX feel
+  await new Promise(r => setTimeout(r, 800));
+  
+  // Open create page with pre-filled data
+  btn.innerHTML = '✅ Opening ' + lp.name + '...';
+  
+  // Copy token info to clipboard for easy paste
+  const clipText = `Token: ${name} ($${symbol})\nDescription: ${desc || 'N/A'}\nImage: ${img || 'N/A'}\nTwitter: ${twitter || 'N/A'}\nTelegram: ${telegram || 'N/A'}\nWebsite: ${website || 'N/A'}`;
+  try { await navigator.clipboard.writeText(clipText); } catch(e) {}
+  
+  // Open in new tab
+  window.open(createUrl, '_blank');
+  
+  showPaymentToast(`🚀 ${lp.name} Ready`, `${name} ($${symbol}) info copied to clipboard. Paste it on ${lp.name} to complete your launch!`);
+  
+  // Reset button after a few seconds
+  setTimeout(() => {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }, 3000);
+}
 
 // =============================================
 // VIEW: WATCHLIST — Saved tokens
