@@ -2987,14 +2987,14 @@
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const CORS_PROXIES = [
       { prefix: 'https://corsproxy.io/?', encode: false },
-      { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true },
+      { prefix: 'https://proxy.cors.sh/', encode: false },
+      { prefix: 'https://thingproxy.freeboard.io/fetch/', encode: false },
+      { prefix: 'https://api.allorigins.win/raw?url=', encode: true },
     ];
-    let _jupNeedsProxy = false; // auto-flip on first CORS failure
+    let _jupNeedsProxy = false;
     let _corsProxyIdx = 0;
 
-    // Smart fetch for Jupiter — tries direct, falls back to CORS proxy
     async function jupFetch(url, opts = {}, timeoutMs = 10000) {
-      // If we already know direct is blocked, go straight to proxy
       if (_jupNeedsProxy) {
         return _jupFetchViaProxy(url, opts, timeoutMs);
       }
@@ -3003,43 +3003,48 @@
           fetch(url, opts),
           new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), timeoutMs))
         ]);
+        // Check for opaque response (CORS blocked but no error thrown)
+        if (res.type === 'opaque') throw new Error('CORS opaque');
         return res;
       } catch (e) {
-        // CORS or network error — enable proxy mode
-        console.warn('Jupiter direct failed, enabling CORS proxy:', e.message);
+        console.warn('Jupiter direct failed:', e.message);
         _jupNeedsProxy = true;
         return _jupFetchViaProxy(url, opts, timeoutMs);
       }
     }
 
     async function _jupFetchViaProxy(url, opts = {}, timeoutMs = 12000) {
+      const isPost = opts.method === 'POST';
+      const errors = [];
       for (let attempt = 0; attempt < CORS_PROXIES.length; attempt++) {
         const proxyIdx = (_corsProxyIdx + attempt) % CORS_PROXIES.length;
         const proxy = CORS_PROXIES[proxyIdx];
+        if (isPost && proxy.prefix.includes('allorigins')) continue;
         try {
-          const proxyUrl = proxy.prefix + (proxy.encode ? encodeURIComponent(url) : url);
+          const proxyUrl = proxy.encode ? proxy.prefix + encodeURIComponent(url) : proxy.prefix + url;
+          const proxyOpts = { ...opts };
+          // Some proxies need explicit origin header
+          if (proxy.prefix.includes('cors.sh')) {
+            proxyOpts.headers = { ...(opts.headers || {}), 'x-cors-api-key': 'temp_demo' };
+          }
           const res = await Promise.race([
-            fetch(proxyUrl, opts),
-            new Promise((_, rej) => setTimeout(() => rej(new Error('proxy timeout')), timeoutMs))
+            fetch(proxyUrl, proxyOpts),
+            new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), timeoutMs))
           ]);
-          // Check we got JSON back, not an error page
-          const contentType = res.headers.get('content-type') || '';
-          if (res.ok && (contentType.includes('json') || contentType === '')) {
+          if (res.ok) {
             _corsProxyIdx = proxyIdx;
             return res;
           }
-          // If we got HTML back instead of JSON, this proxy failed
-          if (contentType.includes('html') || contentType.includes('text')) {
-            console.warn(`Proxy ${proxy.prefix} returned non-JSON:`, contentType);
-            continue;
-          }
-          if (res.ok || res.status < 500) {
-            _corsProxyIdx = proxyIdx;
-            return res;
-          }
-        } catch (e) { continue; }
+          // Non-ok but valid API error (e.g. 400 from Jupiter) — still useful
+          const cloned = res.clone();
+          try { await cloned.json(); _corsProxyIdx = proxyIdx; return res; } catch(e) {}
+          errors.push(`${proxy.prefix.split('/')[2]}: HTTP ${res.status}`);
+        } catch (e) {
+          errors.push(`${proxy.prefix.split('/')[2]}: ${e.message}`);
+        }
       }
-      throw new Error('All CORS proxies failed — try downloading file and opening locally');
+      console.warn('All proxies failed:', errors);
+      throw new Error('CORS proxies failed — download & open locally. ' + errors[0]);
     }
     const SOL_MINT = 'So11111111111111111111111111111111111111112';
     let heliusKey = lsGet('ghost-helius-key', '');
