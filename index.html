@@ -2986,8 +2986,8 @@
     ];
     const JUP_PRICE = 'https://api.jup.ag/price/v2';
     const CORS_PROXIES = [
-      'https://corsproxy.io/?',
-      'https://api.allorigins.win/raw?url=',
+      { prefix: 'https://corsproxy.io/?', encode: false },
+      { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true },
     ];
     let _jupNeedsProxy = false; // auto-flip on first CORS failure
     let _corsProxyIdx = 0;
@@ -3017,15 +3017,22 @@
         const proxyIdx = (_corsProxyIdx + attempt) % CORS_PROXIES.length;
         const proxy = CORS_PROXIES[proxyIdx];
         try {
-          // corsproxy.io format: https://corsproxy.io/?<raw_url>
-          // allorigins format: https://api.allorigins.win/raw?url=<encoded_url>
-          const proxyUrl = proxy.includes('allorigins')
-            ? proxy + encodeURIComponent(url)
-            : proxy + url;
+          const proxyUrl = proxy.prefix + (proxy.encode ? encodeURIComponent(url) : url);
           const res = await Promise.race([
             fetch(proxyUrl, opts),
             new Promise((_, rej) => setTimeout(() => rej(new Error('proxy timeout')), timeoutMs))
           ]);
+          // Check we got JSON back, not an error page
+          const contentType = res.headers.get('content-type') || '';
+          if (res.ok && (contentType.includes('json') || contentType === '')) {
+            _corsProxyIdx = proxyIdx;
+            return res;
+          }
+          // If we got HTML back instead of JSON, this proxy failed
+          if (contentType.includes('html') || contentType.includes('text')) {
+            console.warn(`Proxy ${proxy.prefix} returned non-JSON:`, contentType);
+            continue;
+          }
           if (res.ok || res.status < 500) {
             _corsProxyIdx = proxyIdx;
             return res;
