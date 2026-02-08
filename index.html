@@ -91,6 +91,25 @@ body::before {
 .search-bar input{flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-family:var(--font-body);font-size:.9rem}
 .search-bar input::placeholder{color:var(--text-tertiary)}
 .search-key{font-family:var(--font-mono);font-size:.6rem;color:var(--text-tertiary);border:1px solid var(--border-default);padding:2px 8px;border-radius:6px;background:var(--bg-deep)}
+
+/* Search Dropdown */
+.search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--bg-primary);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:0 16px 48px rgba(0,0,0,0.5);overflow:hidden;z-index:200;max-height:400px;overflow-y:auto;display:none}
+.search-dropdown.active{display:block}
+.search-dropdown-header{padding:8px 14px;font-family:var(--font-mono);font-size:.6rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border-subtle);background:rgba(0,0,0,0.2)}
+.search-result{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background var(--transition);border-bottom:1px solid var(--border-subtle)}
+.search-result:last-child{border:none}
+.search-result:hover{background:rgba(255,255,255,0.03)}
+.search-result-img{width:32px;height:32px;border-radius:var(--radius-sm);border:1px solid var(--border-default);object-fit:cover;flex-shrink:0}
+.search-result-fallback{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.65rem;border:1px solid var(--border-default);flex-shrink:0}
+.search-result-info{flex:1;min-width:0}
+.search-result-name{font-weight:700;font-size:.82rem;color:var(--text-primary);display:flex;align-items:center;gap:6px}
+.search-result-sub{font-family:var(--font-mono);font-size:.65rem;color:var(--text-muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-result-right{text-align:right;flex-shrink:0}
+.search-result-price{font-family:var(--font-mono);font-weight:600;font-size:.8rem;color:var(--text-primary)}
+.search-result-chg{font-family:var(--font-mono);font-size:.7rem;font-weight:600;margin-top:1px}
+.search-chain-tag{font-size:.55rem;padding:1px 5px;border-radius:4px;font-weight:700;font-family:var(--font-mono);letter-spacing:.3px}
+.search-loading{text-align:center;padding:20px;color:var(--text-muted);font-size:.8rem}
+.search-empty{text-align:center;padding:20px;color:var(--text-tertiary);font-size:.8rem}
 .header-right{display:flex;align-items:center;gap:10px}
 .hdr-btn{background:var(--bg-card);border:1px solid var(--border-default);color:var(--text-secondary);padding:8px 16px;border-radius:24px;font-family:var(--font-body);font-size:.8rem;font-weight:500;cursor:pointer;transition:all var(--transition);display:flex;align-items:center;gap:6px}
 .hdr-btn:hover{border-color:var(--border-active);color:var(--text-primary);background:var(--bg-card-hover);transform:translateY(-1px)}
@@ -869,12 +888,13 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
     <span class="logo-text">RADAR</span>
     <span class="logo-tag">BETA</span>
   </div>
-  <div class="search-wrapper">
+  <div class="search-wrapper" style="position:relative">
     <div class="search-bar">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search tokens, pairs, or wallets..." />
+      <input type="text" id="searchInput" placeholder="Search tokens, pairs, or wallets..." autocomplete="off" />
       <span class="search-key">⌘K</span>
     </div>
+    <div class="search-dropdown" id="searchDropdown"></div>
   </div>
   <div class="header-right">
     <button class="hdr-btn" id="alertsBtn" onclick="openAlerts()"><span class="notif-dot" id="alertDot" style="display:none"></span>🔔 <span class="btn-label">Alerts</span> <span class="alert-count" id="alertCount" style="display:none">0</span></button>
@@ -911,13 +931,13 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 
 <!-- FILTERS -->
 <div class="filters">
-  <div class="chip-group">
-    <div class="chip active"><span class="dot" style="background:var(--accent)"></span> All Chains</div>
-    <div class="chip"><span class="dot" style="background:#9945ff"></span> Solana</div>
-    <div class="chip"><span class="dot" style="background:#627eea"></span> Ethereum</div>
-    <div class="chip"><span class="dot" style="background:#2b6def"></span> Base</div>
-    <div class="chip"><span class="dot" style="background:#f0b90b"></span> BSC</div>
-    <div class="chip"><span class="dot" style="background:#0098ea"></span> TON</div>
+  <div class="chip-group" id="chainChips">
+    <div class="chip active" data-chain="all"><span class="dot" style="background:var(--accent)"></span> All Chains</div>
+    <div class="chip" data-chain="solana"><span class="dot" style="background:#9945ff"></span> Solana</div>
+    <div class="chip" data-chain="eth"><span class="dot" style="background:#627eea"></span> Ethereum</div>
+    <div class="chip" data-chain="base"><span class="dot" style="background:#2b6def"></span> Base</div>
+    <div class="chip" data-chain="bsc"><span class="dot" style="background:#f0b90b"></span> BSC</div>
+    <div class="chip" data-chain="ton"><span class="dot" style="background:#0098ea"></span> TON</div>
   </div>
   <div class="nav-sep"></div>
   <div class="tf-group">
@@ -1228,55 +1248,92 @@ const gradients = [
   ['#627eea','#a78bfa'], ['#0098ea','#00dba4'], ['#f0b90b','#ff9a56'],
 ];
 
+// =============================================
+// MULTI-CHAIN CONFIG
+// =============================================
+let currentNetwork = 'solana'; // solana | eth | base | bsc | ton
+const CHAIN_CONFIG = {
+  solana:  { label: 'SOL', color: '#9945ff', quoteDefault: 'SOL',  gecko: 'solana' },
+  eth:     { label: 'ETH', color: '#627eea', quoteDefault: 'WETH', gecko: 'eth' },
+  base:    { label: 'BASE', color: '#2b6def', quoteDefault: 'WETH', gecko: 'base' },
+  bsc:     { label: 'BSC', color: '#f0b90b', quoteDefault: 'WBNB', gecko: 'bsc' },
+  ton:     { label: 'TON', color: '#0098ea', quoteDefault: 'TON',  gecko: 'ton' },
+};
+// "All Chains" uses these networks in rotation
+const ALL_CHAINS = ['solana', 'eth', 'base', 'bsc', 'ton'];
+
 let tokens = [];
 let isLoading = true;
 let currentView = 'trending'; // trending | new | gainers
 
 // =============================================
-// API: Fetch trending pools from GeckoTerminal
-// (same on-chain DEX data DexScreener uses)
+// API: Fetch pools from GeckoTerminal (any chain)
 // =============================================
-async function fetchTrending() {
+async function fetchTrending(network) {
+  const net = network || currentNetwork;
   try {
-    const url = `${GT_BASE}/networks/solana/trending_pools?include=base_token,quote_token&page=1`;
+    const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/trending_pools?include=base_token,quote_token&page=1`;
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     const json = await res.json();
-    return parsePools(json);
-  } catch (err) {
-    console.error('Trending fetch failed:', err);
-    return null;
-  }
+    return parsePools(json, net);
+  } catch (err) { console.error('Trending fetch failed:', err); return null; }
 }
 
-async function fetchNewPools() {
+async function fetchNewPools(network) {
+  const net = network || currentNetwork;
   try {
-    const url = `${GT_BASE}/networks/solana/new_pools?include=base_token,quote_token&page=1`;
+    const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/new_pools?include=base_token,quote_token&page=1`;
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     const json = await res.json();
-    return parsePools(json);
-  } catch (err) {
-    console.error('New pools fetch failed:', err);
-    return null;
-  }
+    return parsePools(json, net);
+  } catch (err) { console.error('New pools fetch failed:', err); return null; }
 }
 
-async function fetchTopPools() {
+async function fetchTopPools(network) {
+  const net = network || currentNetwork;
   try {
-    const url = `${GT_BASE}/networks/solana/pools?sort=h24_volume_usd_desc&include=base_token,quote_token&page=1`;
+    const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/pools?sort=h24_volume_usd_desc&include=base_token,quote_token&page=1`;
     const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     const json = await res.json();
-    return parsePools(json);
-  } catch (err) {
-    console.error('Top pools fetch failed:', err);
-    return null;
-  }
+    return parsePools(json, net);
+  } catch (err) { console.error('Top pools fetch failed:', err); return null; }
+}
+
+// "All Chains" — fetch top trending from all networks, merge & rank
+async function fetchAllChainsTrending() {
+  try {
+    const promises = ALL_CHAINS.map(net => fetchTrending(net).catch(() => []));
+    const results = await Promise.all(promises);
+    const merged = results.flat().filter(Boolean);
+    // Sort by volume to interleave fairly
+    merged.sort((a, b) => b.volRaw - a.volRaw);
+    return merged.slice(0, 30);
+  } catch (err) { console.error('All chains fetch failed:', err); return null; }
+}
+
+async function fetchAllChainsNew() {
+  try {
+    const promises = ALL_CHAINS.map(net => fetchNewPools(net).catch(() => []));
+    const results = await Promise.all(promises);
+    return results.flat().filter(Boolean).sort((a, b) => a.ageH - b.ageH).slice(0, 30);
+  } catch (err) { return null; }
+}
+
+async function fetchAllChainsTop() {
+  try {
+    const promises = ALL_CHAINS.map(net => fetchTopPools(net).catch(() => []));
+    const results = await Promise.all(promises);
+    return results.flat().filter(Boolean).sort((a, b) => b.volRaw - a.volRaw).slice(0, 30);
+  } catch (err) { return null; }
 }
 
 // =============================================
 // PARSE: Transform GeckoTerminal response → RADAR format
 // =============================================
-function parsePools(json) {
+function parsePools(json, network) {
   if (!json?.data?.length) return [];
+  const net = network || currentNetwork;
+  const chainCfg = CHAIN_CONFIG[net] || CHAIN_CONFIG.solana;
 
   // Build included token lookup
   const tokenLookup = {};
@@ -1304,7 +1361,7 @@ function parsePools(json) {
 
       const name = baseTokenData?.name || a.name?.split('/')[0]?.trim() || 'Unknown';
       const symbol = baseTokenData?.symbol || a.name?.split('/')[0]?.trim() || '???';
-      const quoteSymbol = quoteTokenData?.symbol || a.name?.split('/')?.[1]?.trim() || 'SOL';
+      const quoteSymbol = quoteTokenData?.symbol || a.name?.split('/')?.[1]?.trim() || chainCfg.quoteDefault;
       const imageUrl = baseTokenData?.image_url || null;
       const baseAddr = baseTokenData?.address || '';
 
@@ -1358,7 +1415,7 @@ function parsePools(json) {
 
       return {
         name, tick: symbol, pair: quoteSymbol,
-        chain: 'SOL', cc: '#9945ff',
+        chain: chainCfg.label, cc: chainCfg.color, network: net,
         p: parseFloat(a.base_token_price_usd) || 0,
         m5, h1, h6, h24,
         volRaw: vol24, volH1, liqRaw: liq, mcRaw: mc || fdv,
@@ -1386,12 +1443,14 @@ async function loadData(view) {
   
   // Map views to API calls
   const apiView = currentView === 'losers' ? 'gainers' : currentView === 'launchpad' ? 'new' : currentView;
+  const isAll = currentNetwork === 'all';
+  
   if (apiView === 'new') {
-    result = await fetchNewPools();
+    result = isAll ? await fetchAllChainsNew() : await fetchNewPools();
   } else if (apiView === 'gainers') {
-    result = await fetchTopPools();
+    result = isAll ? await fetchAllChainsTop() : await fetchTopPools();
   } else {
-    result = await fetchTrending();
+    result = isAll ? await fetchAllChainsTrending() : await fetchTrending();
   }
 
   if (result && result.length) {
@@ -1642,8 +1701,9 @@ function openModal(i) {
   `;
 
   // Try to fetch token info for socials
+  const tokenNetwork = (t.network && CHAIN_CONFIG[t.network]) ? CHAIN_CONFIG[t.network].gecko : 'solana';
   if (t.poolAddress) {
-    fetch(`${GT_BASE}/networks/solana/pools/${t.poolAddress}/info`)
+    fetch(`${GT_BASE}/networks/${tokenNetwork}/pools/${t.poolAddress}/info`)
       .then(r => r.json())
       .then(info => {
         const attrs = info?.data?.attributes;
@@ -1668,7 +1728,7 @@ function openModal(i) {
   // Same on-chain data as DexScreener, reliable iframe embedding
   const chartEl = document.getElementById('chartArea');
   if (t.poolAddress) {
-    const embedUrl = `https://www.geckoterminal.com/solana/pools/${t.poolAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=0`;
+    const embedUrl = `https://www.geckoterminal.com/${tokenNetwork}/pools/${t.poolAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=0`;
     chartEl.innerHTML = `
       <div class="chart-loading" id="chartLoader"><div class="spinner"></div>Loading chart...</div>
       <iframe
@@ -2163,8 +2223,291 @@ function switchView(view) {
 document.querySelectorAll('.nav-item[data-view]').forEach(n => {
   n.addEventListener('click', function() { switchView(this.dataset.view); });
 });
-document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', function () { this.closest('.chip-group').querySelectorAll('.chip').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
+document.querySelectorAll('.chip[data-chain]').forEach(c => c.addEventListener('click', function () {
+  this.closest('.chip-group').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+  this.classList.add('active');
+  const chain = this.dataset.chain;
+  currentNetwork = chain === 'all' ? 'all' : chain;
+  isLoading = true;
+  tokens = [];
+  // Force table view for data reload
+  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) {
+    switchView(activeView);
+  } else {
+    switchView('trending');
+  }
+}));
+document.querySelectorAll('.chip:not([data-chain])').forEach(c => c.addEventListener('click', function () { this.closest('.chip-group').querySelectorAll('.chip').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
 document.querySelectorAll('.tf-btn').forEach(b => b.addEventListener('click', function () { this.closest('.tf-group').querySelectorAll('.tf-btn').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
+
+// =============================================
+// SEARCH — Live search with contract address + token name
+// =============================================
+const searchInput = document.getElementById('searchInput');
+const searchDropdown = document.getElementById('searchDropdown');
+let searchTimeout = null;
+
+const CHAIN_COLORS = { solana:'#9945ff', eth:'#627eea', base:'#2b6def', bsc:'#f0b90b', ton:'#0098ea' };
+const CHAIN_LABELS = { solana:'SOL', eth:'ETH', base:'BASE', bsc:'BSC', ton:'TON' };
+
+searchInput.addEventListener('input', function() {
+  const q = this.value.trim();
+  clearTimeout(searchTimeout);
+  if (q.length < 2) { searchDropdown.classList.remove('active'); return; }
+  searchDropdown.innerHTML = '<div class="search-loading"><div class="spinner" style="width:20px;height:20px;margin:0 auto 8px"></div>Searching...</div>';
+  searchDropdown.classList.add('active');
+  searchTimeout = setTimeout(() => executeSearch(q), 300);
+});
+
+searchInput.addEventListener('focus', function() {
+  if (this.value.trim().length >= 2) searchDropdown.classList.add('active');
+});
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-wrapper')) searchDropdown.classList.remove('active');
+});
+
+// ⌘K / Ctrl+K shortcut
+document.addEventListener('keydown', function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); searchInput.select(); }
+  if (e.key === 'Escape') { searchDropdown.classList.remove('active'); searchInput.blur(); }
+});
+
+async function executeSearch(query) {
+  const isAddress = query.length > 30 && /^[a-zA-Z0-9]+$/.test(query);
+  
+  try {
+    let results = [];
+    
+    if (isAddress) {
+      // Contract address search — try direct token lookup on current chain first, then all chains
+      const chainsToSearch = currentNetwork === 'all' ? ALL_CHAINS : [currentNetwork, ...ALL_CHAINS.filter(c => c !== currentNetwork)];
+      
+      for (const net of chainsToSearch) {
+        try {
+          // Try as token address
+          const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/tokens/${query}?include=top_pools`;
+          const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+          const json = await res.json();
+          if (json?.data) {
+            const t = json.data.attributes;
+            const topPool = json.data.relationships?.top_pools?.data?.[0];
+            let poolAddr = '';
+            // Get pool address from included
+            if (json.included) {
+              const pool = json.included.find(i => i.type === 'pool');
+              if (pool) poolAddr = pool.attributes?.address || pool.id?.split('_')[1] || '';
+            }
+            results.push({
+              name: t.name || 'Unknown',
+              symbol: t.symbol || '???',
+              imageUrl: t.image_url || null,
+              price: parseFloat(t.price_usd) || 0,
+              priceChange: parseFloat(t.price_change_percentage?.h24) || 0,
+              volume: parseFloat(t.volume_usd?.h24) || 0,
+              address: t.address || query,
+              poolAddress: poolAddr,
+              network: net,
+              mc: parseFloat(t.market_cap_usd) || parseFloat(t.fdv_usd) || 0,
+            });
+            break; // Found it — stop searching
+          }
+        } catch (e) { /* try next chain */ }
+      }
+      
+      // Also try as pool address
+      if (!results.length) {
+        for (const net of chainsToSearch.slice(0, 3)) {
+          try {
+            const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/pools/${query}?include=base_token`;
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            const json = await res.json();
+            if (json?.data) {
+              const a = json.data.attributes;
+              const baseTokenData = json.included?.find(i => i.type === 'token')?.attributes;
+              results.push({
+                name: baseTokenData?.name || a.name?.split('/')[0] || 'Unknown',
+                symbol: baseTokenData?.symbol || a.name?.split('/')[0] || '???',
+                imageUrl: baseTokenData?.image_url || null,
+                price: parseFloat(a.base_token_price_usd) || 0,
+                priceChange: parseFloat(a.price_change_percentage?.h24) || 0,
+                volume: parseFloat(a.volume_usd?.h24) || 0,
+                address: baseTokenData?.address || query,
+                poolAddress: a.address || query,
+                network: net,
+                mc: parseFloat(a.fdv_usd) || 0,
+              });
+              break;
+            }
+          } catch (e) {}
+        }
+      }
+    } else {
+      // Text search — use GeckoTerminal search endpoint
+      const url = `${GT_BASE}/search?query=${encodeURIComponent(query)}`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const json = await res.json();
+      
+      if (json?.data?.attributes?.pools) {
+        const pools = json.data.attributes.pools;
+        const seenSymbols = new Set();
+        
+        pools.slice(0, 12).forEach(p => {
+          const sym = p.tokens?.[0]?.symbol || p.name?.split('/')[0] || '';
+          const key = sym + '_' + (p.network?.identifier || '');
+          if (seenSymbols.has(key)) return;
+          seenSymbols.add(key);
+          
+          const netId = p.network?.identifier || 'solana';
+          // Map GeckoTerminal network identifiers to our IDs
+          let netKey = 'solana';
+          if (netId === 'eth' || netId === 'ethereum') netKey = 'eth';
+          else if (netId === 'base') netKey = 'base';
+          else if (netId === 'bsc' || netId === 'bsc_mainnet') netKey = 'bsc';
+          else if (netId === 'ton') netKey = 'ton';
+          else if (netId === 'solana') netKey = 'solana';
+          else netKey = netId; // unknown chain
+          
+          results.push({
+            name: p.tokens?.[0]?.name || p.name?.split('/')[0] || 'Unknown',
+            symbol: p.tokens?.[0]?.symbol || sym || '???',
+            imageUrl: p.tokens?.[0]?.image_url || null,
+            price: parseFloat(p.price_in_usd) || 0,
+            priceChange: parseFloat(p.price_percentage_change?.h24) || 0,
+            volume: parseFloat(p.volume_in_usd) || 0,
+            address: p.tokens?.[0]?.address || '',
+            poolAddress: p.address || '',
+            network: netKey,
+            mc: 0,
+          });
+        });
+      }
+    }
+    
+    // Also search within loaded tokens (instant, free)
+    const localMatches = tokens.filter(t =>
+      t.tick.toLowerCase().includes(query.toLowerCase()) ||
+      t.name.toLowerCase().includes(query.toLowerCase()) ||
+      (t.baseAddr && t.baseAddr.toLowerCase() === query.toLowerCase())
+    ).slice(0, 5).map(t => ({
+      name: t.name, symbol: t.tick, imageUrl: t.imageUrl,
+      price: t.p, priceChange: t.h24, volume: t.volRaw,
+      address: t.baseAddr, poolAddress: t.poolAddress,
+      network: t.network || currentNetwork, mc: t.mcRaw,
+      isLocal: true, localIndex: tokens.indexOf(t),
+    }));
+    
+    renderSearchResults(localMatches, results, query);
+    
+  } catch (err) {
+    console.error('Search failed:', err);
+    searchDropdown.innerHTML = '<div class="search-empty">⚠️ Search failed — try again</div>';
+  }
+}
+
+function renderSearchResults(local, remote, query) {
+  let html = '';
+  
+  if (local.length) {
+    html += '<div class="search-dropdown-header">📊 Currently Loaded</div>';
+    html += local.map(r => searchResultHTML(r, true)).join('');
+  }
+  
+  // Filter out remote results already in local
+  const localAddrs = new Set(local.map(l => l.address?.toLowerCase()).filter(Boolean));
+  const uniqueRemote = remote.filter(r => !localAddrs.has(r.address?.toLowerCase()));
+  
+  if (uniqueRemote.length) {
+    html += `<div class="search-dropdown-header">🌐 ${query.length > 30 ? 'Contract Match' : 'All Networks'}</div>`;
+    html += uniqueRemote.map(r => searchResultHTML(r, false)).join('');
+  }
+  
+  if (!local.length && !uniqueRemote.length) {
+    html = '<div class="search-empty">No results found for "' + query.slice(0, 30) + '"</div>';
+  }
+  
+  searchDropdown.innerHTML = html;
+}
+
+function searchResultHTML(r, isLocal) {
+  const cc = CHAIN_COLORS[r.network] || '#9945ff';
+  const cl = CHAIN_LABELS[r.network] || r.network?.toUpperCase() || '?';
+  const g = gradients[Math.abs(hashStr(r.symbol || '')) % gradients.length];
+  const chgClass = r.priceChange >= 0 ? 'up' : 'down';
+  const chgColor = r.priceChange >= 0 ? 'var(--accent)' : 'var(--red)';
+  
+  const onclick = isLocal && r.localIndex !== undefined
+    ? `onclick="searchDropdown.classList.remove('active');openModal(${r.localIndex})"`
+    : `onclick="searchDropdown.classList.remove('active');loadSearchedToken('${r.network}','${r.poolAddress}','${r.address}')"`;
+  
+  return `
+    <div class="search-result" ${onclick}>
+      ${r.imageUrl
+        ? `<img class="search-result-img" src="${r.imageUrl}" onerror="this.className='search-result-fallback';this.style.background='linear-gradient(135deg,${g[0]},${g[1]})';this.textContent='${(r.symbol||'?')[0]}'">`
+        : `<div class="search-result-fallback" style="background:linear-gradient(135deg,${g[0]},${g[1]})">${(r.symbol||'?')[0]}</div>`
+      }
+      <div class="search-result-info">
+        <div class="search-result-name">${r.name} <span class="search-chain-tag" style="background:${cc}22;color:${cc}">${cl}</span></div>
+        <div class="search-result-sub">${r.symbol}${r.address ? ' · ' + r.address.slice(0,6) + '...' + r.address.slice(-4) : ''}</div>
+      </div>
+      <div class="search-result-right">
+        ${r.price ? `<div class="search-result-price">${fmtPrice(r.price)}</div>` : ''}
+        ${r.priceChange ? `<div class="search-result-chg" style="color:${chgColor}">${r.priceChange >= 0 ? '+' : ''}${r.priceChange.toFixed(1)}%</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i); return h; }
+
+// Load a token found via search into the table view
+async function loadSearchedToken(network, poolAddress, tokenAddress) {
+  // Switch to that chain
+  if (network && CHAIN_CONFIG[network]) {
+    currentNetwork = network;
+    document.querySelectorAll('.chip[data-chain]').forEach(c => c.classList.remove('active'));
+    const matchChip = document.querySelector(`.chip[data-chain="${network}"]`);
+    if (matchChip) matchChip.classList.add('active');
+    else document.querySelector('.chip[data-chain="all"]').classList.add('active');
+  }
+  
+  // Try to fetch the pool data to inject into table
+  if (poolAddress) {
+    try {
+      const net = CHAIN_CONFIG[network]?.gecko || network;
+      const url = `${GT_BASE}/networks/${net}/pools/${poolAddress}?include=base_token,quote_token`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const json = await res.json();
+      if (json?.data) {
+        // Wrap in array format parsePools expects
+        const poolData = { data: [json.data], included: json.included || [] };
+        const parsed = parsePools(poolData, network);
+        if (parsed.length) {
+          // Load trending for context, but put this token first
+          isLoading = true;
+          switchView('trending');
+          const trending = await fetchTrending(network);
+          if (trending) {
+            // Remove dupe and prepend
+            const filtered = trending.filter(t => t.poolAddress !== parsed[0].poolAddress);
+            tokens = [...parsed, ...filtered];
+            rankTokens(tokens);
+            isLoading = false;
+            render();
+            renderHeat(); renderDynamicFeed(); renderWallets();
+            // Auto-open the modal for the searched token
+            setTimeout(() => openModal(0), 400);
+            return;
+          }
+        }
+      }
+    } catch (e) { console.error('Pool fetch failed:', e); }
+  }
+  
+  // Fallback — just load the chain's trending
+  isLoading = true;
+  switchView('trending');
+}
 
 // =============================================
 // TABLE RENDER — now includes star + losers sort
@@ -2352,7 +2695,8 @@ function renderMultichartsView(c) {
     </div>
     <div class="view-grid ${gridClass}">
       ${active.map(t => {
-        const embedUrl = `https://www.geckoterminal.com/solana/pools/${t.poolAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=0`;
+        const mcNet = (t.network && CHAIN_CONFIG[t.network]) ? CHAIN_CONFIG[t.network].gecko : 'solana';
+        const embedUrl = `https://www.geckoterminal.com/${mcNet}/pools/${t.poolAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=0`;
         return `
         <div class="chart-cell">
           <div class="chart-cell-header">
@@ -3148,10 +3492,11 @@ fetchTickerPrices();
 setInterval(async () => {
   // Fetch fresh data regardless of current view
   const apiView = activeView === 'losers' ? 'gainers' : activeView === 'launchpad' ? 'new' : 'trending';
+  const isAll = currentNetwork === 'all';
   let result;
-  if (apiView === 'new') result = await fetchNewPools();
-  else if (apiView === 'gainers') result = await fetchTopPools();
-  else result = await fetchTrending();
+  if (apiView === 'new') result = isAll ? await fetchAllChainsNew() : await fetchNewPools();
+  else if (apiView === 'gainers') result = isAll ? await fetchAllChainsTop() : await fetchTopPools();
+  else result = isAll ? await fetchAllChainsTrending() : await fetchTrending();
   if (result && result.length) {
     tokens = result;
     rankTokens(tokens);
