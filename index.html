@@ -437,6 +437,40 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 /* Copy-trade grid base */
 .copytrade-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
 
+/* ===== LAUNCHPAD HUB ===== */
+.launchpad-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px}
+.lp-card{border-radius:var(--radius-xl);border:1px solid var(--border-default);background:var(--bg-card);overflow:hidden;cursor:pointer;transition:all .3s ease;position:relative}
+.lp-card:hover{transform:translateY(-4px);border-color:var(--border-active);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+.lp-banner{height:120px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.lp-banner-bg{position:absolute;inset:0;opacity:.15}
+.lp-banner-logo{position:relative;z-index:1;font-size:3rem;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
+.lp-banner-logo img{height:64px;border-radius:12px}
+.lp-body{padding:18px}
+.lp-name{font-size:1.1rem;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.lp-chain-tag{font-size:.55rem;padding:2px 7px;border-radius:4px;font-weight:700;font-family:var(--font-mono);letter-spacing:.3px}
+.lp-desc{font-size:.78rem;color:var(--text-tertiary);line-height:1.5;margin-bottom:14px;min-height:38px}
+.lp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.lp-stat{text-align:center;padding:8px 4px;border-radius:var(--radius-sm);background:var(--bg-deep)}
+.lp-stat-val{font-family:var(--font-mono);font-weight:800;font-size:.82rem;color:var(--text-primary)}
+.lp-stat-label{font-size:.55rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.lp-launch-btn{width:100%;padding:12px;border-radius:var(--radius-sm);border:none;font-family:var(--font-body);font-size:.88rem;font-weight:800;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+.lp-launch-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,0.3)}
+.lp-hot{position:absolute;top:12px;right:12px;padding:3px 8px;border-radius:8px;font-size:.55rem;font-weight:800;font-family:var(--font-mono);z-index:2}
+
+/* Launchpad iframe overlay */
+.lp-iframe-overlay{position:fixed;inset:0;z-index:2500;background:var(--bg-deep);display:none;flex-direction:column}
+.lp-iframe-overlay.active{display:flex}
+.lp-iframe-bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg-primary);border-bottom:1px solid var(--border-default);flex-shrink:0}
+.lp-iframe-bar .lp-iframe-title{flex:1;font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:8px}
+.lp-iframe-bar .lp-iframe-url{font-family:var(--font-mono);font-size:.65rem;color:var(--text-muted);padding:4px 10px;border-radius:6px;background:var(--bg-card);border:1px solid var(--border-default);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lp-iframe-bar button{padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-card);color:var(--text-secondary);font-family:var(--font-body);font-size:.75rem;font-weight:600;cursor:pointer;transition:all var(--transition)}
+.lp-iframe-bar button:hover{border-color:var(--text-tertiary);color:var(--text-primary)}
+.lp-iframe-bar .lp-close-btn:hover{border-color:var(--red);color:var(--red)}
+.lp-iframe-container{flex:1;position:relative}
+.lp-iframe-container iframe{width:100%;height:100%;border:none}
+.lp-iframe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--bg-deep);z-index:1}
+.lp-iframe-loading .spinner{width:32px;height:32px}
+
 /* ---- Desktop sidebar ---- */
 @media(max-width:1200px){.sidebar{width:300px}}
 
@@ -449,6 +483,7 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
   .chart-area{min-height:300px}
   .modal{height:95vh;width:98vw}
   .copytrade-grid{grid-template-columns:1fr}
+  .launchpad-grid{grid-template-columns:1fr}
   .pricing-cards{grid-template-columns:1fr}
 }
 
@@ -659,6 +694,17 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 
   /* Copy trade */
   .copytrade-grid{grid-template-columns:1fr!important;gap:10px;padding:12px}
+  .launchpad-grid{grid-template-columns:1fr!important;gap:10px;padding:12px}
+  .lp-banner{height:80px}
+  .lp-banner-logo{font-size:2rem}
+  .lp-banner-logo img{height:44px}
+  .lp-body{padding:14px}
+  .lp-name{font-size:.95rem}
+  .lp-desc{font-size:.72rem;min-height:auto}
+  .lp-stats{gap:4px}
+  .lp-stat{padding:6px 2px}
+  .lp-stat-val{font-size:.72rem}
+  .lp-launch-btn{padding:10px;font-size:.8rem}
   .trader-card{padding:12px}
   .trader-header{gap:10px;margin-bottom:10px}
   .trader-avi{width:38px;height:38px;font-size:1rem}
@@ -927,7 +973,6 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
   <div class="nav-item" data-view="multicharts">📊 Multicharts</div>
   <div class="nav-sep"></div>
   <div class="nav-item" data-view="launchpad">🚀 Launchpad</div>
-  <div class="nav-item" data-view="copytrade">👥 Copy Trade</div>
   <div class="nav-item" data-view="watchlist">⭐ Watchlist</div>
 </nav>
 
@@ -1151,6 +1196,20 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 
 
 
+<!-- LAUNCHPAD IFRAME OVERLAY -->
+<div class="lp-iframe-overlay" id="lpOverlay">
+  <div class="lp-iframe-bar">
+    <div class="lp-iframe-title" id="lpTitle">🚀 Launchpad</div>
+    <div class="lp-iframe-url" id="lpUrl"></div>
+    <button onclick="window.open(document.getElementById('lpFrame').src,'_blank')">↗ Open in Tab</button>
+    <button class="lp-close-btn" onclick="closeLaunchpad()">✕ Close</button>
+  </div>
+  <div class="lp-iframe-container">
+    <div class="lp-iframe-loading" id="lpLoader"><div class="spinner"></div><div style="color:var(--text-muted);font-size:.85rem">Loading launchpad...</div></div>
+    <iframe id="lpFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals" allow="clipboard-write" onload="document.getElementById('lpLoader').style.display='none'"></iframe>
+  </div>
+</div>
+
 <!-- WALLET PANEL -->
 <div class="panel-overlay" id="walletPanel" onclick="if(event.target===this)closeWalletPanel()">
   <div class="panel">
@@ -1272,30 +1331,21 @@ let activeTF = 'h6';       // Active timeframe for sorting: m5 | h1 | h6 | h24
 let filterVol = false;     // Vol > $100K filter active
 let filterLiq = false;     // Liq > $50K filter active
 
-// Robust fetch with retry + rate-limit backoff
-async function gtFetch(url, retries = 2, delay = 1200) {
-  for (let i = 0; i <= retries; i++) {
-    try {
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      if (res.status === 429) {
-        // Rate limited — wait and retry
-        console.warn(`GeckoTerminal rate limited (429), retry ${i+1}/${retries}...`);
-        await new Promise(r => setTimeout(r, delay * (i + 1)));
-        continue;
-      }
-      if (!res.ok) {
-        console.warn(`GeckoTerminal ${res.status} for ${url}`);
-        if (i < retries) { await new Promise(r => setTimeout(r, delay)); continue; }
-        return null;
-      }
-      return await res.json();
-    } catch (err) {
-      console.error(`Fetch error (attempt ${i+1}):`, err.message);
-      if (i < retries) await new Promise(r => setTimeout(r, delay));
-      else return null;
+// Fast fetch with single retry on failure
+async function gtFetch(url) {
+  try {
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (res.status === 429) {
+      // Rate limited — single quick retry
+      await new Promise(r => setTimeout(r, 800));
+      const r2 = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      return r2.ok ? await r2.json() : null;
     }
+    return res.ok ? await res.json() : null;
+  } catch (err) {
+    console.warn('Fetch error:', err.message);
+    return null;
   }
-  return null;
 }
 
 // =============================================
@@ -1325,40 +1375,22 @@ async function fetchTopPools(network) {
   return json ? parsePools(json, net) : [];
 }
 
-// "All Chains" — fetch top trending from all networks, merge & rank
-// Uses staggered requests to avoid rate limits
+// "All Chains" — parallel fetch from all networks, merge & rank
 async function fetchAllChainsTrending() {
-  try {
-    const results = [];
-    for (const net of ALL_CHAINS) {
-      const data = await fetchTrending(net);
-      if (data?.length) results.push(...data);
-    }
-    results.sort((a, b) => b.volRaw - a.volRaw);
-    return results.slice(0, 30);
-  } catch (err) { console.error('All chains trending failed:', err); return []; }
+  const results = await Promise.all(ALL_CHAINS.map(net => fetchTrending(net).catch(() => [])));
+  const merged = results.flat().filter(Boolean);
+  merged.sort((a, b) => b.volRaw - a.volRaw);
+  return merged.slice(0, 30);
 }
 
 async function fetchAllChainsNew() {
-  try {
-    const results = [];
-    for (const net of ALL_CHAINS) {
-      const data = await fetchNewPools(net);
-      if (data?.length) results.push(...data);
-    }
-    return results.sort((a, b) => a.ageH - b.ageH).slice(0, 30);
-  } catch (err) { return []; }
+  const results = await Promise.all(ALL_CHAINS.map(net => fetchNewPools(net).catch(() => [])));
+  return results.flat().filter(Boolean).sort((a, b) => a.ageH - b.ageH).slice(0, 30);
 }
 
 async function fetchAllChainsTop() {
-  try {
-    const results = [];
-    for (const net of ALL_CHAINS) {
-      const data = await fetchTopPools(net);
-      if (data?.length) results.push(...data);
-    }
-    return results.sort((a, b) => b.volRaw - a.volRaw).slice(0, 30);
-  } catch (err) { return []; }
+  const results = await Promise.all(ALL_CHAINS.map(net => fetchTopPools(net).catch(() => [])));
+  return results.flat().filter(Boolean).sort((a, b) => b.volRaw - a.volRaw).slice(0, 30);
 }
 
 // =============================================
@@ -1484,7 +1516,7 @@ async function loadData(view) {
   }
   
   // Map views to API calls
-  const apiView = currentView === 'losers' ? 'gainers' : currentView === 'launchpad' ? 'new' : currentView;
+  const apiView = currentView === 'losers' ? 'gainers' : currentView;
   const isAll = currentNetwork === 'all';
   
   if (apiView === 'new') {
@@ -1509,7 +1541,7 @@ async function loadData(view) {
     const netLabel = currentNetwork === 'all' ? 'all chains' : (CHAIN_CONFIG[currentNetwork]?.label || currentNetwork);
     const tb = document.getElementById('tbody');
     if (tb) tb.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--yellow)">⏳ Loading ${netLabel} data — retrying...</td></tr>`;
-    setTimeout(() => loadData(currentView), 3000);
+    setTimeout(() => loadData(currentView), 2000);
   }
 }
 
@@ -2286,8 +2318,7 @@ function switchView(view) {
     case 'whales':    renderWhaleView(c); break;
     case 'scanner':   renderScannerView(c); break;
     case 'multicharts': renderMultichartsView(c); break;
-    case 'launchpad': c.innerHTML = TABLE_HTML; loadData('new'); break;
-    case 'copytrade': renderCopyTradeView(c); break;
+    case 'launchpad': renderLaunchpadView(c); break;
     case 'watchlist': renderWatchlistView(c); break;
     default: c.innerHTML = TABLE_HTML; loadData('trending');
   }
@@ -2309,8 +2340,8 @@ document.querySelectorAll('.chip[data-chain]').forEach(c => c.addEventListener('
   const tb = document.getElementById('tbody');
   if (tb) tb.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="width:24px;height:24px;margin:0 auto 10px"></div>Loading ${CHAIN_CONFIG[newNetwork]?.label || 'All'} tokens...</td></tr>`;
   // Force table view for data reload
-  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) {
-    loadData(activeView === 'losers' ? 'gainers' : activeView === 'launchpad' ? 'new' : activeView);
+  if (['trending','new','gainers','losers'].includes(activeView)) {
+    loadData(activeView === 'losers' ? 'gainers' : activeView);
   } else {
     switchView('trending');
   }
@@ -2322,19 +2353,19 @@ document.querySelectorAll('.tf-btn[data-tf]').forEach(b => b.addEventListener('c
   this.closest('.tf-group').querySelectorAll('.tf-btn').forEach(x => x.classList.remove('active'));
   this.classList.add('active');
   activeTF = this.dataset.tf;
-  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) render();
+  if (['trending','new','gainers','losers'].includes(activeView)) render();
 }));
 
 // Vol/Liq filter chips — toggle on/off
 document.getElementById('filterVol').addEventListener('click', function() {
   filterVol = !filterVol;
   this.classList.toggle('active', filterVol);
-  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) render();
+  if (['trending','new','gainers','losers'].includes(activeView)) render();
 });
 document.getElementById('filterLiq').addEventListener('click', function() {
   filterLiq = !filterLiq;
   this.classList.toggle('active', filterLiq);
-  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) render();
+  if (['trending','new','gainers','losers'].includes(activeView)) render();
 });
 
 // =============================================
@@ -2389,12 +2420,16 @@ async function executeSearch(query) {
           const json = await res.json();
           if (json?.data) {
             const t = json.data.attributes;
-            const topPool = json.data.relationships?.top_pools?.data?.[0];
             let poolAddr = '';
-            // Get pool address from included
+            // Try to get pool address from included data
             if (json.included) {
               const pool = json.included.find(i => i.type === 'pool');
               if (pool) poolAddr = pool.attributes?.address || pool.id?.split('_')[1] || '';
+            }
+            // Fallback: get from top_pools relationship ID (format: "network_poolAddress")
+            if (!poolAddr) {
+              const topPoolId = json.data.relationships?.top_pools?.data?.[0]?.id;
+              if (topPoolId && topPoolId.includes('_')) poolAddr = topPoolId.split('_').slice(1).join('_');
             }
             results.push({
               name: t.name || 'Unknown',
@@ -2531,15 +2566,15 @@ function searchResultHTML(r, isLocal) {
   const cc = CHAIN_COLORS[r.network] || '#9945ff';
   const cl = CHAIN_LABELS[r.network] || r.network?.toUpperCase() || '?';
   const g = gradients[Math.abs(hashStr(r.symbol || '')) % gradients.length];
-  const chgClass = r.priceChange >= 0 ? 'up' : 'down';
   const chgColor = r.priceChange >= 0 ? 'var(--accent)' : 'var(--red)';
   
-  const onclick = isLocal && r.localIndex !== undefined
-    ? `onclick="searchDropdown.classList.remove('active');openModal(${r.localIndex})"`
-    : `onclick="searchDropdown.classList.remove('active');loadSearchedToken('${r.network}','${r.poolAddress}','${r.address}')"`;
+  // Store data as attributes — no inline JS to break
+  const dataAttrs = isLocal && r.localIndex !== undefined
+    ? `data-action="local" data-idx="${r.localIndex}"`
+    : `data-action="remote" data-net="${r.network || ''}" data-pool="${r.poolAddress || ''}" data-addr="${r.address || ''}"`;
   
   return `
-    <div class="search-result" ${onclick}>
+    <div class="search-result" ${dataAttrs}>
       ${r.imageUrl
         ? `<img class="search-result-img" src="${r.imageUrl}" onerror="this.className='search-result-fallback';this.style.background='linear-gradient(135deg,${g[0]},${g[1]})';this.textContent='${(r.symbol||'?')[0]}'">`
         : `<div class="search-result-fallback" style="background:linear-gradient(135deg,${g[0]},${g[1]})">${(r.symbol||'?')[0]}</div>`
@@ -2555,6 +2590,20 @@ function searchResultHTML(r, isLocal) {
     </div>`;
 }
 
+// Event delegation for search results — bulletproof click handling
+searchDropdown.addEventListener('click', function(e) {
+  const row = e.target.closest('.search-result');
+  if (!row) return;
+  searchDropdown.classList.remove('active');
+  searchInput.value = '';
+  
+  if (row.dataset.action === 'local') {
+    openModal(parseInt(row.dataset.idx));
+  } else if (row.dataset.action === 'remote') {
+    loadSearchedToken(row.dataset.net, row.dataset.pool, row.dataset.addr);
+  }
+});
+
 function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i); return h; }
 
 // Load a token found via search into the table view
@@ -2568,40 +2617,64 @@ async function loadSearchedToken(network, poolAddress, tokenAddress) {
     else document.querySelector('.chip[data-chain="all"]').classList.add('active');
   }
   
-  // Try to fetch the pool data to inject into table
+  const geckoNet = CHAIN_CONFIG[network]?.gecko || network || 'solana';
+  
+  // If no pool address, find one from the token address
+  if (!poolAddress && tokenAddress) {
+    try {
+      const url = `${GT_BASE}/networks/${geckoNet}/tokens/${tokenAddress}/pools?page=1`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const json = await res.json();
+      if (json?.data?.[0]) {
+        poolAddress = json.data[0].attributes?.address || json.data[0].id?.split('_')[1] || '';
+      }
+    } catch (e) { console.warn('Token pools lookup failed:', e); }
+  }
+  
+  // Fetch the pool data
   if (poolAddress) {
     try {
-      const net = CHAIN_CONFIG[network]?.gecko || network;
-      const url = `${GT_BASE}/networks/${net}/pools/${poolAddress}?include=base_token,quote_token`;
+      const url = `${GT_BASE}/networks/${geckoNet}/pools/${poolAddress}?include=base_token,quote_token`;
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
       const json = await res.json();
       if (json?.data) {
-        // Wrap in array format parsePools expects
         const poolData = { data: [json.data], included: json.included || [] };
         const parsed = parsePools(poolData, network);
         if (parsed.length) {
-          // Load trending for context, but put this token first
-          isLoading = true;
-          switchView('trending');
-          const trending = await fetchTrending(network);
-          if (trending) {
-            // Remove dupe and prepend
-            const filtered = trending.filter(t => t.poolAddress !== parsed[0].poolAddress);
-            tokens = [...parsed, ...filtered];
-            rankTokens(tokens);
-            isLoading = false;
-            render();
-            renderHeat(); renderDynamicFeed(); renderWallets();
-            // Auto-open the modal for the searched token
-            setTimeout(() => openModal(0), 400);
-            return;
-          }
+          // Show token immediately, load trending in background
+          tokens = parsed;
+          rankTokens(tokens);
+          isLoading = false;
+          
+          // Ensure we're on a table view
+          activeView = 'trending';
+          document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+          const navEl = document.querySelector('.nav-item[data-view="trending"]');
+          if (navEl) navEl.classList.add('active');
+          const c = contentEl();
+          if (c) c.innerHTML = TABLE_HTML;
+          render();
+          
+          // Open modal immediately
+          setTimeout(() => openModal(0), 200);
+          
+          // Load rest of trending in background
+          fetchTrending(network).then(trending => {
+            if (trending?.length) {
+              const filtered = trending.filter(t => t.poolAddress !== parsed[0].poolAddress);
+              tokens = [...parsed, ...filtered];
+              rankTokens(tokens);
+              render();
+              renderHeat(); renderDynamicFeed(); renderWallets();
+            }
+          });
+          return;
         }
       }
     } catch (e) { console.error('Pool fetch failed:', e); }
   }
   
-  // Fallback — just load the chain's trending
+  // Fallback — load the chain's trending
   isLoading = true;
   switchView('trending');
 }
@@ -2620,11 +2693,6 @@ render = function() {
   // Sort losers by biggest negative 24h change
   if (activeView === 'losers') {
     list.sort((a, b) => a.h24 - b.h24);
-    list.forEach((t, i) => t.rank = i + 1);
-  }
-  // Launchpad: filter only < 24h old
-  if (activeView === 'launchpad') {
-    list = list.filter(t => t.ageH <= 24);
     list.forEach((t, i) => t.rank = i + 1);
   }
   const tb = document.getElementById('tbody');
@@ -2815,62 +2883,161 @@ function renderMultichartsView(c) {
 // =============================================
 // VIEW: COPY TRADE — Top trader profiles
 // =============================================
-function renderCopyTradeView(c) {
-  if (!tokens.length) {
-    c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted)"><div class="spinner" style="margin:0 auto 12px"></div>Loading traders...</div>';
-    setTimeout(() => renderCopyTradeView(c), 1500);
-    return;
+// =============================================
+// VIEW: LAUNCHPAD HUB — Launch tokens from RADAR
+// =============================================
+const LAUNCHPADS = [
+  {
+    id: 'pump', name: 'Pump.fun', chain: 'SOL', chainColor: '#9945ff',
+    url: 'https://pump.fun',
+    desc: 'The fastest way to launch a memecoin on Solana. Fair launch, instant liquidity, no presale.',
+    icon: '💊',
+    gradient: 'linear-gradient(135deg, #00dc82, #36e4da)',
+    btnColor: '#00dc82', btnText: '#000',
+    stats: { launched: '4.2M+', cost: '~0.02 SOL', time: '<60s' },
+    hot: true,
+  },
+  {
+    id: 'bonk', name: 'Bonk.fun (LetsBonk)', chain: 'SOL', chainColor: '#9945ff',
+    url: 'https://letsbonk.fun',
+    desc: 'Launch tokens powered by the BONK ecosystem. Community-first launches with built-in BONK rewards.',
+    icon: '🐕',
+    gradient: 'linear-gradient(135deg, #f7931a, #ffcb47)',
+    btnColor: '#f7931a', btnText: '#000',
+    stats: { launched: '500K+', cost: '~0.05 SOL', time: '<60s' },
+    hot: false,
+  },
+  {
+    id: 'bags', name: 'Bags.fm', chain: 'SOL', chainColor: '#9945ff',
+    url: 'https://bags.fm',
+    desc: 'Social token launchpad. Create and trade tokens tied to creators, communities, and culture.',
+    icon: '💰',
+    gradient: 'linear-gradient(135deg, #a78bfa, #6d5cff)',
+    btnColor: '#a78bfa', btnText: '#000',
+    stats: { launched: '100K+', cost: 'Free', time: '<30s' },
+    hot: false,
+  },
+  {
+    id: 'fourmeme', name: 'Four.Meme', chain: 'BNB', chainColor: '#f0b90b',
+    url: 'https://four.meme',
+    desc: 'The leading BNB Chain memecoin launchpad. Low fees, massive reach, PancakeSwap integration.',
+    icon: '4️⃣',
+    gradient: 'linear-gradient(135deg, #f0b90b, #fcd535)',
+    btnColor: '#f0b90b', btnText: '#000',
+    stats: { launched: '800K+', cost: '~0.01 BNB', time: '<60s' },
+    hot: false,
   }
-  
-  // Generate realistic trader profiles from actual token data
-  const traders = [
-    { name: 'WhaleMaster', icon: '🐋', bg: 'linear-gradient(135deg,#9945ff,#14F195)', pnl: '+$2.4M', winRate: 87, trades30d: 142, avgHold: '4.2h', style: 'Momentum' },
-    { name: 'DeFi_Shark', icon: '🦈', bg: 'linear-gradient(135deg,#ff4d6a,#ff9a56)', pnl: '+$890K', winRate: 73, trades30d: 289, avgHold: '18m', style: 'Scalper' },
-    { name: 'AlphaHunter', icon: '🎯', bg: 'linear-gradient(135deg,#4da6ff,#a78bfa)', pnl: '+$1.7M', winRate: 81, trades30d: 67, avgHold: '2.1d', style: 'Swing' },
-    { name: 'NightOwl', icon: '🦉', bg: 'linear-gradient(135deg,#00dba4,#4da6ff)', pnl: '+$560K', winRate: 69, trades30d: 201, avgHold: '45m', style: 'Sniper' },
-    { name: 'DiamondPaws', icon: '💎', bg: 'linear-gradient(135deg,#ffd166,#ff6b6b)', pnl: '+$3.1M', winRate: 91, trades30d: 34, avgHold: '6.8d', style: 'Holder' },
-    { name: 'GigaBrain', icon: '🧠', bg: 'linear-gradient(135deg,#a78bfa,#ff4d6a)', pnl: '+$1.2M', winRate: 78, trades30d: 156, avgHold: '1.5h', style: 'AI-Assisted' },
-  ];
+];
 
+function renderLaunchpadView(c) {
   c.innerHTML = `
     <div class="view-header">
-      <div><div class="view-header-title">👥 Copy Trade — Follow Top Traders</div><div class="view-header-sub">Mirror the moves of Solana's most profitable wallets · Automated execution</div></div>
+      <div>
+        <div class="view-header-title">🚀 Launchpad — Deploy a Token</div>
+        <div class="view-header-sub">Launch your token directly from RADAR · No need to leave the terminal</div>
+      </div>
     </div>
-    <div class="card-view copytrade-grid">
-      ${traders.map((tr, ti) => {
-        const addr = '0x' + Array.from({length:8}, () => Math.floor(Math.random()*16).toString(16)).join('');
-        const recentTrades = tokens.slice(ti * 2, ti * 2 + 3);
-        return `
-        <div class="trader-card">
-          <div class="trader-header">
-            <div class="trader-avi" style="background:${tr.bg}">${tr.icon}</div>
-            <div style="flex:1">
-              <div class="trader-name">${tr.name} ${tr.winRate > 80 ? '<span style="font-size:.65rem;padding:2px 6px;border-radius:6px;background:var(--accent-dim);color:var(--accent);font-weight:700">🏆 TOP</span>' : ''}</div>
-              <div class="trader-addr">${addr}...${addr.slice(-4)}</div>
+    <div class="launchpad-grid">
+      ${LAUNCHPADS.map(lp => `
+        <div class="lp-card" onclick="openLaunchpad('${lp.id}')">
+          ${lp.hot ? '<div class="lp-hot" style="background:var(--red-dim);color:var(--red)">🔥 HOT</div>' : ''}
+          <div class="lp-banner" style="background:${lp.gradient}">
+            <div class="lp-banner-logo">${lp.icon}</div>
+          </div>
+          <div class="lp-body">
+            <div class="lp-name">
+              ${lp.name}
+              <span class="lp-chain-tag" style="background:${lp.chainColor}22;color:${lp.chainColor}">${lp.chain}</span>
             </div>
-            <div style="text-align:right">
-              <div style="font-family:var(--font-mono);font-weight:800;color:var(--accent);font-size:1rem">${tr.pnl}</div>
-              <div style="font-size:.65rem;color:var(--text-muted)">30d PnL</div>
+            <div class="lp-desc">${lp.desc}</div>
+            <div class="lp-stats">
+              <div class="lp-stat">
+                <div class="lp-stat-val">${lp.stats.launched}</div>
+                <div class="lp-stat-label">Tokens</div>
+              </div>
+              <div class="lp-stat">
+                <div class="lp-stat-val">${lp.stats.cost}</div>
+                <div class="lp-stat-label">Cost</div>
+              </div>
+              <div class="lp-stat">
+                <div class="lp-stat-val">${lp.stats.time}</div>
+                <div class="lp-stat-label">Deploy</div>
+              </div>
             </div>
+            <button class="lp-launch-btn" style="background:${lp.btnColor};color:${lp.btnText}" onclick="event.stopPropagation();openLaunchpad('${lp.id}')">
+              🚀 Launch on ${lp.name}
+            </button>
           </div>
-          <div class="trader-stats">
-            <div class="trader-stat"><div class="trader-stat-val" style="color:var(--accent)">${tr.winRate}%</div><div class="trader-stat-label">Win Rate</div></div>
-            <div class="trader-stat"><div class="trader-stat-val">${tr.trades30d}</div><div class="trader-stat-label">Trades</div></div>
-            <div class="trader-stat"><div class="trader-stat-val">${tr.avgHold}</div><div class="trader-stat-label">Avg Hold</div></div>
-            <div class="trader-stat"><div class="trader-stat-val" style="color:var(--blue)">${tr.style}</div><div class="trader-stat-label">Style</div></div>
-          </div>
-          <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:6px;font-weight:600">RECENT TRADES</div>
-          <div class="trader-trades">
-            ${recentTrades.map(t => {
-              const isBuy = Math.random() > 0.35;
-              return `<span class="trader-trade ${isBuy ? 'buy' : 'sell'}" style="background:${isBuy ? 'var(--accent-dim)' : 'var(--red-dim)'}; color:${isBuy ? 'var(--accent)' : 'var(--red)'}">${isBuy ? '↑' : '↓'} ${t.tick}</span>`;
-            }).join('')}
-          </div>
-          <button class="copy-btn" onclick="event.stopPropagation();this.textContent='✓ Following — Alerts ON';this.style.background='var(--accent)';this.style.color='var(--bg-deep)'">📋 Copy This Trader</button>
-        </div>`;
-      }).join('')}
-    </div>`;
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
+
+function openLaunchpad(id) {
+  const lp = LAUNCHPADS.find(l => l.id === id);
+  if (!lp) return;
+  
+  const overlay = document.getElementById('lpOverlay');
+  const frame = document.getElementById('lpFrame');
+  const loader = document.getElementById('lpLoader');
+  
+  document.getElementById('lpTitle').innerHTML = `${lp.icon} ${lp.name} <span class="lp-chain-tag" style="background:${lp.chainColor}22;color:${lp.chainColor};font-size:.6rem">${lp.chain}</span>`;
+  document.getElementById('lpUrl').textContent = lp.url;
+  
+  loader.style.display = 'flex';
+  frame.src = '';
+  overlay.classList.add('active');
+  
+  // Try iframe embed — if blocked, offer to open in new tab
+  frame.src = lp.url;
+  
+  // Fallback timer — if iframe doesn't load in 5s, show open-in-tab option
+  const fallbackTimer = setTimeout(() => {
+    if (loader.style.display !== 'none') {
+      loader.innerHTML = `
+        <div style="font-size:2.5rem;margin-bottom:12px">${lp.icon}</div>
+        <div style="font-weight:700;font-size:1rem;margin-bottom:6px">${lp.name} Blocked Embedding</div>
+        <div style="color:var(--text-tertiary);font-size:.82rem;margin-bottom:20px;text-align:center;max-width:340px;line-height:1.5">
+          This launchpad doesn't allow embedding. Click below to open it in a new tab — your RADAR session stays active here.
+        </div>
+        <button class="lp-launch-btn" style="background:${lp.btnColor};color:${lp.btnText};width:auto;padding:12px 32px" onclick="window.open('${lp.url}','_blank');closeLaunchpad()">
+          ↗ Open ${lp.name} in New Tab
+        </button>
+      `;
+    }
+  }, 5000);
+  
+  frame.onload = () => {
+    clearTimeout(fallbackTimer);
+    loader.style.display = 'none';
+  };
+  
+  frame.onerror = () => {
+    clearTimeout(fallbackTimer);
+    loader.innerHTML = `
+      <div style="font-size:2.5rem;margin-bottom:12px">${lp.icon}</div>
+      <div style="font-weight:700;font-size:1rem;margin-bottom:6px">Opening ${lp.name}...</div>
+      <button class="lp-launch-btn" style="background:${lp.btnColor};color:${lp.btnText};width:auto;padding:12px 32px" onclick="window.open('${lp.url}','_blank');closeLaunchpad()">
+        ↗ Open in New Tab
+      </button>
+    `;
+  };
+}
+
+function closeLaunchpad() {
+  const overlay = document.getElementById('lpOverlay');
+  const frame = document.getElementById('lpFrame');
+  overlay.classList.remove('active');
+  frame.src = '';
+}
+
+// Keyboard escape for launchpad overlay
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('lpOverlay').classList.contains('active')) {
+    closeLaunchpad();
+  }
+});
 
 // =============================================
 // VIEW: WATCHLIST — Saved tokens
@@ -3588,7 +3755,7 @@ fetchTickerPrices();
 // Auto-refresh: tokens every 30s, ticker every 60s, feed every 12s
 setInterval(async () => {
   const gen = loadGeneration;
-  const apiView = activeView === 'losers' ? 'gainers' : activeView === 'launchpad' ? 'new' : 'trending';
+  const apiView = activeView === 'losers' ? 'gainers' : 'trending';
   const isAll = currentNetwork === 'all';
   let result;
   if (apiView === 'new') result = isAll ? await fetchAllChainsNew() : await fetchNewPools();
@@ -3600,7 +3767,7 @@ setInterval(async () => {
     rankTokens(tokens);
     isLoading = false;
     const c = contentEl();
-    if (['trending','new','gainers','losers','launchpad'].includes(activeView)) { render(); }
+    if (['trending','new','gainers','losers'].includes(activeView)) { render(); }
     else if (activeView === 'whales' && c) renderWhaleView(c);
     else if (activeView === 'scanner' && c) renderScannerView(c);
     renderHeat(); renderDynamicFeed(); renderWallets();
