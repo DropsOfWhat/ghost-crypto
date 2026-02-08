@@ -5365,10 +5365,13 @@
         const msg = e.message || 'Trade failed';
         if (msg.includes('User rejected')) {
           setStatus('error', '❌ Rejected in wallet');
+        } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('timed out')) {
+          setStatus('error', '❌ API unreachable — download & open file locally');
+          toast('⚠️ Jupiter API blocked here. Download the HTML file and open in browser for trading.', 6000);
         } else {
           setStatus('error', '❌ ' + msg.slice(0, 60));
+          toast('❌ ' + msg.slice(0, 80));
         }
-        toast('❌ ' + msg.slice(0, 80));
       } finally {
         isTrading = false;
         if (allBtns) allBtns.forEach(b => b.classList.remove('loading'));
@@ -5471,10 +5474,13 @@
         const msg = e.message || 'Sell failed';
         if (msg.includes('User rejected')) {
           setStatus('error', '❌ Rejected in wallet');
+        } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('timed out')) {
+          setStatus('error', '❌ API unreachable — download & open file locally');
+          toast('⚠️ Jupiter API blocked here. Download the HTML file and open in browser for trading.', 6000);
         } else {
           setStatus('error', '❌ ' + msg.slice(0, 60));
+          toast('❌ ' + msg.slice(0, 80));
         }
-        toast('❌ ' + msg.slice(0, 80));
       } finally {
         isTrading = false;
         if (allBtns) allBtns.forEach(b => b.classList.remove('loading'));
@@ -7192,18 +7198,27 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     async function jupQuote(inputMint, outputMint, amount, slipBps = 1500) {
       // Try last working endpoint first, then cycle through all
       const order = [jupLastWorking, ...Array.from({length: JUP_ENDPOINTS.length}, (_, i) => i).filter(i => i !== jupLastWorking)];
+      let lastErr = '';
       for (const idx of order) {
         const ep = JUP_ENDPOINTS[idx];
         try {
           const url = `${ep}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=${slipBps}`;
-          const res = await fetchWithTimeout(url, {}, 8000);
-          if (!res.ok) continue;
+          // Use plain fetch as fallback if fetchWithTimeout has issues
+          let res;
+          try {
+            res = await fetchWithTimeout(url, {}, 8000);
+          } catch(fwt) {
+            // fetchWithTimeout failed, try plain fetch
+            res = await fetch(url);
+          }
+          if (!res.ok) { lastErr = `${ep}: HTTP ${res.status}`; continue; }
           const quote = await res.json();
-          if (!quote.outAmount || quote.outAmount === '0') continue;
+          if (!quote.outAmount || quote.outAmount === '0') { lastErr = `${ep}: no output amount`; continue; }
           jupLastWorking = idx;
           return { quote, endpoint: ep };
-        } catch (e) { continue; }
+        } catch (e) { lastErr = `${ep}: ${e.message}`; continue; }
       }
+      console.warn('Jupiter quote failed on all endpoints. Last error:', lastErr);
       return null;
     }
 
