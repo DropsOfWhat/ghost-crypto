@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>RADAR — DEX Intelligence Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=Azeret+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <style>
 :root {
   --bg-deep: #080b12;
@@ -366,6 +367,41 @@ tr:hover .qt{opacity:1}
 
 .claim-close{position:absolute;top:20px;right:20px;background:var(--bg-card);border:1px solid var(--border-default);color:var(--text-tertiary);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all var(--transition);z-index:1}
 .claim-close:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+
+/* Payment confirmation overlay inside card */
+.payment-confirm{padding:20px;text-align:center}
+.payment-confirm-title{font-size:1rem;font-weight:800;margin-bottom:6px;color:var(--text-primary)}
+.payment-confirm-sub{font-size:.78rem;color:var(--text-tertiary);margin-bottom:16px;line-height:1.5}
+.payment-sol-amount{font-family:var(--font-mono);font-size:1.8rem;font-weight:800;color:var(--accent);margin-bottom:4px}
+.payment-usd-equiv{font-family:var(--font-mono);font-size:.8rem;color:var(--text-muted);margin-bottom:20px}
+.payment-detail{display:flex;justify-content:space-between;padding:8px 0;font-size:.78rem;border-bottom:1px solid var(--border-subtle)}
+.payment-detail-label{color:var(--text-tertiary)}
+.payment-detail-val{font-family:var(--font-mono);color:var(--text-primary);font-weight:600}
+.payment-detail-val.addr{font-size:.65rem;word-break:break-all}
+.payment-actions{display:flex;gap:8px;margin-top:20px}
+.payment-actions button{flex:1;padding:12px;border-radius:var(--radius-sm);font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer;border:none;transition:all var(--transition)}
+.payment-actions .pay-btn{background:linear-gradient(135deg,var(--accent),#00c9a7);color:var(--bg-deep);box-shadow:0 4px 20px rgba(0,219,164,0.2)}
+.payment-actions .pay-btn:hover{box-shadow:0 6px 30px rgba(0,219,164,0.35);transform:translateY(-1px)}
+.payment-actions .cancel-btn{background:var(--bg-card);border:1px solid var(--border-default);color:var(--text-tertiary)}
+.payment-actions .cancel-btn:hover{border-color:var(--red);color:var(--red)}
+.payment-status{text-align:center;padding:30px 20px}
+.payment-status .spinner-lg{width:40px;height:40px;border-radius:50%;border:3px solid var(--border-default);border-top-color:var(--accent);animation:spin 1s linear infinite;margin:0 auto 16px}
+.payment-success{font-size:2rem;margin-bottom:12px}
+.payment-tx{font-family:var(--font-mono);font-size:.65rem;color:var(--text-muted);word-break:break-all;margin-top:8px}
+.payment-tx a{color:var(--accent);text-decoration:none}
+.payment-tx a:hover{text-decoration:underline}
+.claim-form{padding:20px}
+.claim-form-group{margin-bottom:14px}
+.claim-form-label{font-size:.72rem;font-weight:600;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-mono)}
+.claim-form-input{width:100%;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--border-default);background:var(--bg-deep);color:var(--text-primary);font-family:var(--font-body);font-size:.85rem;outline:none;transition:border var(--transition);box-sizing:border-box}
+.claim-form-input:focus{border-color:rgba(0,219,164,0.3);box-shadow:0 0 0 3px rgba(0,219,164,0.06)}
+.claim-form-input::placeholder{color:var(--text-tertiary)}
+textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font-body)}
+.claim-form-submit{width:100%;padding:12px;border-radius:var(--radius-sm);border:none;background:linear-gradient(135deg,var(--accent),#00c9a7);color:var(--bg-deep);font-family:var(--font-body);font-size:.9rem;font-weight:800;cursor:pointer;transition:all var(--transition);margin-top:6px}
+.claim-form-submit:hover{box-shadow:0 6px 30px rgba(0,219,164,0.35);transform:translateY(-1px)}
+.contribute-input-wrap{display:flex;gap:8px;margin-bottom:16px}
+.contribute-input-wrap input{flex:1}
+.contribute-input-wrap .sol-equiv{font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted);display:flex;align-items:center;padding:0 8px;white-space:nowrap}
 
 /* Comparison to DS */
 .comparison{padding:0 28px 24px}
@@ -1019,7 +1055,7 @@ tr:hover .qt{opacity:1}
           <li><span class="x-mark">—</span> No verified badge</li>
           <li><span class="x-mark">—</span> No trending boost</li>
         </ul>
-        <button class="card-btn free-btn">Get Started — Free</button>
+        <button class="card-btn free-btn" onclick="handleFreeClaim()">Get Started — Free</button>
       </div>
 
       <!-- PRO TIER -->
@@ -1036,7 +1072,7 @@ tr:hover .qt{opacity:1}
           <li><span class="check">✓</span> Edit anytime for 30 days</li>
           <li><span class="x-mark">—</span> No trending boost</li>
         </ul>
-        <button class="card-btn pro-btn">Upgrade to Pro — $49</button>
+        <button class="card-btn pro-btn" onclick="handlePayment('pro', 49)">Upgrade to Pro — $49</button>
       </div>
 
       <!-- BOOST TIER -->
@@ -1052,7 +1088,7 @@ tr:hover .qt{opacity:1}
           <li><span class="check">✓</span> Analytics dashboard</li>
           <li><span class="check">✓</span> Unlimited edits</li>
         </ul>
-        <button class="card-btn boost-btn">Boost Now — $29/wk</button>
+        <button class="card-btn boost-btn" onclick="handlePayment('boost', 29)">Boost Now — $29/wk</button>
       </div>
     </div>
 
@@ -1085,7 +1121,7 @@ tr:hover .qt{opacity:1}
           <div class="fund-avi" style="background:#ffaa33;color:#000">E</div>
           <span class="fund-count">+12 holders contributed</span>
         </div>
-        <button class="contribute-btn">💰 Contribute to This Fund</button>
+        <button class="contribute-btn" onclick="handleContribute()">💰 Contribute to This Fund</button>
       </div>
     </div>
   </div>
@@ -1383,7 +1419,10 @@ async function fetchTickerPrices() {
     const fmt = v => v >= 1000 ? '$' + v.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '$' + v.toFixed(2);
     const chgF = v => (v >= 0 ? '↑' : '↓') + Math.abs(v).toFixed(1) + '%';
     const cls = v => v >= 0 ? 'up' : 'down';
-    if (d.solana) document.getElementById('tk-sol').innerHTML = `<span class="ticker-val ${cls(d.solana.usd_24h_change)}">${fmt(d.solana.usd)} ${chgF(d.solana.usd_24h_change)}</span>`;
+    if (d.solana) {
+      solPriceUSD = d.solana.usd;
+      document.getElementById('tk-sol').innerHTML = `<span class="ticker-val ${cls(d.solana.usd_24h_change)}">${fmt(d.solana.usd)} ${chgF(d.solana.usd_24h_change)}</span>`;
+    }
     if (d.ethereum) document.getElementById('tk-eth').innerHTML = `<span class="ticker-val ${cls(d.ethereum.usd_24h_change)}">${fmt(d.ethereum.usd)} ${chgF(d.ethereum.usd_24h_change)}</span>`;
     if (d.bitcoin) document.getElementById('tk-btc').innerHTML = `<span class="ticker-val ${cls(d.bitcoin.usd_24h_change)}">${fmt(d.bitcoin.usd)} ${chgF(d.bitcoin.usd_24h_change)}</span>`;
     if (tokens.length) {
@@ -1569,6 +1608,7 @@ function renderDynamicFeed() {
 function openModal(i) {
   const t = tokens[i];
   if (!t) return;
+  currentModalToken = t.tick;
   const g = gradients[((t.rank || 1) - 1) % gradients.length];
 
   // Banner
@@ -1673,9 +1713,399 @@ function closeModal() {
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
 // Claim Profile Modal
-function openClaim(e) { e && e.stopPropagation(); document.getElementById('claimModal').classList.add('active'); }
+function openClaim(e) { e && e.stopPropagation(); document.getElementById('claimModal').classList.add('active'); resetClaimModal(); }
 function closeClaim() { document.getElementById('claimModal').classList.remove('active'); }
 document.getElementById('claimModal').addEventListener('click', e => { if (e.target.id === 'claimModal') closeClaim(); });
+
+// Reset claim modal to default pricing view
+let _pricingCardsOriginal = '';
+function resetClaimModal() {
+  const container = document.querySelector('.pricing-cards');
+  if (_pricingCardsOriginal && container) container.innerHTML = _pricingCardsOriginal;
+  const commCard = document.querySelector('.community-card');
+  if (commCard && commCard.dataset.original) commCard.innerHTML = commCard.dataset.original;
+}
+
+// Store original card HTML on load
+setTimeout(() => {
+  const container = document.querySelector('.pricing-cards');
+  if (container) _pricingCardsOriginal = container.innerHTML;
+  const commCard = document.querySelector('.community-card');
+  if (commCard) commCard.dataset.original = commCard.innerHTML;
+}, 500);
+
+// =============================================
+// FREE TIER — In-app claim form
+// =============================================
+function handleFreeClaim() {
+  const card = document.querySelector('.pricing-card.free');
+  card.innerHTML = `
+    <div class="claim-form">
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:12px;color:var(--accent)">🆓 Claim Free Profile</div>
+      <div class="claim-form-group">
+        <div class="claim-form-label">Token Icon URL</div>
+        <input class="claim-form-input" id="claimIcon" placeholder="https://yoursite.com/icon.png" type="url">
+      </div>
+      <div class="claim-form-group">
+        <div class="claim-form-label">Short Description (140 chars)</div>
+        <textarea class="claim-form-input" id="claimDesc" maxlength="140" placeholder="What makes your token unique?"></textarea>
+      </div>
+      <div class="claim-form-group">
+        <div class="claim-form-label">X (Twitter) Link</div>
+        <input class="claim-form-input" id="claimX" placeholder="https://x.com/yourtoken" type="url">
+      </div>
+      <div class="claim-form-group">
+        <div class="claim-form-label">Telegram Link</div>
+        <input class="claim-form-input" id="claimTg" placeholder="https://t.me/yourgroup" type="url">
+      </div>
+      <button class="claim-form-submit" onclick="submitFreeClaim()">✓ Claim Profile — Free</button>
+    </div>
+  `;
+}
+
+function submitFreeClaim() {
+  const data = {
+    icon: document.getElementById('claimIcon')?.value || '',
+    desc: document.getElementById('claimDesc')?.value || '',
+    x: document.getElementById('claimX')?.value || '',
+    tg: document.getElementById('claimTg')?.value || '',
+    tier: 'free',
+    claimed: Date.now()
+  };
+  // Save to localStorage
+  const claims = JSON.parse(localStorage.getItem('radar_claims') || '{}');
+  claims[currentModalToken || 'unknown'] = data;
+  localStorage.setItem('radar_claims', JSON.stringify(claims));
+  
+  const card = document.querySelector('.pricing-card.free');
+  card.innerHTML = `
+    <div class="payment-status">
+      <div class="payment-success">✅</div>
+      <div style="font-weight:800;font-size:1rem;margin-bottom:6px">Profile Claimed!</div>
+      <div style="font-size:.8rem;color:var(--text-tertiary);line-height:1.5">Your free profile is now active. Upgrade to Pro anytime for verified badge and full customization.</div>
+    </div>
+  `;
+}
+
+// Track which token the modal is open for
+let currentModalToken = null;
+const _origOpenClaim = openClaim;
+
+// =============================================
+// PAID TIERS — SOL payment via Phantom
+// =============================================
+function handlePayment(tier, usdAmount) {
+  // Check wallet connection
+  if (!connectedWallet || !walletPublicKey) {
+    showPaymentToast('🔗 Connect your wallet first', 'Connect Phantom or Solflare to make payments.');
+    connectWallet();
+    return;
+  }
+  
+  // Check SOL price is available
+  if (!solPriceUSD || solPriceUSD <= 0) {
+    showPaymentToast('⏳ Loading prices...', 'SOL price is still loading. Please try again in a moment.');
+    fetchTickerPrices();
+    return;
+  }
+  
+  const solAmount = (usdAmount / solPriceUSD);
+  const solDisplay = solAmount.toFixed(4);
+  const tierNames = { pro: '🚀 Pro Profile', boost: '⚡ Boost (1 Week)' };
+  const tierColors = { pro: 'var(--blue)', boost: 'var(--yellow)' };
+  
+  const cardClass = tier === 'pro' ? '.pricing-card.pro' : '.pricing-card.boost';
+  const card = document.querySelector(cardClass);
+  
+  card.innerHTML = `
+    <div class="payment-confirm">
+      <div class="payment-confirm-title">${tierNames[tier]}</div>
+      <div class="payment-confirm-sub">Confirm your payment via ${connectedWallet === 'phantom' ? 'Phantom' : 'Solflare'}</div>
+      <div class="payment-sol-amount">◎ ${solDisplay}</div>
+      <div class="payment-usd-equiv">≈ $${usdAmount} USD at $${solPriceUSD.toFixed(2)}/SOL</div>
+      <div class="payment-detail"><span class="payment-detail-label">From</span><span class="payment-detail-val addr">${walletPublicKey.slice(0,8)}...${walletPublicKey.slice(-8)}</span></div>
+      <div class="payment-detail"><span class="payment-detail-label">To</span><span class="payment-detail-val addr">RADAR Treasury</span></div>
+      <div class="payment-detail"><span class="payment-detail-label">Network</span><span class="payment-detail-val">Solana Mainnet</span></div>
+      <div class="payment-detail"><span class="payment-detail-label">Balance</span><span class="payment-detail-val">${walletBalance ? walletBalance.toFixed(4) + ' SOL' : 'Loading...'}</span></div>
+      <div class="payment-actions">
+        <button class="cancel-btn" onclick="resetClaimModal()">Cancel</button>
+        <button class="pay-btn" onclick="executeSolPayment('${tier}', ${usdAmount}, ${solAmount})">⚡ Pay ${solDisplay} SOL</button>
+      </div>
+    </div>
+  `;
+}
+
+async function executeSolPayment(tier, usdAmount, solAmount) {
+  const cardClass = tier === 'pro' ? '.pricing-card.pro' : tier === 'boost' ? '.pricing-card.boost' : '.community-card';
+  const card = document.querySelector(cardClass);
+  
+  // Show processing state
+  card.innerHTML = `
+    <div class="payment-status">
+      <div class="spinner-lg"></div>
+      <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">Processing Payment...</div>
+      <div style="font-size:.78rem;color:var(--text-tertiary)">Approve the transaction in your wallet</div>
+    </div>
+  `;
+  
+  try {
+    const provider = connectedWallet === 'phantom' ? getPhantomProvider() : getSolflareProvider();
+    if (!provider) throw new Error('Wallet provider not found');
+    
+    // Build transaction using @solana/web3.js
+    const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = window.solanaWeb3;
+    
+    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+    const fromPubkey = new PublicKey(walletPublicKey);
+    const toPubkey = new PublicKey(RADAR_TREASURY);
+    const lamports = Math.round(solAmount * LAMPORTS_PER_SOL);
+    
+    // Check balance
+    if (walletBalance && walletBalance < solAmount + 0.005) {
+      throw new Error(`Insufficient balance. You need ${(solAmount + 0.005).toFixed(4)} SOL (including fees), but only have ${walletBalance.toFixed(4)} SOL.`);
+    }
+    
+    // Create transfer instruction
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports
+      })
+    );
+    
+    // Get recent blockhash
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromPubkey;
+    
+    // Sign and send
+    const signed = await provider.signAndSendTransaction(transaction);
+    const signature = signed.signature || signed;
+    
+    // Wait for confirmation
+    card.innerHTML = `
+      <div class="payment-status">
+        <div class="spinner-lg"></div>
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">Confirming on-chain...</div>
+        <div style="font-size:.78rem;color:var(--text-tertiary)">Waiting for Solana network confirmation</div>
+      </div>
+    `;
+    
+    await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
+    
+    // SUCCESS
+    const tierEmoji = tier === 'pro' ? '🚀' : tier === 'boost' ? '⚡' : '💰';
+    const tierLabel = tier === 'pro' ? 'Pro Profile Activated!' : tier === 'boost' ? 'Boost Activated!' : 'Contribution Received!';
+    
+    card.innerHTML = `
+      <div class="payment-status">
+        <div class="payment-success">✅</div>
+        <div style="font-weight:800;font-size:1rem;margin-bottom:6px">${tierEmoji} ${tierLabel}</div>
+        <div style="font-size:.78rem;color:var(--text-tertiary);line-height:1.5;margin-bottom:12px">${
+          tier === 'pro' ? 'Your token now has a verified badge and full profile customization. Changes go live immediately.' :
+          tier === 'boost' ? 'Your token will appear in Trending and Hot Picks for the next 7 days.' :
+          'Thank you for contributing to this token\'s community fund!'
+        }</div>
+        <div style="font-family:var(--font-mono);font-size:.85rem;color:var(--accent);margin-bottom:8px">◎ ${solAmount.toFixed(4)} SOL paid</div>
+        <div class="payment-tx">TX: <a href="https://solscan.io/tx/${signature}" target="_blank" rel="noopener">${String(signature).slice(0,16)}...${String(signature).slice(-16)}</a></div>
+      </div>
+    `;
+    
+    // Save claim to localStorage
+    const claims = JSON.parse(localStorage.getItem('radar_claims') || '{}');
+    claims[currentModalToken || 'unknown'] = {
+      tier, usdAmount, solAmount, signature: String(signature), timestamp: Date.now()
+    };
+    localStorage.setItem('radar_claims', JSON.stringify(claims));
+    
+    // Refresh balance
+    fetchSolBalance();
+    
+    showPaymentToast('✅ Payment Confirmed!', `${solAmount.toFixed(4)} SOL sent to RADAR Treasury`);
+    
+  } catch (err) {
+    console.error('Payment failed:', err);
+    const errMsg = err.message || 'Transaction was rejected or failed';
+    
+    card.innerHTML = `
+      <div class="payment-status">
+        <div class="payment-success">❌</div>
+        <div style="font-weight:800;font-size:1rem;margin-bottom:6px;color:var(--red)">Payment Failed</div>
+        <div style="font-size:.78rem;color:var(--text-tertiary);line-height:1.5;margin-bottom:16px">${errMsg}</div>
+        <div class="payment-actions">
+          <button class="cancel-btn" onclick="resetClaimModal()">Back</button>
+          <button class="pay-btn" onclick="handlePayment('${tier}', ${usdAmount})">Retry</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// =============================================
+// COMMUNITY FUND — Custom amount contribution
+// =============================================
+function handleContribute() {
+  if (!connectedWallet || !walletPublicKey) {
+    showPaymentToast('🔗 Connect your wallet first', 'Connect Phantom or Solflare to contribute.');
+    connectWallet();
+    return;
+  }
+  
+  if (!solPriceUSD || solPriceUSD <= 0) {
+    showPaymentToast('⏳ Loading prices...', 'Please try again in a moment.');
+    fetchTickerPrices();
+    return;
+  }
+  
+  const card = document.querySelector('.community-card');
+  const origHTML = card.innerHTML;
+  card.dataset.original = origHTML;
+  
+  card.innerHTML = `
+    <div class="claim-form">
+      <div style="font-weight:800;font-size:.95rem;margin-bottom:4px;color:var(--yellow)">💰 Contribute to Community Fund</div>
+      <div style="font-size:.78rem;color:var(--text-tertiary);margin-bottom:16px">Any amount helps upgrade this token's profile. Goal: $49 (Pro)</div>
+      <div class="claim-form-group">
+        <div class="claim-form-label">Amount (USD)</div>
+        <div class="contribute-input-wrap">
+          <input class="claim-form-input" id="contributeAmount" type="number" min="0.5" step="0.5" value="5" placeholder="5.00" oninput="updateContribSol()">
+          <span class="sol-equiv" id="contribSolEquiv">≈ ${(5 / solPriceUSD).toFixed(4)} SOL</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:16px">
+        <button class="preset" onclick="setContribAmount(2)">$2</button>
+        <button class="preset" onclick="setContribAmount(5)">$5</button>
+        <button class="preset" onclick="setContribAmount(10)">$10</button>
+        <button class="preset" onclick="setContribAmount(25)">$25</button>
+      </div>
+      <div class="payment-detail"><span class="payment-detail-label">From</span><span class="payment-detail-val addr">${walletPublicKey.slice(0,6)}...${walletPublicKey.slice(-6)}</span></div>
+      <div class="payment-detail"><span class="payment-detail-label">To</span><span class="payment-detail-val">RADAR Treasury</span></div>
+      <div class="payment-detail" style="border:none"><span class="payment-detail-label">Balance</span><span class="payment-detail-val">${walletBalance ? walletBalance.toFixed(4) + ' SOL' : '...'}</span></div>
+      <div class="payment-actions" style="margin-top:12px">
+        <button class="cancel-btn" onclick="restoreCommunityCard()">Cancel</button>
+        <button class="pay-btn" onclick="executeContribution()">💰 Send Contribution</button>
+      </div>
+    </div>
+  `;
+}
+
+function updateContribSol() {
+  const val = parseFloat(document.getElementById('contributeAmount')?.value) || 0;
+  const el = document.getElementById('contribSolEquiv');
+  if (el && solPriceUSD > 0) el.textContent = `≈ ${(val / solPriceUSD).toFixed(4)} SOL`;
+}
+
+function setContribAmount(val) {
+  const inp = document.getElementById('contributeAmount');
+  if (inp) { inp.value = val; updateContribSol(); }
+}
+
+function restoreCommunityCard() {
+  const card = document.querySelector('.community-card');
+  if (card && card.dataset.original) card.innerHTML = card.dataset.original;
+}
+
+async function executeContribution() {
+  const usdAmount = parseFloat(document.getElementById('contributeAmount')?.value) || 0;
+  if (usdAmount < 0.1) {
+    showPaymentToast('⚠️ Minimum $0.10', 'Please enter a valid amount.');
+    return;
+  }
+  const solAmount = usdAmount / solPriceUSD;
+  const card = document.querySelector('.community-card');
+  
+  // Reuse the same payment execution flow
+  card.innerHTML = `
+    <div class="payment-status">
+      <div class="spinner-lg"></div>
+      <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">Processing Contribution...</div>
+      <div style="font-size:.78rem;color:var(--text-tertiary)">Approve the transaction in your wallet</div>
+    </div>
+  `;
+  
+  try {
+    const provider = connectedWallet === 'phantom' ? getPhantomProvider() : getSolflareProvider();
+    if (!provider) throw new Error('Wallet provider not found');
+    
+    const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = window.solanaWeb3;
+    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+    const fromPubkey = new PublicKey(walletPublicKey);
+    const toPubkey = new PublicKey(RADAR_TREASURY);
+    const lamports = Math.round(solAmount * LAMPORTS_PER_SOL);
+    
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+    );
+    
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromPubkey;
+    
+    const signed = await provider.signAndSendTransaction(transaction);
+    const signature = signed.signature || signed;
+    
+    card.innerHTML = `
+      <div class="payment-status">
+        <div class="spinner-lg"></div>
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:4px">Confirming on-chain...</div>
+        <div style="font-size:.78rem;color:var(--text-tertiary)">Waiting for network confirmation</div>
+      </div>
+    `;
+    
+    await connection.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, 'confirmed');
+    
+    // Update fund progress (simulate — in real backend this would query actual total)
+    const funds = JSON.parse(localStorage.getItem('radar_fund') || '{"total": 33.40, "contributors": 12}');
+    funds.total += usdAmount;
+    funds.contributors += 1;
+    localStorage.setItem('radar_fund', JSON.stringify(funds));
+    const pct = Math.min(100, (funds.total / 49) * 100);
+    
+    card.innerHTML = `
+      <div class="payment-status">
+        <div class="payment-success">🎉</div>
+        <div style="font-weight:800;font-size:1rem;margin-bottom:6px;color:var(--yellow)">Contribution Received!</div>
+        <div style="font-size:.78rem;color:var(--text-tertiary);line-height:1.5;margin-bottom:12px">Thank you for supporting this token's community fund. $${funds.total.toFixed(2)} of $49 raised (${pct.toFixed(0)}%)!</div>
+        <div style="font-family:var(--font-mono);font-size:.85rem;color:var(--accent);margin-bottom:8px">◎ ${solAmount.toFixed(4)} SOL contributed</div>
+        <div class="payment-tx">TX: <a href="https://solscan.io/tx/${signature}" target="_blank" rel="noopener">${String(signature).slice(0,16)}...${String(signature).slice(-16)}</a></div>
+      </div>
+    `;
+    
+    fetchSolBalance();
+    showPaymentToast('🎉 Contribution Sent!', `$${usdAmount.toFixed(2)} contributed to the community fund`);
+    
+  } catch (err) {
+    console.error('Contribution failed:', err);
+    card.innerHTML = `
+      <div class="payment-status">
+        <div class="payment-success">❌</div>
+        <div style="font-weight:800;font-size:.9rem;margin-bottom:6px;color:var(--red)">Contribution Failed</div>
+        <div style="font-size:.78rem;color:var(--text-tertiary);margin-bottom:16px">${err.message || 'Transaction rejected'}</div>
+        <div class="payment-actions">
+          <button class="cancel-btn" onclick="restoreCommunityCard()">Back</button>
+          <button class="pay-btn" onclick="handleContribute()">Retry</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// =============================================
+// PAYMENT TOAST NOTIFICATION
+// =============================================
+function showPaymentToast(title, msg) {
+  const existing = document.querySelector('.payment-toast');
+  if (existing) existing.remove();
+  
+  const toast = document.createElement('div');
+  toast.className = 'payment-toast';
+  toast.style.cssText = 'position:fixed;top:80px;right:20px;z-index:3000;background:var(--bg-primary);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:16px 20px;box-shadow:0 12px 40px rgba(0,219,164,0.15);animation:panelSlide .3s ease;max-width:320px;cursor:pointer';
+  toast.innerHTML = `<div style="font-weight:700;font-size:.85rem;margin-bottom:4px">${title}</div><div style="font-size:.75rem;color:var(--text-tertiary)">${msg}</div>`;
+  toast.onclick = () => toast.remove();
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 6000);
+}
 
 // Trade tabs
 function setTab(el, type) {
@@ -2088,6 +2518,8 @@ let connectedWallet = null;
 let walletPublicKey = null;
 let walletBalance = null;
 let portfolioTokens = [];
+let solPriceUSD = 0;
+const RADAR_TREASURY = '4WsUY7F2VQJ7ahB1Wo44pP82M4pCJLyyLdgT9JeYSerj';
 
 function getPhantomProvider() {
   if ('phantom' in window) return window.phantom?.solana;
