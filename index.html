@@ -46,7 +46,7 @@
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body {
   font-family: var(--font-body);
   background: var(--bg-deep);
@@ -1679,13 +1679,11 @@ function render() {
   if (filterVol) filtered = filtered.filter(t => t.volRaw >= 100000);
   if (filterLiq) filtered = filtered.filter(t => t.liqRaw >= 50000);
   
-  // Sort by timeframe for Gainers/Losers views
-  if (activeView === 'gainers' || activeView === 'losers') {
-    const key = activeTF; // m5, h1, h6, h24
-    filtered = [...filtered].sort((a, b) => {
-      return activeView === 'losers' ? a[key] - b[key] : b[key] - a[key];
-    });
-  }
+  // Sort by selected timeframe across all table views
+  const key = activeTF; // m5, h1, h6, h24
+  filtered = [...filtered].sort((a, b) => {
+    return activeView === 'losers' ? a[key] - b[key] : b[key] - a[key];
+  });
   
   // Highlight active timeframe column header
   document.querySelectorAll('thead th').forEach(th => th.classList.remove('tf-active'));
