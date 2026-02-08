@@ -148,6 +148,8 @@ body::before {
 .tf-btn{padding:5px 12px;font-size:.72rem;font-weight:600;color:var(--text-tertiary);cursor:pointer;border:none;background:none;font-family:var(--font-mono);transition:all var(--transition)}
 .tf-btn:hover{color:var(--text-secondary);background:rgba(255,255,255,0.03)}
 .tf-btn.active{color:var(--accent);background:var(--accent-dim)}
+th.tf-active{color:var(--accent)!important;text-shadow:0 0 8px var(--accent-glow)}
+td.tf-highlight{background:rgba(0,219,164,0.03)}
 .ai-shield{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;font-size:.75rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,rgba(0,219,164,0.08),rgba(77,166,255,0.06));border:1px solid rgba(0,219,164,0.15);color:var(--accent);transition:all .3s ease}
 .ai-shield:hover{border-color:rgba(0,219,164,0.3);box-shadow:0 0 20px rgba(0,219,164,0.08)}
 
@@ -932,8 +934,8 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
 <!-- FILTERS -->
 <div class="filters">
   <div class="chip-group" id="chainChips">
-    <div class="chip active" data-chain="all"><span class="dot" style="background:var(--accent)"></span> All Chains</div>
-    <div class="chip" data-chain="solana"><span class="dot" style="background:#9945ff"></span> Solana</div>
+    <div class="chip" data-chain="all"><span class="dot" style="background:var(--accent)"></span> All Chains</div>
+    <div class="chip active" data-chain="solana"><span class="dot" style="background:#9945ff"></span> Solana</div>
     <div class="chip" data-chain="eth"><span class="dot" style="background:#627eea"></span> Ethereum</div>
     <div class="chip" data-chain="base"><span class="dot" style="background:#2b6def"></span> Base</div>
     <div class="chip" data-chain="bsc"><span class="dot" style="background:#f0b90b"></span> BSC</div>
@@ -941,13 +943,13 @@ textarea.claim-form-input{resize:vertical;min-height:60px;font-family:var(--font
   </div>
   <div class="nav-sep"></div>
   <div class="tf-group">
-    <button class="tf-btn">5M</button>
-    <button class="tf-btn">1H</button>
-    <button class="tf-btn active">6H</button>
-    <button class="tf-btn">24H</button>
+    <button class="tf-btn" data-tf="m5">5M</button>
+    <button class="tf-btn" data-tf="h1">1H</button>
+    <button class="tf-btn active" data-tf="h6">6H</button>
+    <button class="tf-btn" data-tf="h24">24H</button>
   </div>
   <div class="nav-sep"></div>
-  <div class="chip-group"><div class="chip">Vol &gt; $100K</div><div class="chip">Liq &gt; $50K</div></div>
+  <div class="chip-group"><div class="chip" data-filter="vol" id="filterVol">Vol &gt; $100K</div><div class="chip" data-filter="liq" id="filterLiq">Liq &gt; $50K</div></div>
   <div class="ai-shield"><span>🛡️</span> AI Shield — Rug Filter ON</div>
 </div>
 
@@ -1265,66 +1267,98 @@ const ALL_CHAINS = ['solana', 'eth', 'base', 'bsc', 'ton'];
 let tokens = [];
 let isLoading = true;
 let currentView = 'trending'; // trending | new | gainers
+let loadGeneration = 0; // Increments on each chain switch to ignore stale results
+let activeTF = 'h6';       // Active timeframe for sorting: m5 | h1 | h6 | h24
+let filterVol = false;     // Vol > $100K filter active
+let filterLiq = false;     // Liq > $50K filter active
+
+// Robust fetch with retry + rate-limit backoff
+async function gtFetch(url, retries = 2, delay = 1200) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (res.status === 429) {
+        // Rate limited — wait and retry
+        console.warn(`GeckoTerminal rate limited (429), retry ${i+1}/${retries}...`);
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+        continue;
+      }
+      if (!res.ok) {
+        console.warn(`GeckoTerminal ${res.status} for ${url}`);
+        if (i < retries) { await new Promise(r => setTimeout(r, delay)); continue; }
+        return null;
+      }
+      return await res.json();
+    } catch (err) {
+      console.error(`Fetch error (attempt ${i+1}):`, err.message);
+      if (i < retries) await new Promise(r => setTimeout(r, delay));
+      else return null;
+    }
+  }
+  return null;
+}
 
 // =============================================
 // API: Fetch pools from GeckoTerminal (any chain)
 // =============================================
 async function fetchTrending(network) {
   const net = network || currentNetwork;
-  try {
-    const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/trending_pools?include=base_token,quote_token&page=1`;
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    const json = await res.json();
-    return parsePools(json, net);
-  } catch (err) { console.error('Trending fetch failed:', err); return null; }
+  const geckoNet = CHAIN_CONFIG[net]?.gecko || net;
+  const url = `${GT_BASE}/networks/${geckoNet}/trending_pools?include=base_token,quote_token&page=1`;
+  const json = await gtFetch(url);
+  return json ? parsePools(json, net) : [];
 }
 
 async function fetchNewPools(network) {
   const net = network || currentNetwork;
-  try {
-    const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/new_pools?include=base_token,quote_token&page=1`;
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    const json = await res.json();
-    return parsePools(json, net);
-  } catch (err) { console.error('New pools fetch failed:', err); return null; }
+  const geckoNet = CHAIN_CONFIG[net]?.gecko || net;
+  const url = `${GT_BASE}/networks/${geckoNet}/new_pools?include=base_token,quote_token&page=1`;
+  const json = await gtFetch(url);
+  return json ? parsePools(json, net) : [];
 }
 
 async function fetchTopPools(network) {
   const net = network || currentNetwork;
-  try {
-    const url = `${GT_BASE}/networks/${CHAIN_CONFIG[net].gecko}/pools?sort=h24_volume_usd_desc&include=base_token,quote_token&page=1`;
-    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-    const json = await res.json();
-    return parsePools(json, net);
-  } catch (err) { console.error('Top pools fetch failed:', err); return null; }
+  const geckoNet = CHAIN_CONFIG[net]?.gecko || net;
+  const url = `${GT_BASE}/networks/${geckoNet}/pools?sort=h24_volume_usd_desc&include=base_token,quote_token&page=1`;
+  const json = await gtFetch(url);
+  return json ? parsePools(json, net) : [];
 }
 
 // "All Chains" — fetch top trending from all networks, merge & rank
+// Uses staggered requests to avoid rate limits
 async function fetchAllChainsTrending() {
   try {
-    const promises = ALL_CHAINS.map(net => fetchTrending(net).catch(() => []));
-    const results = await Promise.all(promises);
-    const merged = results.flat().filter(Boolean);
-    // Sort by volume to interleave fairly
-    merged.sort((a, b) => b.volRaw - a.volRaw);
-    return merged.slice(0, 30);
-  } catch (err) { console.error('All chains fetch failed:', err); return null; }
+    const results = [];
+    for (const net of ALL_CHAINS) {
+      const data = await fetchTrending(net);
+      if (data?.length) results.push(...data);
+    }
+    results.sort((a, b) => b.volRaw - a.volRaw);
+    return results.slice(0, 30);
+  } catch (err) { console.error('All chains trending failed:', err); return []; }
 }
 
 async function fetchAllChainsNew() {
   try {
-    const promises = ALL_CHAINS.map(net => fetchNewPools(net).catch(() => []));
-    const results = await Promise.all(promises);
-    return results.flat().filter(Boolean).sort((a, b) => a.ageH - b.ageH).slice(0, 30);
-  } catch (err) { return null; }
+    const results = [];
+    for (const net of ALL_CHAINS) {
+      const data = await fetchNewPools(net);
+      if (data?.length) results.push(...data);
+    }
+    return results.sort((a, b) => a.ageH - b.ageH).slice(0, 30);
+  } catch (err) { return []; }
 }
 
 async function fetchAllChainsTop() {
   try {
-    const promises = ALL_CHAINS.map(net => fetchTopPools(net).catch(() => []));
-    const results = await Promise.all(promises);
-    return results.flat().filter(Boolean).sort((a, b) => b.volRaw - a.volRaw).slice(0, 30);
-  } catch (err) { return null; }
+    const results = [];
+    for (const net of ALL_CHAINS) {
+      const data = await fetchTopPools(net);
+      if (data?.length) results.push(...data);
+    }
+    return results.sort((a, b) => b.volRaw - a.volRaw).slice(0, 30);
+  } catch (err) { return []; }
 }
 
 // =============================================
@@ -1439,7 +1473,15 @@ function parsePools(json, network) {
 // =============================================
 async function loadData(view) {
   currentView = view || currentView;
+  const myGen = loadGeneration; // Capture current generation
   let result;
+  
+  // Show loading indicator
+  const tb = document.getElementById('tbody');
+  if (tb && (!tokens.length || isLoading)) {
+    const netLabel = currentNetwork === 'all' ? 'all chains' : (CHAIN_CONFIG[currentNetwork]?.label || currentNetwork);
+    tb.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="width:24px;height:24px;margin:0 auto 10px"></div>Loading ${netLabel} tokens...</td></tr>`;
+  }
   
   // Map views to API calls
   const apiView = currentView === 'losers' ? 'gainers' : currentView === 'launchpad' ? 'new' : currentView;
@@ -1453,6 +1495,8 @@ async function loadData(view) {
     result = isAll ? await fetchAllChainsTrending() : await fetchTrending();
   }
 
+  if (myGen !== loadGeneration) return; // Chain was switched during fetch — discard stale results
+
   if (result && result.length) {
     tokens = result;
     rankTokens(tokens);
@@ -1462,9 +1506,10 @@ async function loadData(view) {
     renderDynamicFeed();
     renderWallets();
   } else if (isLoading) {
+    const netLabel = currentNetwork === 'all' ? 'all chains' : (CHAIN_CONFIG[currentNetwork]?.label || currentNetwork);
     const tb = document.getElementById('tbody');
-    if (tb) tb.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--red)">⚠️ Failed to load — retrying...</td></tr>';
-    setTimeout(() => loadData(currentView), 5000);
+    if (tb) tb.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--yellow)">⏳ Loading ${netLabel} data — retrying...</td></tr>`;
+    setTimeout(() => loadData(currentView), 3000);
   }
 }
 
@@ -1595,24 +1640,52 @@ function render() {
     document.getElementById('tbody').innerHTML = '<tr><td colspan="14" style="text-align:center;padding:60px;color:var(--text-muted)"><div class="chart-loading" style="position:static;background:none"><div class="spinner"></div>Fetching trending tokens from on-chain data...</div></td></tr>';
     return;
   }
-  document.getElementById('tbody').innerHTML = tokens.map((t, i) => `
-    <tr onclick="openModal(${i})" style="animation-delay:${i * 0.04}s">
+  
+  // Apply filters
+  let filtered = tokens;
+  if (filterVol) filtered = filtered.filter(t => t.volRaw >= 100000);
+  if (filterLiq) filtered = filtered.filter(t => t.liqRaw >= 50000);
+  
+  // Sort by timeframe for Gainers/Losers views
+  if (activeView === 'gainers' || activeView === 'losers') {
+    const key = activeTF; // m5, h1, h6, h24
+    filtered = [...filtered].sort((a, b) => {
+      return activeView === 'losers' ? a[key] - b[key] : b[key] - a[key];
+    });
+  }
+  
+  // Highlight active timeframe column header
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('tf-active'));
+  const thMap = { m5: 5, h1: 6, h6: 7, h24: 8 };
+  const activeThIdx = thMap[activeTF];
+  const ths = document.querySelectorAll('thead th');
+  if (ths[activeThIdx]) ths[activeThIdx].classList.add('tf-active');
+  
+  if (!filtered.length) {
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text-muted)">No tokens match current filters</td></tr>';
+    return;
+  }
+  
+  document.getElementById('tbody').innerHTML = filtered.map((t, i) => {
+    const origIdx = tokens.indexOf(t);
+    return `
+    <tr onclick="openModal(${origIdx})" style="animation-delay:${i * 0.04}s">
       <td><span class="rank ${t.rank <= 3 ? 'gold' : ''}">${t.rank}</span></td>
       <td><div class="tk">${tokenImgHTML(t)}<div><div class="tk-name">${t.name}${t.verified ? ' <span class="verified-badge">✓</span>' : ''}<span class="chain-dot" style="background:${t.cc}"></span>${t.ageH <= 6 ? '<span class="new-tag">NEW</span>' : ''}</div><div class="tk-sub">${t.tick}/${t.pair} · ${t.age}</div></div></div></td>
       <td class="price">${fmtPrice(t.p)}</td>
       <td>${aiHTML(t.ai)}</td>
       <td>${sparkSVG(t)}</td>
-      <td>${chg(t.m5)}</td>
-      <td>${chg(t.h1)}</td>
-      <td>${chg(t.h6)}</td>
-      <td>${chg(t.h24)}</td>
+      <td class="${activeTF==='m5'?'tf-highlight':''}">${chg(t.m5)}</td>
+      <td class="${activeTF==='h1'?'tf-highlight':''}">${chg(t.h1)}</td>
+      <td class="${activeTF==='h6'?'tf-highlight':''}">${chg(t.h6)}</td>
+      <td class="${activeTF==='h24'?'tf-highlight':''}">${chg(t.h24)}</td>
       <td class="muted">$${fmtVol(t.volRaw)}</td>
       <td class="muted">$${fmtVol(t.liqRaw)}</td>
       <td class="muted">$${fmtMc(t.mcRaw)}</td>
       <td>${safeHTML(t.safe)}</td>
       <td><div class="qt"><button class="qt-btn qt-buy" onclick="event.stopPropagation()">BUY</button><button class="qt-btn qt-sell" onclick="event.stopPropagation()">SELL</button></div></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 // =============================================
@@ -2227,18 +2300,42 @@ document.querySelectorAll('.chip[data-chain]').forEach(c => c.addEventListener('
   this.closest('.chip-group').querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
   this.classList.add('active');
   const chain = this.dataset.chain;
-  currentNetwork = chain === 'all' ? 'all' : chain;
+  const newNetwork = chain === 'all' ? 'all' : chain;
+  if (newNetwork === currentNetwork) return; // No change
+  currentNetwork = newNetwork;
   isLoading = true;
-  tokens = [];
+  loadGeneration++; // Cancel any pending fetches from previous chain
+  // Show loading in table, but DON'T clear tokens yet (they show until new data arrives)
+  const tb = document.getElementById('tbody');
+  if (tb) tb.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:40px;color:var(--text-muted)"><div class="spinner" style="width:24px;height:24px;margin:0 auto 10px"></div>Loading ${CHAIN_CONFIG[newNetwork]?.label || 'All'} tokens...</td></tr>`;
   // Force table view for data reload
   if (['trending','new','gainers','losers','launchpad'].includes(activeView)) {
-    switchView(activeView);
+    loadData(activeView === 'losers' ? 'gainers' : activeView === 'launchpad' ? 'new' : activeView);
   } else {
     switchView('trending');
   }
 }));
-document.querySelectorAll('.chip:not([data-chain])').forEach(c => c.addEventListener('click', function () { this.closest('.chip-group').querySelectorAll('.chip').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
-document.querySelectorAll('.tf-btn').forEach(b => b.addEventListener('click', function () { this.closest('.tf-group').querySelectorAll('.tf-btn').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
+document.querySelectorAll('.chip:not([data-chain]):not([data-filter])').forEach(c => c.addEventListener('click', function () { this.closest('.chip-group').querySelectorAll('.chip').forEach(x => x.classList.remove('active')); this.classList.add('active'); }));
+
+// Timeframe buttons — sort by selected period
+document.querySelectorAll('.tf-btn[data-tf]').forEach(b => b.addEventListener('click', function () {
+  this.closest('.tf-group').querySelectorAll('.tf-btn').forEach(x => x.classList.remove('active'));
+  this.classList.add('active');
+  activeTF = this.dataset.tf;
+  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) render();
+}));
+
+// Vol/Liq filter chips — toggle on/off
+document.getElementById('filterVol').addEventListener('click', function() {
+  filterVol = !filterVol;
+  this.classList.toggle('active', filterVol);
+  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) render();
+});
+document.getElementById('filterLiq').addEventListener('click', function() {
+  filterLiq = !filterLiq;
+  this.classList.toggle('active', filterLiq);
+  if (['trending','new','gainers','losers','launchpad'].includes(activeView)) render();
+});
 
 // =============================================
 // SEARCH — Live search with contract address + token name
@@ -3490,18 +3587,18 @@ fetchTickerPrices();
 
 // Auto-refresh: tokens every 30s, ticker every 60s, feed every 12s
 setInterval(async () => {
-  // Fetch fresh data regardless of current view
+  const gen = loadGeneration;
   const apiView = activeView === 'losers' ? 'gainers' : activeView === 'launchpad' ? 'new' : 'trending';
   const isAll = currentNetwork === 'all';
   let result;
   if (apiView === 'new') result = isAll ? await fetchAllChainsNew() : await fetchNewPools();
   else if (apiView === 'gainers') result = isAll ? await fetchAllChainsTop() : await fetchTopPools();
   else result = isAll ? await fetchAllChainsTrending() : await fetchTrending();
+  if (gen !== loadGeneration) return; // Chain was switched — discard
   if (result && result.length) {
     tokens = result;
     rankTokens(tokens);
     isLoading = false;
-    // Re-render based on active view
     const c = contentEl();
     if (['trending','new','gainers','losers','launchpad'].includes(activeView)) { render(); }
     else if (activeView === 'whales' && c) renderWhaleView(c);
