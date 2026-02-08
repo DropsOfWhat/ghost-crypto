@@ -3056,17 +3056,16 @@ function renderLaunchpadView(c) {
 }
 
 function expandLaunchpad(id) {
-  // Collapse any other expanded cards
-  document.querySelectorAll('.lp-card.expanded').forEach(card => {
-    if (card.id !== 'lp-' + id) card.classList.remove('expanded');
-  });
   const card = document.getElementById('lp-' + id);
-  if (card) {
-    card.classList.toggle('expanded');
-    if (card.classList.contains('expanded')) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
+  if (!card) return;
+  // If already expanded, don't toggle off (form clicks bubble here)
+  if (card.classList.contains('expanded')) return;
+  // Collapse any other expanded cards
+  document.querySelectorAll('.lp-card.expanded').forEach(c => {
+    if (c.id !== 'lp-' + id) c.classList.remove('expanded');
+  });
+  card.classList.add('expanded');
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function collapseLaunchpad(id) {
@@ -3802,16 +3801,21 @@ openModal = function(i) {
   const t = tokens[i];
   if (!t) return;
   
-  // Add alert quick-add row below the AI box
+  // Remove any previous alert toggles/configs from modal
+  document.querySelectorAll('.modal-alert-section').forEach(el => el.remove());
+  
+  // Add alert quick-add row below the AI box — only for THIS token
   const aiBox = document.querySelector('.ai-box');
   if (aiBox) {
     const existing = alerts.find(a => a.tick === t.tick && a.active);
-    aiBox.insertAdjacentHTML('afterend', `
+    const section = document.createElement('div');
+    section.className = 'modal-alert-section';
+    section.innerHTML = `
       <div class="alert-toggle-row" onclick="toggleModalAlert(${i}, this)" style="margin-top:12px">
         <span class="alert-toggle-label">🔔 Price Alert for ${t.tick}</span>
         <div class="alert-toggle ${existing ? 'on' : ''}" id="modalAlertToggle"></div>
       </div>
-      <div id="modalAlertConfig" style="display:${existing ? 'none' : 'none'};margin-top:8px">
+      <div id="modalAlertConfig" style="display:none;margin-top:8px">
         <div class="alert-form" style="margin-bottom:0">
           <div class="alert-form-row">
             <select id="modalAlertCond">
@@ -3826,7 +3830,8 @@ openModal = function(i) {
           <button class="alert-add-btn" onclick="saveModalAlert(${i})">Set Alert</button>
         </div>
       </div>
-    `);
+    `;
+    aiBox.after(section);
   }
 };
 
