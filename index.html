@@ -5293,7 +5293,7 @@
         setStatus('pending', '⏳ Getting quote...');
         const lamports = Math.round(solAmount * 1e9);
         const jupResult = await jupQuote(SOL_MINT, mint, lamports, Math.round(slippage * 100));
-        if (!jupResult) throw new Error('Jupiter quote failed');
+        if (!jupResult) throw new Error('Jupiter quote failed — token may have no liquidity or routes');
         
         setStatus('pending', '⏳ Building transaction...');
         const swapData = await jupSwap(jupResult.endpoint, jupResult.quote, walletAddress, Math.round(priority * 1e9));
@@ -5407,7 +5407,7 @@
         
         setStatus('pending', '⏳ Getting sell quote...');
         const jupResult = await jupQuote(mint, SOL_MINT, lamports, Math.round(slippage * 100));
-        if (!jupResult) throw new Error('Jupiter quote failed');
+        if (!jupResult) throw new Error('Jupiter quote failed — token may have no liquidity or routes');
         
         setStatus('pending', '⏳ Building transaction...');
         const swapData = await jupSwap(jupResult.endpoint, jupResult.quote, walletAddress, Math.round(priority * 1e9));
@@ -7058,18 +7058,29 @@ Be concise, use numbers. Output as plain text, not markdown.`;
     }
 
     // ── Evaluate & Execute ──
+    let _fetchAbortSafe = true; // assume AbortController works; flip on first DataCloneError
     async function fetchWithTimeout(url, opts = {}, timeoutMs = 12000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch(url, { ...opts, signal: controller.signal });
-        clearTimeout(timer);
-        return res;
-      } catch (e) {
-        clearTimeout(timer);
-        if (e.name === 'AbortError') throw new Error('Request timed out');
-        throw e;
+      if (_fetchAbortSafe) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), timeoutMs);
+          const res = await fetch(url, { ...opts, signal: controller.signal });
+          clearTimeout(timer);
+          return res;
+        } catch (e) {
+          if (e.name === 'DataCloneError' || e.message?.includes('could not be cloned')) {
+            _fetchAbortSafe = false; // sandbox detected — never use AbortController again
+          } else {
+            if (e.name === 'AbortError') throw new Error('Request timed out');
+            throw e;
+          }
+        }
       }
+      // Fallback: plain fetch with timeout race (no AbortController)
+      return Promise.race([
+        fetch(url, opts),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), timeoutMs))
+      ]);
     }
 
     async function alphaEvaluateAndBuy(mint, trackedWallet, theirSolAmount) {
